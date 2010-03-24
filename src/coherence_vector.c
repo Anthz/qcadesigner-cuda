@@ -49,6 +49,9 @@
 #define TWO_PI 6.283185
 #define FOUR_PI 12.56637061
 
+//uncomment this to compile using nVidia's CUDA Technology - see www.nvidia.com/cuda for more infos
+//#define CUDA
+
 //!Options for the coherence simulation engine
 coherence_OP coherence_options = {1, 1e-15, 1e-16, 7e-11, 9.8e-22, 3.8e-23, 0.0, 2.0, 80, 12.9, 11.5, EULER_METHOD, TRUE, FALSE} ;
 
@@ -315,6 +318,7 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
 
   command_history_message ("It took %d iterations to converge the initial steady state polarization\n", k);
 
+  #ifndef CUDA 
   // perform the iterations over all samples //
   for (j = 0; j < number_samples; j++)
     {
@@ -401,8 +405,28 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
           qcad_cell_calculate_polarization (exp_array_index_1d (design->bus_layout->outputs, BUS_LAYOUT_CELL, i).cell) ;
 
   if (TRUE == STOP_SIMULATION) return sim_data;
-
   }//for number of samples
+  #else
+  //CUDA code for coherence simulation goes here
+  //tentative pseudo algorithm
+  //1st: get a suitable representation of the design which can be copied easily
+  //     into global memory
+  //     HINT:
+  //	 typedef struct cuda_cell_t{
+  //			 	long int id;	   //unique id
+  //				(void*) data_cell; //replace void* either w/ pointer to
+  //								   //suitable struct or w/ data itself
+  //				int* neighbors;	   //long int vector <-> id of cell /0
+  //     } cuda_cell  
+  //2nd: have the representation take into account neighborhood as a list of 
+  //     pointers to the ids of the neghbours
+  //3rd: copy everything into global memory
+  //4th: kernel copies into its local memory _A COPY OF THE DATA OF ITS NEIGH._
+  //5th: kernel can process the evolution from s to s+1 using local data and 
+  //     updates the state of the cell it is working on
+  //6th: repeat 4-5 until total number of samples are computed
+  //7th: copy everything from device memory to host memory, mapping correctly 
+  #endif
 
   // Free the neigbours and Ek array introduced by this simulation//
   for (k = 0; k < number_of_cell_layers; k++)
