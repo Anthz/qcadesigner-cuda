@@ -43,6 +43,7 @@
 #include "custom_widgets.h"
 #include "global_consts.h"
 
+//#define CUDA //uncomment this to use CUDA technology
 //#define REDUCE_DEREF
 
 //!Options for the bistable simulation engine
@@ -241,6 +242,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   set_progress_bar_fraction (0.0) ;
 
   // perform the iterations over all samples //
+#ifndef CUDA	
 #ifdef REDUCE_DEREF
   // Dereference some structures now so we don't do it over and over in the loop
   sim_data_number_samples = sim_data->number_samples ;
@@ -399,6 +401,12 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
     if(TRUE == STOP_SIMULATION)
       j = sim_data_number_samples ;
     }//for number of samples
+#else
+/* insert code here to use CUDA
+if we want to modify only this piece of code we need to find postcondition and ensure them. maybe it would be simpler to modify the entire function.
+another ifndef branch can be declared earlier to avoid some unused initializations. 
+*/
+#endif
 
   // Free the neigbours and Ek array introduced by this simulation//
   for (k = 0; k < number_of_cell_layers; k++)
