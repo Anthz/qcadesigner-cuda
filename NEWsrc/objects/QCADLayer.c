@@ -241,7 +241,7 @@ static gboolean qcad_layer_do_container_add (QCADDOContainer *container, QCADDes
         g_object_ref (G_OBJECT (obj)) ;
         if (NULL != ots->llDeSel)
           ots->llDeSel->data = obj ;
-        qcad_design_object_selected (obj, ots) ;
+/*        qcad_design_object_selected (obj, ots) ;*/
         return TRUE ;
         }
       }
@@ -797,7 +797,7 @@ static gboolean unserialize (QCADDesignObject *obj, FILE *pfile)
   {
   char *pszLine = NULL, *pszValue = NULL ;
   QCADLayer *layer = NULL ;
-  int iShowProgress = -1 ;
+/*  int iShowProgress = -1 ;*/
 
   layer = QCAD_LAYER (obj) ;
 
@@ -844,8 +844,8 @@ static gboolean unserialize (QCADDesignObject *obj, FILE *pfile)
         qcad_layer_do_container_add (QCAD_DO_CONTAINER (layer), obj) ;
 /*        DBG_REFS (fprintf (stderr, "QCADLayer::unserialize:After adding object 0x%08X to layer 0x%08X, unref-ing object\n", (int)obj, (int)layer)) ;*/
         g_object_unref (G_OBJECT (obj)) ;
-        if (!(iShowProgress = (iShowProgress + 1) % 1000))
-          set_progress_bar_fraction (get_file_percent (pfile)) ;
+/*        if (!(iShowProgress = (iShowProgress + 1) % 1000))*/
+/*          set_progress_bar_fraction (get_file_percent (pfile)) ;*/
         }
       }
     g_free (pszLine) ;
