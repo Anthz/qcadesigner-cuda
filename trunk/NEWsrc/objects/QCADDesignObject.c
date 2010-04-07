@@ -140,7 +140,7 @@ GType qcad_design_object_get_type ()
 
     if ((qcad_design_object_type = g_type_register_static (G_TYPE_OBJECT, QCAD_TYPE_STRING_DESIGN_OBJECT, &qcad_design_object_info, 0)))
       g_type_class_ref (qcad_design_object_type) ;
-    DBG_OO (fprintf (stderr, "Registered QCADDesignObject as %d\n", (int)qcad_design_object_type)) ;
+/*    DBG_OO (fprintf (stderr, "Registered QCADDesignObject as %d\n", (int)qcad_design_object_type)) ;*/
     }
   return qcad_design_object_type ;
   }
@@ -218,10 +218,10 @@ static void qcad_design_object_instance_init (GObject *object, gpointer data)
 static void qcad_design_object_instance_finalize (GObject *object)
   {
   void (*parent_finalize) (GObject *obj) = G_OBJECT_CLASS (g_type_class_peek (g_type_parent (QCAD_TYPE_DESIGN_OBJECT)))->finalize ;
-  DBG_QCADDO_FIN (fprintf (stderr, "QCADDesignObject::instance_finalize:finalizing object 0x%08X of type \"%s\"\n", (int)object, g_type_name (G_TYPE_FROM_INSTANCE (object)))) ;
+/*  DBG_QCADDO_FIN (fprintf (stderr, "QCADDesignObject::instance_finalize:finalizing object 0x%08X of type \"%s\"\n", (int)object, g_type_name (G_TYPE_FROM_INSTANCE (object)))) ;*/
   if (NULL != parent_finalize)
     (*parent_finalize) (object) ;
-  DBG_QCADDO_FIN (fprintf (stderr, "QCADDesignObject::instance_finalize:Leaving\n")) ;
+/*  DBG_QCADDO_FIN (fprintf (stderr, "QCADDesignObject::instance_finalize:Leaving\n")) ;*/
   }
 
 /*///////////////////////////////////////////////////////////////////////////////*/

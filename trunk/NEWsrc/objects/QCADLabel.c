@@ -103,7 +103,7 @@ GType qcad_label_get_type ()
 
     if ((qcad_label_type = g_type_register_static (QCAD_TYPE_STRETCHY_OBJECT, QCAD_TYPE_STRING_LABEL, &qcad_label_info, 0)))
       g_type_class_ref (qcad_label_type) ;
-    DBG_OO (fprintf (stderr, "Registered QCADLabel as %d\n", (int)qcad_label_type)) ;
+/*    DBG_OO (fprintf (stderr, "Registered QCADLabel as %d\n", (int)qcad_label_type)) ;*/
     }
   return qcad_label_type ;
   }
@@ -144,7 +144,7 @@ static void qcad_label_instance_init (GObject *object, gpointer data)
   QCAD_DESIGN_OBJECT (object)->bounding_box.cxWorld =
   QCAD_DESIGN_OBJECT (object)->bounding_box.cyWorld = 0.0 ;
 /*  memcpy (&(QCAD_DESIGN_OBJECT (object)->clr), &clrBlue, sizeof (GdkColor)) ;*/
-  qcad_label_shrinkwrap (QCAD_LABEL (object)) ;
+/*  qcad_label_shrinkwrap (QCAD_LABEL (object)) ;*/
 /*  DBG_OO (fprintf (stderr, "QCADLabel::instance_init:Leaving\n")) ;*/
   }
 
@@ -307,8 +307,8 @@ static gboolean unserialize (QCADDesignObject *obj, FILE *fp)
     g_free (ReadLine (fp, '\0', FALSE)) ;
     }
 
-  if (bParentInit)
-    qcad_label_shrinkwrap (QCAD_LABEL (obj)) ;
+/*  if (bParentInit)*/
+/*    qcad_label_shrinkwrap (QCAD_LABEL (obj)) ;*/
 
   return bParentInit ;
   }
@@ -413,8 +413,8 @@ void qcad_label_vset_text (QCADLabel *label, char *psz, va_list va)
     g_free (label->psz) ;
   label->psz = g_strdup_vprintf (psz, va) ;
   label->bNeedsEPMDraw = TRUE ;
-  if (label->bShrinkWrap)
-    qcad_label_shrinkwrap (label) ;
+/*  if (label->bShrinkWrap)*/
+/*    qcad_label_shrinkwrap (label) ;*/
   }
 
 /*void qcad_label_shrinkwrap (QCADLabel *label)*/

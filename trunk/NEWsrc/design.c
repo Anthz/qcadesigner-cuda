@@ -58,7 +58,7 @@
 /*  } DESIGN_OBJECT_ARRAY_WEAK_REF_STRUCT ;*/
 //#endif /* def DBG_WEAK_REFS */
 
-/*static void design_bus_layout_remove_cell (DESIGN *design, QCADCell *cell, QCADCellFunction cell_function) ;*/
+static void design_bus_layout_remove_cell (DESIGN *design, QCADCell *cell, QCADCellFunction cell_function) ;
 static void design_rebuild_io_lists (DESIGN *design) ;
 /*#ifdef STDIO_FILEIO*/
 
@@ -1350,50 +1350,50 @@ QCADCell *design_bus_layout_iter_this (BUS_LAYOUT_ITER *bus_layout_iter, int *pi
 /*      }*/
 /*  }*/
 
-/*static void design_bus_layout_remove_cell (DESIGN *design, QCADCell *cell, QCADCellFunction cell_function)*/
-/*  {*/
-/*  int Nix, Nix1 ;*/
-/*  int idx = -1 ;*/
-/*  EXP_ARRAY *cell_list = NULL ;*/
-/*  BUS *bus = NULL ;*/
+static void design_bus_layout_remove_cell (DESIGN *design, QCADCell *cell, QCADCellFunction cell_function)
+  {
+  int Nix, Nix1 ;
+  int idx = -1 ;
+  EXP_ARRAY *cell_list = NULL ;
+  BUS *bus = NULL ;
 
-/*  if (NULL ==*/
-/*    (cell_list = (QCAD_CELL_INPUT  == cell_function) ? design->bus_layout->inputs :*/
-/*                 (QCAD_CELL_OUTPUT == cell_function) ? design->bus_layout->outputs : NULL))*/
-/*    return ;*/
+  if (NULL ==
+    (cell_list = (QCAD_CELL_INPUT  == cell_function) ? design->bus_layout->inputs :
+                 (QCAD_CELL_OUTPUT == cell_function) ? design->bus_layout->outputs : NULL))
+    return ;
 
-/*  for (idx = 0 ; idx < cell_list->icUsed ; idx++)*/
-/*    if (QCAD_CELL (exp_array_index_1d (cell_list, BUS_LAYOUT_CELL, idx).cell) == cell)*/
-/*      break ;*/
+  for (idx = 0 ; idx < cell_list->icUsed ; idx++)
+    if (QCAD_CELL (exp_array_index_1d (cell_list, BUS_LAYOUT_CELL, idx).cell) == cell)
+      break ;
 
-/*  // Cell wasn't found among the bus-forming cells*/
-/*  if (idx == cell_list->icUsed) return ;*/
+  // Cell wasn't found among the bus-forming cells
+  if (idx == cell_list->icUsed) return ;
 
-/*  for (Nix = 0 ; Nix < design->bus_layout->buses->icUsed ; Nix++)*/
-/*    {*/
-/*    bus = &exp_array_index_1d (design->bus_layout->buses, BUS, Nix) ;*/
-/*    if (bus->bus_function == cell_function)*/
-/*      {*/
-/*      for (Nix1 = bus->cell_indices->icUsed ; Nix1 > -1 ; Nix1--)*/
-/*        {*/
-/*        if (exp_array_index_1d (bus->cell_indices, int, Nix1) == idx)*/
-/*          exp_array_remove_vals (bus->cell_indices, 1, Nix1--, 1) ;*/
-/*        else*/
-/*        if (exp_array_index_1d (bus->cell_indices, int, Nix1) > idx)*/
-/*          exp_array_index_1d (bus->cell_indices, int, Nix1)-- ;*/
-/*        }*/
+  for (Nix = 0 ; Nix < design->bus_layout->buses->icUsed ; Nix++)
+    {
+    bus = &exp_array_index_1d (design->bus_layout->buses, BUS, Nix) ;
+    if (bus->bus_function == cell_function)
+      {
+      for (Nix1 = bus->cell_indices->icUsed ; Nix1 > -1 ; Nix1--)
+        {
+        if (exp_array_index_1d (bus->cell_indices, int, Nix1) == idx)
+          exp_array_remove_vals (bus->cell_indices, 1, Nix1--, 1) ;
+        else
+        if (exp_array_index_1d (bus->cell_indices, int, Nix1) > idx)
+          exp_array_index_1d (bus->cell_indices, int, Nix1)-- ;
+        }
 
-/*      if (0 == bus->cell_indices->icUsed)*/
-/*        {*/
-/*        g_free (bus->pszName) ;*/
-/*        exp_array_free (bus->cell_indices) ;*/
-/*        exp_array_remove_vals (design->bus_layout->buses, 1, Nix--, 1) ;*/
-/*        }*/
-/*      }*/
-/*    }*/
+      if (0 == bus->cell_indices->icUsed)
+        {
+        g_free (bus->pszName) ;
+        exp_array_free (bus->cell_indices) ;
+        exp_array_remove_vals (design->bus_layout->buses, 1, Nix--, 1) ;
+        }
+      }
+    }
 
-/*  exp_array_remove_vals (cell_list, 1, idx, 1) ;*/
-/*  }*/
+  exp_array_remove_vals (cell_list, 1, idx, 1) ;
+  }
 
 /*void design_fix_legacy (DESIGN *design)*/
 /*  {*/

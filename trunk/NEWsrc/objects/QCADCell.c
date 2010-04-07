@@ -211,7 +211,7 @@ GType qcad_cell_get_type ()
       g_type_add_interface_static (qcad_cell_type, QCAD_TYPE_DO_CONTAINER, &qcad_cell_do_container_info) ;
       g_type_class_ref (qcad_cell_type) ;
       }
-    DBG_OO (fprintf (stderr, "Registered QCADCell as %d\n", qcad_cell_type)) ;
+/*    DBG_OO (fprintf (stderr, "Registered QCADCell as %d\n", qcad_cell_type)) ;*/
     }
   return qcad_cell_type ;
   }
@@ -372,8 +372,8 @@ static void qcad_cell_set_property (GObject *object, guint property_id, const GV
 /*      DBG_VAL (fprintf (stderr, "qcad_cell_set_property:Setting cell clock to %d\n", g_value_get_uint (value))) ;*/
       break ;
 
-    case QCAD_CELL_PROPERTY_MODE:
-      qcad_cell_set_display_mode (cell, g_value_get_enum (value)) ;
+/*    case QCAD_CELL_PROPERTY_MODE:*/
+/*      qcad_cell_set_display_mode (cell, g_value_get_enum (value)) ;*/
 /*      DBG_VAL (fprintf (stderr, "qcad_cell_set_property:Setting cell mode to %s\n",*/
 /*        g_enum_get_value (g_type_class_peek (QCAD_TYPE_CELL_MODE), g_value_get_enum (value))->value_name)) ;*/
       break ;
@@ -385,7 +385,7 @@ static void qcad_cell_set_property (GObject *object, guint property_id, const GV
 
     case QCAD_CELL_PROPERTY_POLARIZATION:
       qcad_cell_set_polarization (cell, g_value_get_double (value)) ;
-      DBG_VAL (fprintf (stderr, "qcad_cell_set_property:Setting cell polarization to %lf\n", g_value_get_double (value))) ;
+/*      DBG_VAL (fprintf (stderr, "qcad_cell_set_property:Setting cell polarization to %lf\n", g_value_get_double (value))) ;*/
       break ;
     }
   }
@@ -448,7 +448,7 @@ static void qcad_cell_instance_finalize (GObject *object)
     free (QCAD_CELL (object)->cell_model) ;
 
   G_OBJECT_CLASS (g_type_class_peek (g_type_parent (QCAD_TYPE_CELL)))->finalize (object) ;
-  DBG_OO (fprintf (stderr, "QCADCell::instance_finalize:Leaving\n")) ;
+/*  DBG_OO (fprintf (stderr, "QCADCell::instance_finalize:Leaving\n")) ;*/
   }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1087,7 +1087,7 @@ static gboolean unserialize (QCADDesignObject *obj, FILE *fp)
         if (!strcmp (pszValue, QCAD_TYPE_STRING_LABEL))
           {
           cell->label = QCAD_LABEL (qcad_design_object_new_from_stream (fp)) ;
-          qcad_label_shrinkwrap (cell->label) ;
+/*          qcad_label_shrinkwrap (cell->label) ;*/
           g_object_add_weak_pointer (G_OBJECT (cell->label), (gpointer *)&(cell->label)) ;
           cell->bLabelRemoved = FALSE ;
           }
@@ -1730,10 +1730,10 @@ void qcad_cell_set_label (QCADCell *cell, char *pszLabel)
 /*  memcpy (&(QCAD_DESIGN_OBJECT (cell->label)->clr), &(QCAD_DESIGN_OBJECT (cell)->clr), sizeof (GdkColor)) ;*/
   qcad_label_set_text (cell->label, pszLabel) ;
 
-  if (bNewLabel)
-    qcad_design_object_move_to (QCAD_DESIGN_OBJECT (cell->label),
-      QCAD_DESIGN_OBJECT (cell)->bounding_box.xWorld + QCAD_DESIGN_OBJECT (cell->label)->bounding_box.cxWorld / 2.0,
-      QCAD_DESIGN_OBJECT (cell)->bounding_box.yWorld - QCAD_DESIGN_OBJECT (cell->label)->bounding_box.cyWorld / 2.0 - QCAD_CELL_LABEL_DEFAULT_OFFSET_Y) ;
+/*  if (bNewLabel)*/
+/*    qcad_design_object_move_to (QCAD_DESIGN_OBJECT (cell->label),*/
+/*      QCAD_DESIGN_OBJECT (cell)->bounding_box.xWorld + QCAD_DESIGN_OBJECT (cell->label)->bounding_box.cxWorld / 2.0,*/
+/*      QCAD_DESIGN_OBJECT (cell)->bounding_box.yWorld - QCAD_DESIGN_OBJECT (cell->label)->bounding_box.cyWorld / 2.0 - QCAD_CELL_LABEL_DEFAULT_OFFSET_Y) ;*/
 
 /*  if (QCAD_DESIGN_OBJECT (cell)->bSelected)*/
 /*    qcad_design_object_set_selected (QCAD_DESIGN_OBJECT (cell->label), TRUE) ;*/
