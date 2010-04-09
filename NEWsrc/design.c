@@ -827,6 +827,8 @@ gboolean design_unserialize (DESIGN **pdesign, FILE *pfile)
     {
     //peek the next line
     if ((bEOF = (NULL == (pszLine = ReadLine (pfile, '\0', TRUE))))) break ;
+/*	printf("%s", pszLine); //DBG*/
+/*	getchar(); //DBG*/
     if (!strcmp (pszLine, "[#TYPE:DESIGN]"))
       {
       g_free (pszLine) ;
@@ -848,6 +850,7 @@ gboolean design_unserialize (DESIGN **pdesign, FILE *pfile)
 /*            if (QCAD_IS_CELL (llItr->data))*/
 /*              g_signal_connect (G_OBJECT (llItr->data), "cell-function-changed", (GCallback)cell_function_changed, (*pdesign)) ;*/
         }
+/*	printf("----------->QCADLayer read\n"); //DBG*/
       }
     else
     if (!strcmp (pszLine, "[TYPE:BUS_LAYOUT]"))

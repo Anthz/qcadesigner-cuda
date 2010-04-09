@@ -130,7 +130,6 @@ GType qcad_layer_get_type ()
       NULL,
       NULL
       } ;
-
     if ((qcad_layer_type = g_type_register_static (QCAD_TYPE_DESIGN_OBJECT, QCAD_TYPE_STRING_LAYER, &qcad_layer_info, 0)))
       {
       g_type_add_interface_static (qcad_layer_type, QCAD_TYPE_COMPOUND_DO, &qcad_compound_do_info) ;
@@ -797,6 +796,7 @@ static gboolean unserialize (QCADDesignObject *obj, FILE *pfile)
   {
   char *pszLine = NULL, *pszValue = NULL ;
   QCADLayer *layer = NULL ;
+
 /*  int iShowProgress = -1 ;*/
 
   layer = QCAD_LAYER (obj) ;

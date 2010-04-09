@@ -75,7 +75,7 @@ int main (int argc, char **argv)
 //#ifdef GTK_GUI
 //  gtk_init (&argc, &argv) ;
 //#else
-//  g_type_init () ;
+  g_type_init () ;
 //#endif /* def GTK_GUI */
 
 
@@ -92,13 +92,14 @@ int main (int argc, char **argv)
     fprintf (stderr, "Failed to open the circuit file !\n") ;
     return 3 ;
     }
-//  else
-//  if (NULL == design)
-//    {
-//    fprintf (stderr, "Failed to open the circuit file !\n") ;
-//    return 3 ;
-//    }
-//
+  else
+  if (NULL == design)
+    {
+    fprintf (stderr, "Failed to open the circuit file !\n") ;
+    return 3 ;
+    }
+
+
 //  if (BISTABLE == sim_engine)
 //    {
 //    bistable_OP *bo = NULL ;
@@ -211,8 +212,7 @@ int main (int argc, char **argv)
 //
 //  g_rand_free (rnd) ;
 
-	
-  printf(".................OK...............\n");
+
   return 0 ;
   }
 
