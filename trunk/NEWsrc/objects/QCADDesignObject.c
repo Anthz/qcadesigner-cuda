@@ -359,6 +359,7 @@ QCADDesignObject *qcad_design_object_new_from_stream (FILE *fp)
   c = pszLine[idx] ;
   pszLine[idx] = 0 ;
 
+
   if (!(type = g_type_from_name (pszType)))
     {
     fprintf (stderr, "Type %s does not exist !\n", pszType) ;
