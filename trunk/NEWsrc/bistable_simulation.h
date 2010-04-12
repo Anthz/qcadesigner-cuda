@@ -19,38 +19,41 @@
 //////////////////////////////////////////////////////////
 // Contents:                                            //
 //                                                      //
-// Header file for the open/save functions.             //
+// Header file for the bistable simulation engine. This //
+// engine treats the circuit in a time-independent      //
+// fashion, as a system capable of 2 basis states.      //
 //                                                      //
 //////////////////////////////////////////////////////////
 
-#ifndef _FILEIO_H_
-#define _FILEIO_H_
+#ifndef _BISTABLE_SIMULATION_H_
+#define _BISTABLE_SIMULATION_H_
 
-//#ifdef STDIO_FILEIO
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <assert.h>
 
 #include "design.h"
 #include "vector_table.h"
-#include "coherence_vector.h"
-#include "bistable_simulation.h"
 #include "simulation.h"
 
-// -- Prototypes -- //
-gboolean open_project_file (gchar *file_name, DESIGN **pdesign) ;
-gboolean open_project_file_fp (FILE *pfile, DESIGN **pdesign) ;
-gboolean check_project_file_magic_fp (FILE *pfile, double *pversion) ;
-//SIMULATION_OUTPUT *open_simulation_output_file (char *pszFName) ;
-//SIMULATION_OUTPUT *open_simulation_output_file_fp (FILE *fp) ;
-coherence_OP *open_coherence_options_file (char *pszFName) ;
-bistable_OP *open_bistable_options_file (char *pszFName) ;
-//simulation_data *simulation_data_unserialize (FILE *fp) ;
-//gboolean create_file (gchar *file_name, DESIGN *design) ;
-//void create_file_fp (FILE *pfile, DESIGN *design) ;
-//void create_simulation_output_file (char *pszFName, SIMULATION_OUTPUT *sim_output) ;
-//void create_simulation_output_file_fp (FILE *pfile, SIMULATION_OUTPUT *sim_output) ;
-//void simulation_data_serialize (FILE *fp, simulation_data *sim_data) ;
-//void export_block (char *pszFName, DESIGN *design) ;
-//void export_block_fp (FILE *pfile, DESIGN *design) ;
+typedef struct
+  {
+	int number_of_samples;
+	gboolean animate_simulation;
+	double convergence_tolerance;
+	double radius_of_effect;
+	double epsilonR;
+	double clock_high;
+	double clock_low;
+	double clock_shift;
+	double clock_amplitude_factor;
+	int max_iterations_per_sample;
+	double layer_separation;
+	gboolean randomize_cells;
+  } bistable_OP;
 
-/////////////////////////////////////////////////////////////////////////////////////
-//#endif /* def STDIO_FILEIO */
-#endif /* _FILEIO_H_ */
+simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, bistable_OP *options, VectorTable *pvt);
+void bistable_options_dump (bistable_OP *bistable_options, FILE *pfile) ;
+
+#endif /* _BISTABLE_SIMULATION_H_ */

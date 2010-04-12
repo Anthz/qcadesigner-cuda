@@ -1,0 +1,16 @@
+[COHERENCE_OPTIONS]
+T=
+relaxation=
+time_step=
+duration=
+clock_high=
+clock_low=
+clock_shift=
+clock_amplitude_factor=
+radius_of_effect=
+epsilonR=
+layer_separation=
+algorithm=
+randomize_cells=
+animate_simulation=
+[#COHERENCE_OPTIONS]

@@ -17,40 +17,59 @@
 // This will reduce ramp up time for new people trying  //
 // to contribute to the project.                        //
 //////////////////////////////////////////////////////////
+// This file was contributed by Gabriel Schulhof        //
+// (schulhof@atips.ca).                                 //
+//////////////////////////////////////////////////////////
 // Contents:                                            //
 //                                                      //
-// Header file for the open/save functions.             //
+// Header for functions related to the simulation       //
+// results data structure itself.                       //
 //                                                      //
 //////////////////////////////////////////////////////////
 
-#ifndef _FILEIO_H_
-#define _FILEIO_H_
-
-//#ifdef STDIO_FILEIO
+#ifndef _SIMULATION_DATA_H_
+#define _SIMULATION_DATA_H_
 
 #include "design.h"
 #include "vector_table.h"
-#include "coherence_vector.h"
-#include "bistable_simulation.h"
-#include "simulation.h"
+#include "objects/QCADCell.h"
 
-// -- Prototypes -- //
-gboolean open_project_file (gchar *file_name, DESIGN **pdesign) ;
-gboolean open_project_file_fp (FILE *pfile, DESIGN **pdesign) ;
-gboolean check_project_file_magic_fp (FILE *pfile, double *pversion) ;
-//SIMULATION_OUTPUT *open_simulation_output_file (char *pszFName) ;
-//SIMULATION_OUTPUT *open_simulation_output_file_fp (FILE *fp) ;
-coherence_OP *open_coherence_options_file (char *pszFName) ;
-bistable_OP *open_bistable_options_file (char *pszFName) ;
-//simulation_data *simulation_data_unserialize (FILE *fp) ;
-//gboolean create_file (gchar *file_name, DESIGN *design) ;
-//void create_file_fp (FILE *pfile, DESIGN *design) ;
-//void create_simulation_output_file (char *pszFName, SIMULATION_OUTPUT *sim_output) ;
-//void create_simulation_output_file_fp (FILE *pfile, SIMULATION_OUTPUT *sim_output) ;
-//void simulation_data_serialize (FILE *fp, simulation_data *sim_data) ;
-//void export_block (char *pszFName, DESIGN *design) ;
-//void export_block_fp (FILE *pfile, DESIGN *design) ;
+struct TRACEDATA
+  {
+	// array containing the labels for each trace //
+	char  *data_labels;
 
-/////////////////////////////////////////////////////////////////////////////////////
-//#endif /* def STDIO_FILEIO */
-#endif /* _FILEIO_H_ */
+	// default color to use with trace //
+	QCADCellFunction trace_function ;
+
+	int drawtrace;
+
+	// array containing all plot data //
+	double *data;
+  } ;
+
+typedef struct
+  {
+	// total number of simulation samples //
+	int number_samples;
+
+	// Total number of traces //
+	int number_of_traces;
+
+	// property of trace //
+	struct TRACEDATA *trace;
+
+	struct TRACEDATA *clock_data ;
+  }simulation_data;
+
+typedef struct
+  {
+  simulation_data *sim_data ;
+  BUS_LAYOUT *bus_layout ;
+  gboolean bFakeIOLists ;
+  } SIMULATION_OUTPUT ;
+
+void tracedata_get_min_max (struct TRACEDATA *trace, int idxStart, int idxEnd, double *pdMin, double *pdMax) ;
+simulation_data *simulation_data_destroy (simulation_data *sim_data);
+
+#endif /* ndef _SIMULATION_DATA_H_ */

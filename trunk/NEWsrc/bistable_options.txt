@@ -1,0 +1,14 @@
+[BISTABLE_OPTIONS]
+number_of_samples=
+animate_simulation=
+convergence_tolerance=
+radius_of_effect=
+epsilonR=
+clock_high=
+clock_low=
+clock_shift=
+clock_amplitude_factor=
+max_iterations_per_sample=
+layer_separation=
+randomize_cells=
+[#BISTABLE_OPTIONS]

@@ -19,38 +19,51 @@
 //////////////////////////////////////////////////////////
 // Contents:                                            //
 //                                                      //
-// Header file for the open/save functions.             //
+// Header file for the coherence vector time-dependent  //
+// simulation engine.                                   //
 //                                                      //
 //////////////////////////////////////////////////////////
 
-#ifndef _FILEIO_H_
-#define _FILEIO_H_
+#ifndef _COHERENCE_SIMULATION_H_
+#define _COHERENCE_SIMULATION_H_
 
-//#ifdef STDIO_FILEIO
+#include <stdlib.h>
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <assert.h>
 
-#include "design.h"
 #include "vector_table.h"
-#include "coherence_vector.h"
-#include "bistable_simulation.h"
 #include "simulation.h"
 
-// -- Prototypes -- //
-gboolean open_project_file (gchar *file_name, DESIGN **pdesign) ;
-gboolean open_project_file_fp (FILE *pfile, DESIGN **pdesign) ;
-gboolean check_project_file_magic_fp (FILE *pfile, double *pversion) ;
-//SIMULATION_OUTPUT *open_simulation_output_file (char *pszFName) ;
-//SIMULATION_OUTPUT *open_simulation_output_file_fp (FILE *fp) ;
-coherence_OP *open_coherence_options_file (char *pszFName) ;
-bistable_OP *open_bistable_options_file (char *pszFName) ;
-//simulation_data *simulation_data_unserialize (FILE *fp) ;
-//gboolean create_file (gchar *file_name, DESIGN *design) ;
-//void create_file_fp (FILE *pfile, DESIGN *design) ;
-//void create_simulation_output_file (char *pszFName, SIMULATION_OUTPUT *sim_output) ;
-//void create_simulation_output_file_fp (FILE *pfile, SIMULATION_OUTPUT *sim_output) ;
-//void simulation_data_serialize (FILE *fp, simulation_data *sim_data) ;
-//void export_block (char *pszFName, DESIGN *design) ;
-//void export_block_fp (FILE *pfile, DESIGN *design) ;
+// Physical Constants //
+#define hbar 1.05457266e-34
+#define over_hbar 9.48252e33
+#define hbar_sqr 1.11212e-68
+#define over_hbar_sqr 8.99183e67
+#define kB 1.381e-23
+#define over_kB 7.24296e22
+#define E 1.602e-19
 
-/////////////////////////////////////////////////////////////////////////////////////
-//#endif /* def STDIO_FILEIO */
-#endif /* _FILEIO_H_ */
+typedef struct
+  {
+	double T;
+	double relaxation;
+	double time_step;
+	double duration;
+	double clock_high;
+	double clock_low;
+	double clock_shift;
+	double clock_amplitude_factor;
+	double radius_of_effect;
+	double epsilonR;
+	double layer_separation;
+	int algorithm;
+	gboolean randomize_cells;
+	gboolean animate_simulation;
+  } coherence_OP;
+
+void coherence_options_dump (coherence_OP *coherence_options, FILE *pfile) ;
+simulation_data *run_coherence_simulation(int SIMULATION_TYPE, DESIGN *design, coherence_OP *options, VectorTable *pvt);
+
+#endif /* _COHERENCE_SIMULATION_H_ */
