@@ -4,7 +4,7 @@ CUDAROOT=$(CUDA_HOME)
 CUDASDKROOT=$(CUDA_SDK_HOME)
 NVCC=$(CUDA_HOME)/bin/nvcc
 
-NVCFLAGS=  \
+NVCFLAGS= \
 	-I $(CUDASDKROOT)/C/common/inc \
 	-I $(CUDAROOT)/include
 
@@ -13,8 +13,8 @@ CFLAGS= \
 	 -L$(CUDASDKROOT)/C/lib
 
 OBJECTS =\
-		GlobalVSTexture_kernel.o\
-      GlobalVSTexture_main.o 
+	GlobalVSTexture_kernel.o \
+ 	GlobalVSTexture_main.o 
       
 	
 GlobalVSTexture: $(OBJECTS)
