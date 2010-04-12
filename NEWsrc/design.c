@@ -116,34 +116,34 @@ DESIGN *design_new (QCADSubstrate **psubs)
   return design ;
   }
 
-/*DESIGN *design_copy (DESIGN *design)*/
-/*  {*/
-/*  DESIGN *new_design = NULL ;*/
-/*  GList *llItr = NULL ;*/
-/*  GList *llItrObj = NULL ;*/
-/*  QCADLayer *new_layer = NULL ;*/
-/*  BUS bus = {NULL, 0, NULL}, *src_bus = NULL ;*/
-/*  EXP_ARRAY *cell_list = NULL ;*/
-/*  int Nix, Nix1 ;*/
-/*	*/
-/*  if (NULL == design) return NULL ;*/
+DESIGN *design_copy (DESIGN *design)
+  {
+  DESIGN *new_design = NULL ;
+  GList *llItr = NULL ;
+  GList *llItrObj = NULL ;
+  QCADLayer *new_layer = NULL ;
+  BUS bus = {NULL, 0, NULL}, *src_bus = NULL ;
+  EXP_ARRAY *cell_list = NULL ;
+  int Nix, Nix1 ;
+	
+  if (NULL == design) return NULL ;
 
-/*  new_design = g_malloc0 (sizeof (DESIGN)) ;*/
-/*  new_design->lstLayers =*/
-/*  new_design->lstLastLayer =*/
-/*  new_design->lstCurrentLayer = NULL ;*/
+  new_design = g_malloc0 (sizeof (DESIGN)) ;
+  new_design->lstLayers =
+  new_design->lstLastLayer =
+  new_design->lstCurrentLayer = NULL ;
 
-/*  new_design->bus_layout = design_bus_layout_new () ;*/
+  new_design->bus_layout = design_bus_layout_new () ;
 
-/*  for (llItr = design->lstLastLayer ; llItr != NULL ; llItr = llItr->prev)*/
-/*    {*/
-/*    new_design->lstLayers = g_list_prepend (new_design->lstLayers,*/
-/*      new_layer = QCAD_LAYER (qcad_design_object_new_from_object (QCAD_DESIGN_OBJECT (llItr->data)))) ;*/
+  for (llItr = design->lstLastLayer ; llItr != NULL ; llItr = llItr->prev)
+    {
+    new_design->lstLayers = g_list_prepend (new_design->lstLayers,
+      new_layer = QCAD_LAYER (qcad_design_object_new_from_object (QCAD_DESIGN_OBJECT (llItr->data)))) ;
 
 /*    g_signal_connect (G_OBJECT (new_layer), "added",   (GCallback)qcad_layer_design_object_added,   new_design) ;*/
 /*    g_signal_connect (G_OBJECT (new_layer), "removed", (GCallback)qcad_layer_design_object_removed, new_design) ;*/
 
-/*    // Artificially call the "added" callback for the new layer*/
+    // Artificially call the "added" callback for the new layer
 /*    for (llItrObj = new_layer->lstObjs ; llItrObj != NULL ; llItrObj = llItrObj->next)*/
 /*      {*/
 /*      if (QCAD_IS_CELL (llItrObj->data))*/
@@ -151,28 +151,28 @@ DESIGN *design_new (QCADSubstrate **psubs)
 /*      qcad_layer_design_object_added (new_layer, QCAD_DESIGN_OBJECT (llItrObj->data), new_design) ;*/
 /*      }*/
 
-/*    if (NULL == new_design->lstLastLayer)*/
-/*      new_design->lstLastLayer = new_design->lstLayers ;*/
-/*    if (design->lstCurrentLayer == llItr)*/
-/*      new_design->lstCurrentLayer = new_design->lstLayers ;*/
-/*    }*/
+    if (NULL == new_design->lstLastLayer)
+      new_design->lstLastLayer = new_design->lstLayers ;
+    if (design->lstCurrentLayer == llItr)
+      new_design->lstCurrentLayer = new_design->lstLayers ;
+    }
 
-/*  for (Nix = 0 ; Nix < design->bus_layout->buses->icUsed ; Nix++)*/
-/*    {*/
-/*    src_bus = &(exp_array_index_1d (design->bus_layout->buses, BUS, Nix)) ;*/
-/*    bus.pszName = g_strdup (src_bus->pszName) ;*/
-/*    bus.bus_function = src_bus->bus_function ;*/
-/*    bus.cell_indices = exp_array_copy (src_bus->cell_indices) ;*/
-/*    exp_array_insert_vals (new_design->bus_layout->buses, &bus, 1, 1, -1) ;*/
+  for (Nix = 0 ; Nix < design->bus_layout->buses->icUsed ; Nix++)
+    {
+    src_bus = &(exp_array_index_1d (design->bus_layout->buses, BUS, Nix)) ;
+    bus.pszName = g_strdup (src_bus->pszName) ;
+    bus.bus_function = src_bus->bus_function ;
+    bus.cell_indices = exp_array_copy (src_bus->cell_indices) ;
+    exp_array_insert_vals (new_design->bus_layout->buses, &bus, 1, 1, -1) ;
 
-/*    // Flag all the cells in the appropriate I/O list as "used-in-a-bus"*/
-/*    cell_list = (QCAD_CELL_INPUT == bus.bus_function ? new_design->bus_layout->inputs : new_design->bus_layout->outputs) ;*/
-/*    for (Nix1 = 0 ; Nix1 < bus.cell_indices->icUsed ; Nix1++)*/
-/*      exp_array_index_1d (cell_list, BUS_LAYOUT_CELL, exp_array_index_1d (bus.cell_indices, int, Nix1)).bIsInBus = TRUE ;*/
-/*    }*/
+    // Flag all the cells in the appropriate I/O list as "used-in-a-bus"
+    cell_list = (QCAD_CELL_INPUT == bus.bus_function ? new_design->bus_layout->inputs : new_design->bus_layout->outputs) ;
+    for (Nix1 = 0 ; Nix1 < bus.cell_indices->icUsed ; Nix1++)
+      exp_array_index_1d (cell_list, BUS_LAYOUT_CELL, exp_array_index_1d (bus.cell_indices, int, Nix1)).bIsInBus = TRUE ;
+    }
 
-/*  return new_design ;*/
-/*  }*/
+  return new_design ;
+  }
 
 // This function always returns NULL
 DESIGN *design_destroy (DESIGN *design)

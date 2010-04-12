@@ -25,9 +25,9 @@
 //////////////////////////////////////////////////////////
 
 // -- includes -- //
-#ifdef HAVE_CONFIG_H
-#  include <config.h>
-#endif
+/*#ifdef HAVE_CONFIG_H*/
+/*#  include <config.h>*/
+/*#endif*/
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,7 +38,7 @@
 #include "fileio_helpers.h"
 #include "global_consts.h"
 /*#include "custom_widgets.h"*/
-/*#include "objects/QCADDOContainer.h"*/
+#include "objects/QCADDOContainer.h"
 
 #define FLOATS_PER_LINE 5
 
@@ -55,8 +55,8 @@
 /*static void serialize_trace (FILE *fp, struct TRACEDATA *trace, int icSamples) ;*/
 /*static void unserialize_trace (FILE *pfile, struct TRACEDATA *trace, int icSamples) ;*/
 /*static void unserialize_trace_data (FILE *pfile, struct TRACEDATA *trace, int icSamples) ;*/
-/*static coherence_OP *open_coherence_options_file_fp (FILE *fp) ;*/
-/*static bistable_OP *open_bistable_options_file_fp (FILE *fp) ;*/
+static coherence_OP *open_coherence_options_file_fp (FILE *fp) ;
+static bistable_OP *open_bistable_options_file_fp (FILE *fp) ;
 /*static void build_io_tables (simulation_data *sim_data, BUS_LAYOUT *bus_layout) ;*/
 
 /*static double qcadesigner_version = 2.0 ;*/
@@ -754,174 +754,171 @@ gboolean check_project_file_magic_fp (FILE *pfile, double *pversion)
 /*  return sim_data ;*/
 /*  }*/
 
-/*coherence_OP *open_coherence_options_file (char *pszFName)*/
-/*  {*/
-/*  coherence_OP *coherence_options = NULL ;*/
-/*  FILE *fp = NULL ;*/
+coherence_OP *open_coherence_options_file (char *pszFName)
+  {
+  coherence_OP *coherence_options = NULL ;
+  FILE *fp = NULL ;
 
-/*  if (NULL == (fp = file_open_and_buffer (pszFName)))*/
-/*    return NULL ;*/
+  if (NULL == (fp = file_open_and_buffer (pszFName)))
+    return NULL ;
 
-/*  coherence_options = open_coherence_options_file_fp (fp) ;*/
+  coherence_options = open_coherence_options_file_fp (fp) ;
 
-/*  file_close_and_unbuffer (fp) ;*/
+  file_close_and_unbuffer (fp) ;
 
-/*  return coherence_options ;*/
-/*  }*/
+  return coherence_options ;
+  }
 
-/*static coherence_OP *open_coherence_options_file_fp (FILE *pfile)*/
-/*  {*/
-/*  coherence_OP *coherence_options = NULL ;*/
-/*  char *pszLine = NULL, *pszValue = NULL ;*/
+static coherence_OP *open_coherence_options_file_fp (FILE *pfile)
+  {
+  coherence_OP *coherence_options = NULL ;
+  char *pszLine = NULL, *pszValue = NULL ;
 
-/*  if (!SkipPast (pfile, '\0', "[COHERENCE_OPTIONS]", NULL))*/
-/*    return NULL ;*/
+  if (!SkipPast (pfile, '\0', "[COHERENCE_OPTIONS]", NULL))
+    return NULL ;
 
-/*  coherence_options = g_malloc0 (sizeof (coherence_OP)) ;*/
+  coherence_options = g_malloc0 (sizeof (coherence_OP)) ;
 
-/*  while (TRUE)*/
-/*    {*/
-/*    if (NULL == (pszLine = ReadLine (pfile, '\0', TRUE))) break ;*/
+  while (TRUE)
+    {
+    if (NULL == (pszLine = ReadLine (pfile, '\0', TRUE))) break ;
 
-/*    if (!strncmp (pszLine, "[#COHERENCE_OPTIONS]", sizeof ("[#COHERENCE_OPTIONS]") - 1))*/
-/*      {*/
-/*      g_free (pszLine) ;*/
-/*      break ;*/
-/*      }*/
+    if (!strncmp (pszLine, "[#COHERENCE_OPTIONS]", sizeof ("[#COHERENCE_OPTIONS]") - 1))
+      {
+      g_free (pszLine) ;
+      break ;
+      }
 
-/*    tokenize_line (pszLine, strlen (pszLine), &pszValue, '=') ;*/
+    tokenize_line (pszLine, strlen (pszLine), &pszValue, '=') ;
 
-/*    if (!strncmp (pszLine, "T", sizeof ("T") - 1))*/
-/*      coherence_options->T = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "relaxation", sizeof ("relaxation") - 1))*/
-/*      coherence_options->relaxation = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "time_step", sizeof ("time_step") - 1))*/
-/*      coherence_options->time_step = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "relaxation", sizeof ("relaxation") - 1))*/
-/*      coherence_options->relaxation = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "duration", sizeof ("duration") - 1))*/
-/*      coherence_options->duration = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "clock_high", sizeof ("clock_high") - 1))*/
-/*      coherence_options->clock_high = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "clock_low", sizeof ("clock_low") - 1))*/
-/*      coherence_options->clock_low = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "clock_shift", sizeof ("clock_shift") - 1))*/
-/*      coherence_options->clock_shift = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "clock_amplitude_factor", sizeof ("clock_amplitude_factor") - 1))*/
-/*      coherence_options->clock_amplitude_factor = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "radius_of_effect", sizeof ("radius_of_effect") - 1))*/
-/*      coherence_options->radius_of_effect = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "epsilonR", sizeof ("epsilonR") - 1))*/
-/*      coherence_options->epsilonR = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "layer_separation", sizeof ("layer_separation") - 1))*/
-/*      coherence_options->layer_separation = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "algorithm", sizeof ("algorithm") - 1))*/
-/*      coherence_options->algorithm = atoi (pszValue) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "randomize_cells", sizeof ("randomize_cells") - 1))*/
-/*      coherence_options->randomize_cells = !strncmp (pszValue, "TRUE", sizeof ("TRUE") - 1) ? TRUE : FALSE ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "animate_simulation", sizeof ("animate_simulation") - 1))*/
-/*      coherence_options->animate_simulation = !strncmp (pszValue, "TRUE", sizeof ("TRUE") - 1) ? TRUE : FALSE ;*/
+    if (!strncmp (pszLine, "T", sizeof ("T") - 1))
+      coherence_options->T = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "relaxation", sizeof ("relaxation") - 1))
+      coherence_options->relaxation = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "time_step", sizeof ("time_step") - 1))
+      coherence_options->time_step = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "duration", sizeof ("duration") - 1))
+      coherence_options->duration = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "clock_high", sizeof ("clock_high") - 1))
+      coherence_options->clock_high = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "clock_low", sizeof ("clock_low") - 1))
+      coherence_options->clock_low = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "clock_shift", sizeof ("clock_shift") - 1))
+      coherence_options->clock_shift = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "clock_amplitude_factor", sizeof ("clock_amplitude_factor") - 1))
+      coherence_options->clock_amplitude_factor = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "radius_of_effect", sizeof ("radius_of_effect") - 1))
+      coherence_options->radius_of_effect = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "epsilonR", sizeof ("epsilonR") - 1))
+      coherence_options->epsilonR = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "layer_separation", sizeof ("layer_separation") - 1))
+      coherence_options->layer_separation = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "algorithm", sizeof ("algorithm") - 1))
+      coherence_options->algorithm = atoi (pszValue) ;
+    else
+    if (!strncmp (pszLine, "randomize_cells", sizeof ("randomize_cells") - 1))
+      coherence_options->randomize_cells = !strncmp (pszValue, "TRUE", sizeof ("TRUE") - 1) ? TRUE : FALSE ;
+    else
+    if (!strncmp (pszLine, "animate_simulation", sizeof ("animate_simulation") - 1))
+      coherence_options->animate_simulation = !strncmp (pszValue, "TRUE", sizeof ("TRUE") - 1) ? TRUE : FALSE ;
 
-/*    g_free (pszLine) ;*/
-/*    g_free (ReadLine (pfile, '\0', FALSE)) ;*/
-/*    }*/
+    g_free (pszLine) ;
+    g_free (ReadLine (pfile, '\0', FALSE)) ;
+    }
 
-/*  return coherence_options ;*/
-/*  }*/
+  return coherence_options ;
+  }
 
-/*bistable_OP *open_bistable_options_file (char *pszFName)*/
-/*  {*/
-/*  bistable_OP *bistable_options = NULL ;*/
-/*  FILE *fp = NULL ;*/
+bistable_OP *open_bistable_options_file (char *pszFName)
+  {
+  bistable_OP *bistable_options = NULL ;
+  FILE *fp = NULL ;
 
-/*  if (NULL == (fp = file_open_and_buffer (pszFName)))*/
-/*    return NULL ;*/
+  if (NULL == (fp = file_open_and_buffer (pszFName)))
+    return NULL ;
 
-/*  bistable_options = open_bistable_options_file_fp (fp) ;*/
+  bistable_options = open_bistable_options_file_fp (fp) ;
 
-/*  file_close_and_unbuffer (fp) ;*/
+  file_close_and_unbuffer (fp) ;
 
-/*  return bistable_options ;*/
-/*  }*/
+  return bistable_options ;
+  }
 
-/*static bistable_OP *open_bistable_options_file_fp (FILE *pfile)*/
-/*  {*/
-/*  bistable_OP *bistable_options = NULL ;*/
-/*  char *pszLine = NULL, *pszValue = NULL ;*/
+static bistable_OP *open_bistable_options_file_fp (FILE *pfile)
+  {
+  bistable_OP *bistable_options = NULL ;
+  char *pszLine = NULL, *pszValue = NULL ;
 
-/*  if (!SkipPast (pfile, '\0', "[BISTABLE_OPTIONS]", NULL))*/
-/*    return NULL ;*/
+  if (!SkipPast (pfile, '\0', "[BISTABLE_OPTIONS]", NULL))
+    return NULL ;
 
-/*  bistable_options = g_malloc0 (sizeof (bistable_OP)) ;*/
+  bistable_options = g_malloc0 (sizeof (bistable_OP)) ;
 
-/*  while (TRUE)*/
-/*    {*/
-/*    if (NULL == (pszLine = ReadLine (pfile, '\0', TRUE))) break ;*/
+  while (TRUE)
+    {
+    if (NULL == (pszLine = ReadLine (pfile, '\0', TRUE))) break ;
 
-/*    if (!strncmp (pszLine, "[#BISTABLE_OPTIONS]", sizeof ("[#BISTABLE_OPTIONS]") - 1))*/
-/*      {*/
-/*      g_free (pszLine) ;*/
-/*      break ;*/
-/*      }*/
+    if (!strncmp (pszLine, "[#BISTABLE_OPTIONS]", sizeof ("[#BISTABLE_OPTIONS]") - 1))
+      {
+      g_free (pszLine) ;
+      break ;
+      }
 
-/*    tokenize_line (pszLine, strlen (pszLine), &pszValue, '=') ;*/
+    tokenize_line (pszLine, strlen (pszLine), &pszValue, '=') ;
 
-/*    if (!strncmp (pszLine, "number_of_samples", sizeof ("number_of_samples") - 1))*/
-/*      bistable_options->number_of_samples = atoi (pszValue) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "animate_simulation", sizeof ("animate_simulation") - 1))*/
-/*      bistable_options->animate_simulation = !strncmp (pszValue, "TRUE", sizeof ("TRUE") - 1) ? TRUE : FALSE ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "convergence_tolerance", sizeof ("convergence_tolerance") - 1))*/
-/*      bistable_options->convergence_tolerance = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "radius_of_effect", sizeof ("radius_of_effect") - 1))*/
-/*      bistable_options->radius_of_effect = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "epsilonR", sizeof ("epsilonR") - 1))*/
-/*      bistable_options->epsilonR = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "clock_high", sizeof ("clock_high") - 1))*/
-/*      bistable_options->clock_high = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "clock_low", sizeof ("clock_low") - 1))*/
-/*      bistable_options->clock_low = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "clock_shift", sizeof ("clock_shift") - 1))*/
-/*      bistable_options->clock_shift = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "clock_amplitude_factor", sizeof ("clock_amplitude_factor") - 1))*/
-/*      bistable_options->clock_amplitude_factor = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "max_iterations_per_sample", sizeof ("max_iterations_per_sample") - 1))*/
-/*      bistable_options->max_iterations_per_sample = atoi (pszValue) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "layer_separation", sizeof ("layer_separation") - 1))*/
-/*      bistable_options->layer_separation = g_ascii_strtod (pszValue, NULL) ;*/
-/*    else*/
-/*    if (!strncmp (pszLine, "randomize_cells", sizeof ("randomize_cells") - 1))*/
-/*      bistable_options->randomize_cells = !strncmp (pszValue, "TRUE", sizeof ("TRUE") - 1) ? TRUE : FALSE ;*/
+    if (!strncmp (pszLine, "number_of_samples", sizeof ("number_of_samples") - 1))
+      bistable_options->number_of_samples = atoi (pszValue) ;
+    else
+    if (!strncmp (pszLine, "animate_simulation", sizeof ("animate_simulation") - 1))
+      bistable_options->animate_simulation = !strncmp (pszValue, "TRUE", sizeof ("TRUE") - 1) ? TRUE : FALSE ;
+    else
+    if (!strncmp (pszLine, "convergence_tolerance", sizeof ("convergence_tolerance") - 1))
+      bistable_options->convergence_tolerance = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "radius_of_effect", sizeof ("radius_of_effect") - 1))
+      bistable_options->radius_of_effect = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "epsilonR", sizeof ("epsilonR") - 1))
+      bistable_options->epsilonR = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "clock_high", sizeof ("clock_high") - 1))
+      bistable_options->clock_high = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "clock_low", sizeof ("clock_low") - 1))
+      bistable_options->clock_low = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "clock_shift", sizeof ("clock_shift") - 1))
+      bistable_options->clock_shift = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "clock_amplitude_factor", sizeof ("clock_amplitude_factor") - 1))
+      bistable_options->clock_amplitude_factor = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "max_iterations_per_sample", sizeof ("max_iterations_per_sample") - 1))
+      bistable_options->max_iterations_per_sample = atoi (pszValue) ;
+    else
+    if (!strncmp (pszLine, "layer_separation", sizeof ("layer_separation") - 1))
+      bistable_options->layer_separation = g_ascii_strtod (pszValue, NULL) ;
+    else
+    if (!strncmp (pszLine, "randomize_cells", sizeof ("randomize_cells") - 1))
+      bistable_options->randomize_cells = !strncmp (pszValue, "TRUE", sizeof ("TRUE") - 1) ? TRUE : FALSE ;
 
-/*    g_free (pszLine) ;*/
-/*    g_free (ReadLine (pfile, '\0', FALSE)) ;*/
-/*    }*/
+    g_free (pszLine) ;
+    g_free (ReadLine (pfile, '\0', FALSE)) ;
+    }
 
-/*  return bistable_options ;*/
-/*  }*/
+  return bistable_options ;
+  }
 
 /*// Best effort trace unserialization - in the worst case, it'll be a flatline.*/
 /*static void unserialize_trace (FILE *pfile, struct TRACEDATA *trace, int icSamples)*/

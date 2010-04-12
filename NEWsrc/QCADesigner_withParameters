@@ -1,1 +1,0 @@
-./QCADesigner -f sample.qca -o options -n 10 -t 0.001 -e BISTABLE

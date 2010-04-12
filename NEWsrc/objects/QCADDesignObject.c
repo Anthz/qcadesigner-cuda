@@ -92,8 +92,8 @@ static gboolean unserialize (QCADDesignObject *obj, FILE *fp);
 //#endif /* def STDIO_FILEIO */
 static void get_bounds_box (QCADDesignObject *obj, WorldRectangle *rcWorld) ;
 /*static gboolean set_selected (QCADDesignObject *obj, gboolean bSelected) ;*/
-/*static void move (QCADDesignObject *obj, double dxDelta, double dyDelta) ;*/
-/*static void copy (QCADDesignObject *objSrc, QCADDesignObject *objDst) ;*/
+static void move (QCADDesignObject *obj, double dxDelta, double dyDelta) ;
+static void copy (QCADDesignObject *objSrc, QCADDesignObject *objDst) ;
 /*static const char *PostScript_preamble () ;*/
 /*static char *PostScript_instance (QCADDesignObject *obj, gboolean bColour) ;*/
 static GList *add_unique_types (QCADDesignObject *obj, GList *lst) ;
@@ -149,14 +149,14 @@ static void qcad_design_object_class_init (GObjectClass *klass, gpointer data)
   {
 /*  DBG_OO (fprintf (stderr, "QCADDesignObject::class_init:Entering.\n")) ;*/
 
-/*  QCAD_DESIGN_OBJECT_CLASS (klass)->copy = copy ;*/
+  QCAD_DESIGN_OBJECT_CLASS (klass)->copy = copy ;
 /*#ifdef STDIO_FILEIO*/
 /*  QCAD_DESIGN_OBJECT_CLASS (klass)->serialize = serialize ;*/
   QCAD_DESIGN_OBJECT_CLASS (klass)->unserialize = unserialize ;
 //#endif  def STDIO_FILEIO 
   QCAD_DESIGN_OBJECT_CLASS (klass)->get_bounds_box = get_bounds_box ;
 /*  QCAD_DESIGN_OBJECT_CLASS (klass)->set_selected = set_selected ;*/
-/*  QCAD_DESIGN_OBJECT_CLASS (klass)->move = move ;*/
+  QCAD_DESIGN_OBJECT_CLASS (klass)->move = move ;
 /*  QCAD_DESIGN_OBJECT_CLASS (klass)->transform = transform ;*/
 /*  QCAD_DESIGN_OBJECT_CLASS (klass)->hit_test = hit_test ;*/
 /*  QCAD_DESIGN_OBJECT_CLASS (klass)->select_test = select_test ;*/
@@ -226,26 +226,26 @@ static void qcad_design_object_instance_finalize (GObject *object)
 
 /*///////////////////////////////////////////////////////////////////////////////*/
 
-/*QCADDesignObject *qcad_design_object_new_from_object (QCADDesignObject *src)*/
-/*  {*/
-/*  GType type = G_TYPE_FROM_INSTANCE (src) ;*/
-/*  QCADDesignObject *dst = NULL ;*/
+QCADDesignObject *qcad_design_object_new_from_object (QCADDesignObject *src)
+  {
+  GType type = G_TYPE_FROM_INSTANCE (src) ;
+  QCADDesignObject *dst = NULL ;
 /*  DBG_OO_CP (fprintf (stderr, "Copying the following object:\n")) ;*/
 /*  DBG_OO_CP (qcad_design_object_serialize (src, stderr)) ;*/
 /*  DBG_OO_CP (fprintf (stderr, "qcad_design_object_new_from_object:Found type %s\n",*/
 /*    NULL == g_type_name (type) ? "NULL" : g_type_name (type))) ;*/
-/*  if (type)*/
-/*    {*/
-/*    dst = g_object_new (type, NULL) ;*/
-/*    QCAD_DESIGN_OBJECT_GET_CLASS (src)->copy (src, dst) ;*/
-/*    }*/
+  if (type)
+    {
+    dst = g_object_new (type, NULL) ;
+    QCAD_DESIGN_OBJECT_GET_CLASS (src)->copy (src, dst) ;
+    }
 
 /*  DBG_OO_CP (qcad_design_object_serialize (dst, stderr)) ;*/
 
 /*  DBG_OO_CP (fprintf (stderr, "qcad_design_object_new_from_object:Copied object.\n")) ;*/
 
-/*  return dst ;*/
-/*  }*/
+  return dst ;
+  }
 
 GList *qcad_design_object_add_types (QCADDesignObject *obj, GList *lst)
   {return QCAD_DESIGN_OBJECT_GET_CLASS (obj)->add_unique_types (obj, lst) ;}
@@ -279,14 +279,14 @@ GList *qcad_design_object_add_types (QCADDesignObject *obj, GList *lst)
 /*gboolean qcad_design_object_set_selected (QCADDesignObject *obj, gboolean bSelected)*/
 /*  {return QCAD_DESIGN_OBJECT_GET_CLASS (obj)->set_selected (obj, bSelected) ;}*/
 
-/*void qcad_design_object_move (QCADDesignObject *obj, double dxDelta, double dyDelta)*/
-/*  {QCAD_DESIGN_OBJECT_GET_CLASS (obj)->move (obj, dxDelta, dyDelta) ;}*/
+void qcad_design_object_move (QCADDesignObject *obj, double dxDelta, double dyDelta)
+  {QCAD_DESIGN_OBJECT_GET_CLASS (obj)->move (obj, dxDelta, dyDelta) ;}
 
-/*void qcad_design_object_move_to (QCADDesignObject *obj, double xWorld, double yWorld)*/
-/*  {*/
-/*  if (NULL != obj)*/
-/*    qcad_design_object_move (obj, xWorld - obj->x, yWorld - obj->y) ;*/
-/*  }*/
+void qcad_design_object_move_to (QCADDesignObject *obj, double xWorld, double yWorld)
+  {
+  if (NULL != obj)
+    qcad_design_object_move (obj, xWorld - obj->x, yWorld - obj->y) ;
+  }
 
 void qcad_design_object_get_bounds_box (QCADDesignObject *obj, WorldRectangle *rcWorld)
   {QCAD_DESIGN_OBJECT_GET_CLASS (obj)->get_bounds_box (obj, rcWorld) ;}
@@ -487,19 +487,19 @@ static void default_properties_destroy (struct QCADDesignObjectClass *klass, voi
 //#endif /* def UNDO_REDO */
 //#endif /* def GTK_GUI */
 
-/*static void copy (QCADDesignObject *objSrc, QCADDesignObject *objDst)*/
-/*  {*/
+static void copy (QCADDesignObject *objSrc, QCADDesignObject *objDst)
+  {
 /*  DBG_OO_CP (fprintf (stderr, "QCADDesignObject::copy:Entering\n")) ;*/
-/*  objDst->x         = objSrc->x ;*/
-/*  objDst->y         = objSrc->y ;*/
-/*  memcpy (&(objDst->bounding_box), &(objSrc->bounding_box), sizeof (WorldRectangle)) ;*/
+  objDst->x         = objSrc->x ;
+  objDst->y         = objSrc->y ;
+  memcpy (&(objDst->bounding_box), &(objSrc->bounding_box), sizeof (WorldRectangle)) ;
 /*  objDst->bSelected = objSrc->bSelected ;*/
 /*  objDst->clr.red   = objSrc->clr.red ;*/
 /*  objDst->clr.green = objSrc->clr.green ;*/
 /*  objDst->clr.blue  = objSrc->clr.blue ;*/
 /*  objDst->clr.pixel = objSrc->clr.pixel ;*/
 /*  DBG_OO_CP (fprintf (stderr, "QCADDesignObject::copy:Leaving\n")) ;*/
-/*  }*/
+  }
 
 /*static void transform (QCADDesignObject *obj, double m11, double m12, double m21, double m22)*/
 /*  {*/
@@ -600,15 +600,15 @@ static void get_bounds_box (QCADDesignObject *obj, WorldRectangle *rcWorld)
 /*  return bRet ;*/
 /*  }*/
 
-/*static void move (QCADDesignObject *obj, double dxDelta, double dyDelta)*/
-/*  {*/
-/*  if (!QCAD_IS_DESIGN_OBJECT (obj)) return ;*/
+static void move (QCADDesignObject *obj, double dxDelta, double dyDelta)
+  {
+  if (!QCAD_IS_DESIGN_OBJECT (obj)) return ;
 
-/*  QCAD_DESIGN_OBJECT (obj)->bounding_box.xWorld += dxDelta ;*/
-/*  QCAD_DESIGN_OBJECT (obj)->bounding_box.yWorld += dyDelta ;*/
-/*  obj->x += dxDelta ;*/
-/*  obj->y += dyDelta ;*/
-/*  }*/
+  QCAD_DESIGN_OBJECT (obj)->bounding_box.xWorld += dxDelta ;
+  QCAD_DESIGN_OBJECT (obj)->bounding_box.yWorld += dyDelta ;
+  obj->x += dxDelta ;
+  obj->y += dyDelta ;
+  }
 
 /*static QCADDesignObject *hit_test (QCADDesignObject *obj, int xReal, int yReal)*/
 /*  {*/

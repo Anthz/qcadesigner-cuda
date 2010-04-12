@@ -82,10 +82,10 @@ typedef struct QCADDesignObjectClass
   const char *(*PostScript_preamble) () ;
 //  char *(*PostScript_instance) (QCADDesignObject *obj, gboolean bColour) ;
   GList *(*add_unique_types) (QCADDesignObject *obj, GList *lst) ;
-//  void (*copy) (QCADDesignObject *objSrc, QCADDesignObject *objDst) ;
+  void (*copy) (QCADDesignObject *objSrc, QCADDesignObject *objDst) ;
   void (*get_bounds_box) (QCADDesignObject *obj, WorldRectangle *rcWorld) ;
 //  gboolean (*set_selected) (QCADDesignObject *obj, gboolean bSelected) ;
-//  void (*move) (QCADDesignObject *obj, double dxDelta, double dyDelta) ;
+  void (*move) (QCADDesignObject *obj, double dxDelta, double dyDelta) ;
 //  QCADDesignObject *(*hit_test) (QCADDesignObject *obj, int xReal, int yReal) ;
 //  gboolean (*select_test) (QCADDesignObject *obj, WorldRectangle *rc, QCADSelectionMethod method) ;
 //#ifdef GTK_GUI
@@ -129,9 +129,9 @@ GType qcad_design_object_get_type () ;
 QCADDesignObject *qcad_design_object_new_from_stream (FILE *fp) ;
 
 //#endif /* def STDIO_FILEIO */
-//QCADDesignObject *qcad_design_object_new_from_object (QCADDesignObject *src) ;
-//void qcad_design_object_move (QCADDesignObject *obj, double dxDelta, double dyDelta) ;
-//void qcad_design_object_move_to (QCADDesignObject *obj, double xWorld, double yWorld) ;
+QCADDesignObject *qcad_design_object_new_from_object (QCADDesignObject *src) ;
+void qcad_design_object_move (QCADDesignObject *obj, double dxDelta, double dyDelta) ;
+void qcad_design_object_move_to (QCADDesignObject *obj, double xWorld, double yWorld) ;
 void qcad_design_object_get_bounds_box (QCADDesignObject *obj, WorldRectangle *rcWorld) ;
 //gboolean qcad_design_object_set_selected (QCADDesignObject *obj, gboolean bSelected) ;
 //gboolean qcad_design_object_overlaps (QCADDesignObject *obj1, QCADDesignObject *obj2) ;
