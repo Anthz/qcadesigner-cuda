@@ -13,7 +13,38 @@ TODO:
 
 #include <math.h>
 
+#undef	CLAMP
+#define CLAMP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
 #define BLOCK_DIM 256
+
+__device__ inline double generate_clock_at_sample_s (unsigned int clock_num, unsigned long int sample, unsigned long int number_samples, int total_number_of_inputs, const coherence_OP *options, int SIMULATION_TYPE, VectorTable *pvt)
+{
+  double clock = 0;
+
+  /*
+   if (SIMULATION_TYPE == EXHAUSTIVE_VERIFICATION)
+   {
+  */
+    clock = clock_prefactor *
+      cos (((double) (1 << total_number_of_inputs)) * (double) sample * optimization_options_four_pi_over_number_samples - PI * (double)clock_num * 0.5) + optimization_options_clock_shift + options_clock_shift;
+
+    // Saturate the clock at the clock high and low values
+    clock = CLAMP (clock, options_clock_low, options_clock_high) ;
+  /*
+  }
+  else
+  if (SIMULATION_TYPE == VECTOR_TABLE)
+    {
+    clock = clock_prefactor *
+      cos (((double)pvt->vectors->icUsed) * (double) sample * optimization_options.two_pi_over_number_samples - PI * (double)clock_num * 0.5) + optimization_options.clock_shift + options->clock_shift;
+
+    // Saturate the clock at the clock high and low values
+    clock = CLAMP (clock, options->clock_low, options->clock_high) ;
+    }
+   */
+  return clock;
+  }// calculate_clock_value
+
 
 
 __global__ void kernel (float* d_next_polarization, float *d_polarization, float *d_clock, float *d_lambda_x, float *d_lambda_y, float *d_lambda_z, float **d_Ek, int **d_neighbours, int cells_number, int neighbours_number)
@@ -31,7 +62,7 @@ __global__ void kernel (float* d_next_polarization, float *d_polarization, float
    if (th_index < cells_number)
    {
       // Generate next clock
-      generate_next_clock (h_clock, cells_number, i, ...);
+      generate_clock_at_sample_s (h_clock, cells_number, i, ...);
 
       PEk = 0;
       
@@ -130,3 +161,5 @@ void launch_coherence_vector_simulation (float *h_polarization, float *h_clock, 
    cudaFree(d_neighbours);  
 
 }
+
+
