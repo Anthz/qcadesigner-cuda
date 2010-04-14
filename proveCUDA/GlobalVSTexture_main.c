@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
-#define NUM_CELLS 10000
-#define NUM_NEIGH_FIX 10
+#define NUM_CELLS 100
+#define NUM_NEIGH_FIX 4
 #define __DEBUG_MODE__
 
 
@@ -95,8 +96,16 @@ int main () {
 
 #ifdef __DEBUG_MODE__
    float gold_result[NUM_CELLS];
+   struct timeval tv1,tv2;
+   struct timezone tz1,tz2;
 
+   gettimeofday(&tv1,&tz1);
    computeGold(gold_result, polarization, neighbours, NUM_CELLS, NUM_CELLS, NUM_CELLS*NUM_NEIGH_FIX);
+   gettimeofday(&tv2,&tz2);
+    
+   unsigned long time_elapsed = (unsigned long)(tv2.tv_sec * 1000000 + tv2.tv_usec) - (tv1.tv_sec * 1000000 + tv1.tv_usec);
+   
+   printf("CPU exec time: %ld ms\n", time_elapsed/1000);
 
    fp = fopen("log_global_results.txt", "w");
    for (i = 0; i < NUM_CELLS; i++)
@@ -127,7 +136,7 @@ int main () {
     printf("Verification Success (Texture Memory)!\n");
 
 #endif
-
+   
    return 0;
 
 }

@@ -122,9 +122,11 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
   double old_lambda_z;
   time_t start_time, end_time;
   simulation_data *sim_data = NULL ;
-  // for randomization
+  #ifndef CUDA
+  // Randomization. NOT necessary with CUDA
   int Nix, Nix1, idxCell1, idxCell2 ;
   QCADCell *swap = NULL ;
+  #endif
   BUS_LAYOUT_ITER bli ;
   double dPolarization = 2.0 ;
   int idxMasterBitOrder = -1.0 ;
@@ -238,6 +240,7 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
       sim_data->clock_data[i].data[j] = calculate_clock_value(i, j * record_interval, number_samples, total_number_of_inputs, options, SIMULATION_TYPE, pvt);
     }
 
+  //TODO: CUDA_coherence_refresh_all_Ek ???
   // -- refresh all the kink energies and neighbours-- //
   coherence_refresh_all_Ek (number_of_cell_layers, number_of_cells_in_layer, sorted_cells, options);
 
@@ -249,6 +252,7 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
   // The following line causes a segfault when the design consists of a single cell
 //  printf("The Ek to the first cells neighbour is %e [eV]\n",((coherence_model *)sorted_cells[0][0]->cell_model)->Ek[0]/1.602e-19);
 
+#ifndef CUDA
   // randomize the cells in the design as to minimize any numerical problems associated //
   // with having cells simulated in some predefined order: //
   // for each layer ...
@@ -263,6 +267,7 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
       sorted_cells[Nix][idxCell1] = sorted_cells[Nix][idxCell2] ;
       sorted_cells[Nix][idxCell2] = swap ;
       }
+#endif
 
   if (EXHAUSTIVE_VERIFICATION == SIMULATION_TYPE)
     for (design_bus_layout_iter_first (design->bus_layout, &bli, QCAD_CELL_INPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i))
