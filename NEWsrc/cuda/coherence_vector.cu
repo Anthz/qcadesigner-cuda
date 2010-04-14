@@ -60,47 +60,18 @@ __device__ inline float slope_z (float t, float PEk, float Gamma, float lambda_x
    return (PEk * tanh (optimization_options_hbar_over_kBT * mag) + mag * (2.0 * Gamma * options_relaxation * lambda_y - hbar * lambda_z)) / (options_relaxation * hbar * mag);
 }
 
-__device__ inline double generate_clock_at_sample_s (unsigned int clock_num, unsigned long int sample, unsigned long int number_samples, int total_number_of_inputs, const coherence_OP *options, int SIMULATION_TYPE, VectorTable *pvt)
-{
-  double clock = 0;
-
-  /*
-   if (SIMULATION_TYPE == EXHAUSTIVE_VERIFICATION)
-   {
-  */
-    clock = clock_prefactor *
-      cos (((double) (1 << total_number_of_inputs)) * (double) sample * optimization_options_four_pi_over_number_samples - PI * (double)clock_num * 0.5) + optimization_options_clock_shift + options_clock_shift;
-
-    // Saturate the clock at the clock high and low values
-    clock = CLAMP (clock, options_clock_low, options_clock_high) ;
-  /*
-  }
-  else
-  if (SIMULATION_TYPE == VECTOR_TABLE)
-    {
-    clock = clock_prefactor *
-      cos (((double)pvt->vectors->icUsed) * (double) sample * optimization_options.two_pi_over_number_samples - PI * (double)clock_num * 0.5) + optimization_options.clock_shift + options->clock_shift;
-
-    // Saturate the clock at the clock high and low values
-    clock = CLAMP (clock, options->clock_low, options->clock_high) ;
-    }
-   */
-  return clock;
-  }// calculate_clock_value
-
-
 
 // Next value of lambda x with choice of options_algorithm
-__device__ inline float lambda_x_next (float t, float PEk, float Gamma, float lambda_x, float lambda_y, float lambda_z)
+__device__ inline float eval_next_lambda_x (float t, float PEk, float Gamma, float lambda_x, float lambda_y, float lambda_z)
 {
-   float k1 = options_time_step * slope_x (t, PEk, Gamma, lambda_x, lambda_y, lambda_z, options_relaxation);
+   float k1 = options_time_step * slope_x (t, PEk, Gamma, lambda_x, lambda_y, lambda_z);
    float k2, k3, k4;
 
    if (RUNGE_KUTTA == options_algorithm)
    {
-      k2 = options_time_step * slope_x (t, PEk, Gamma, lambda_x + k1/2, lambda_y, lambda_z, options_relaxation);
-      k3 = options_time_step * slope_x (t, PEk, Gamma, lambda_x + k2/2, lambda_y, lambda_z, options_relaxation);
-      k4 = options_time_step * slope_x (t, PEk, Gamma, lambda_x + k3,   lambda_y, lambda_z, options_relaxation);
+      k2 = options_time_step * slope_x (t, PEk, Gamma, lambda_x + k1/2, lambda_y, lambda_z);
+      k3 = options_time_step * slope_x (t, PEk, Gamma, lambda_x + k2/2, lambda_y, lambda_z);
+      k4 = options_time_step * slope_x (t, PEk, Gamma, lambda_x + k3,   lambda_y, lambda_z);
       return lambda_x + k1/6 + k2/3 + k3/3 + k4/6;
    }
    else
@@ -112,16 +83,16 @@ __device__ inline float lambda_x_next (float t, float PEk, float Gamma, float la
 
 
 // Next value of lambda y with choice of options_algorithm
-__device__ inline float lambda_y_next (float t, float PEk, float Gamma, float lambda_x, float lambda_y, float lambda_z)
+__device__ inline float eval_next_lambda_y (float t, float PEk, float Gamma, float lambda_x, float lambda_y, float lambda_z)
 {
-   float k1 = options_time_step * slope_y (t, PEk, Gamma, lambda_x, lambda_y, lambda_z, options_relaxation);
+   float k1 = options_time_step * slope_y (t, PEk, Gamma, lambda_x, lambda_y, lambda_z);
    float k2, k3, k4;
 
    if (RUNGE_KUTTA == options_algorithm)
    {
-      k2 = options_time_step * slope_y (t, PEk, Gamma, lambda_x, lambda_y + k1/2, lambda_z, options_relaxation);
-      k3 = options_time_step * slope_y (t, PEk, Gamma, lambda_x, lambda_y + k2/2, lambda_z, options_relaxation);
-      k4 = options_time_step * slope_y (t, PEk, Gamma, lambda_x, lambda_y + k3,   lambda_z, options_relaxation);
+      k2 = options_time_step * slope_y (t, PEk, Gamma, lambda_x, lambda_y + k1/2, lambda_z);
+      k3 = options_time_step * slope_y (t, PEk, Gamma, lambda_x, lambda_y + k2/2, lambda_z);
+      k4 = options_time_step * slope_y (t, PEk, Gamma, lambda_x, lambda_y + k3,   lambda_z);
       return lambda_y + k1/6 + k2/3 + k3/3 + k4/6;
    }
    else
@@ -133,16 +104,16 @@ __device__ inline float lambda_y_next (float t, float PEk, float Gamma, float la
 
 
 // Next value of lambda z with choice of options_algorithm
-__device__ inline float lambda_z_next (float t, float PEk, float Gamma, float lambda_x, float lambda_y, float lambda_z)
+__device__ inline float eval_next_lambda_z (float t, float PEk, float Gamma, float lambda_x, float lambda_y, float lambda_z)
 {
-   float k1 = options_time_step * slope_z (t, PEk, Gamma, lambda_x, lambda_y, lambda_z, options_relaxation);
+   float k1 = options_time_step * slope_z (t, PEk, Gamma, lambda_x, lambda_y, lambda_z);
    float k2, k3, k4;
 
    if (RUNGE_KUTTA == options_algorithm)
    {
-      k2 = options_time_step * slope_z(t, PEk, Gamma, lambda_x, lambda_y, lambda_z + k1/2, options_relaxation);
-      k3 = options_time_step * slope_z(t, PEk, Gamma, lambda_x, lambda_y, lambda_z + k2/2, options_relaxation);
-      k4 = options_time_step * slope_z(t, PEk, Gamma, lambda_x, lambda_y, lambda_z + k3,   options_relaxation);
+      k2 = options_time_step * slope_z(t, PEk, Gamma, lambda_x, lambda_y, lambda_z + k1/2);
+      k3 = options_time_step * slope_z(t, PEk, Gamma, lambda_x, lambda_y, lambda_z + k2/2);
+      k4 = options_time_step * slope_z(t, PEk, Gamma, lambda_x, lambda_y, lambda_z + k3  );
       return lambda_z + k1/6 + k2/3 + k3/3 + k4/6;
    }
    else
@@ -150,6 +121,34 @@ __device__ inline float lambda_z_next (float t, float PEk, float Gamma, float la
       return lambda_z + k1;
    else
       return 0;
+}
+
+
+__device__ inline float generate_clock_at_sample_s (unsigned int clock_num, unsigned long int sample, unsigned long int number_samples, int total_number_of_inputs, const coherence_OP *options, int SIMULATION_TYPE, VectorTable *pvt)
+{
+   float clock = 0;
+
+   /*
+   if (SIMULATION_TYPE == EXHAUSTIVE_VERIFICATION)
+   {
+   */
+      clock = clock_prefactor *
+      cos (((float) (1 << total_number_of_inputs)) * (float) sample * optimization_options_four_pi_over_number_samples - PI * (float)clock_num * 0.5) + optimization_options_clock_shift + options_clock_shift;
+
+      // Saturate the clock at the clock high and low values
+      clock = CLAMP (clock, options_clock_low, options_clock_high) ;
+   /*
+   }
+   else
+   if (SIMULATION_TYPE == VECTOR_TABLE)
+      {
+      clock = clock_prefactor * cos (((float)pvt->vectors->icUsed) * (float) sample * optimization_options.two_pi_over_number_samples - PI * (float)clock_num * 0.5) + optimization_options.clock_shift + options->clock_shift;
+
+      // Saturate the clock at the clock high and low values
+      clock = CLAMP (clock, options->clock_low, options->clock_high) ;
+      }
+   */
+   return clock;
 }
 
 
