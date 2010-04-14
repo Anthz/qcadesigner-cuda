@@ -125,6 +125,10 @@ void launchGlobalKernel (float *h_result, float *h_polarization, int *h_neighbou
 
    printf("Tempo d'esecuzione su GPU (Global Memory): %f ms.\n", milliseconds);
 
+   cudaFree(d_result);
+   cudaFree(d_polarization);
+   cudaFree(d_neighbours);
+
 }
 
 
