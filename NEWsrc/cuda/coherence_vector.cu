@@ -10,6 +10,7 @@ TODO:
 
 #include <cutil_inline.h>
 #include <cuda.h>
+#include <cuPrintf.cuh>
 
 #include <math.h>
 
@@ -36,6 +37,9 @@ __constant__ float optimization_options_two_pi_over_number_samples;
 __constant__ float optimization_options_hbar_over_kBT;
 
 // Coherence Options
+__constant__ float options_clock_low;
+__constant__ float options_clock_high;
+__constant__ float options_clock_shift;
 __constant__ float options_relaxation;
 __constant__ float options_time_step;
 __constant__ int options_algorithm;
@@ -213,7 +217,7 @@ void launch_coherence_vector_simulation (float *h_polarization, float *h_clock, 
 
    // Variables
    size_t Ek_pitch, neighbours_pitch;
-   float *d_next_polarization, *d_polarization, *d_clock, **d_Ek;
+   float *d_next_polarization, *d_polarization, *d_clock, **d_Ek, *d_lambda_x, *d_lambda_y, *d_lambda_z;
    int **d_neighbours;
    int i;
 
@@ -250,6 +254,9 @@ void launch_coherence_vector_simulation (float *h_polarization, float *h_clock, 
    cutilSafeCall (cudaMemcpyToSymbol("optimization_options_four_pi_over_number_samples", optimization_options->four_pi_over_number_samples, sizeof(float), 0, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpyToSymbol("optimization_options_two_pi_over_number_samples", optimization_options->two_pi_over_number_samples, sizeof(float), 0, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpyToSymbol("optimization_options_hbar_over_kBT", optimization_options->hbar_over_kBT, sizeof(float), 0, cudaMemcpyHostToDevice));
+   cutilSafeCall (cudaMemcpyToSymbol("options_clock_low", options->clock_low, sizeof(float), 0, cudaMemcpyHostToDevice));
+   cutilSafeCall (cudaMemcpyToSymbol("options_clock_high", options->clock_high, sizeof(float), 0, cudaMemcpyHostToDevice));  
+   cutilSafeCall (cudaMemcpyToSymbol("options_clock_shift", options->clock_shift, sizeof(float), 0, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpyToSymbol("options_relaxation", options->relaxation, sizeof(float), 0, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpyToSymbol("options_time_step", options->time_step, sizeof(float), 0, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpyToSymbol("options_algorithm", options->algorithm, sizeof(int), 0, cudaMemcpyHostToDevice));
