@@ -13,7 +13,7 @@ CFLAGS= \
 	 -L$(CUDASDKROOT)/C/lib
 
 OBJECTS =\
-	coherence_vector.o \
+	coherence_vector_NO_PITCH.o \
  	test_coherence_vector.o 
       
 	
