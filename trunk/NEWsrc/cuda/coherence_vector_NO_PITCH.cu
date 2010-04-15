@@ -87,11 +87,11 @@ typedef struct
 // MODIFIED coherence_optimizations struct (from coherence_vector.c)
 typedef struct
 {
-   double clock_prefactor;
-   double clock_shift;
-   double four_pi_over_number_samples;
-   double two_pi_over_number_samples;
-   double hbar_over_kBT;
+   float clock_prefactor;
+   float clock_shift;
+   float four_pi_over_number_samples;
+   float two_pi_over_number_samples;
+   float hbar_over_kBT;
 } CUDA_coherence_optimizations;
 
 
@@ -207,7 +207,7 @@ __device__ inline float generate_clock_at_sample_s (unsigned int clock_num, unsi
 }
 
 
-__global__ void kernel (float* d_next_polarization, float *d_polarization, float *d_clock, float *d_lambda_x, float *d_lambda_y, float *d_lambda_z, float **d_Ek, int **d_neighbours, int cells_number, int neighbours_number, int sample_number)
+__global__ void kernel (float* d_next_polarization, float *d_polarization, float *d_clock, float *d_lambda_x, float *d_lambda_y, float *d_lambda_z, float *d_Ek, int *d_neighbours, int cells_number, int neighbours_number, int sample_number)
 {
 
    int th_index = blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
@@ -232,8 +232,8 @@ __global__ void kernel (float* d_next_polarization, float *d_polarization, float
       
       for (i = 0; i < neighbours_number; i++)
       {
-	 nb_index = d_neighbours[th_index][i];
-	 PEk += d_polarization[nb_index] * d_Ek[th_index][nb_index]; 
+	 nb_index = d_neighbours[th_index*neighbours_number+i];
+	 PEk += d_polarization[nb_index] * d_Ek[th_index*neighbours_number+nb_index]; 
       }
 
       lambda_x = d_lambda_x[th_index];
@@ -264,13 +264,12 @@ __global__ void kernel (float* d_next_polarization, float *d_polarization, float
  \param <iteration> {}
 */
 extern "C"
-void launch_coherence_vector_simulation (float *h_polarization, float *h_clock, float *h_lambda_x, float *h_lambda_y, float *h_lambda_z, float **h_Ek, int **h_neighbours, int cells_number, int neighbours_number, int iterations, CUDA_coherence_OP *options, CUDA_coherence_optimizations *optimization_options)
+void launch_coherence_vector_simulation (float *h_polarization, float *h_clock, float *h_lambda_x, float *h_lambda_y, float *h_lambda_z, float *h_Ek, int *h_neighbours, int cells_number, int neighbours_number, int iterations, CUDA_coherence_OP *options, CUDA_coherence_optimizations *optimization_options)
 {
 
    // Variables
-   size_t Ek_pitch, neighbours_pitch;
-   float *d_next_polarization, *d_polarization, *d_clock, **d_Ek, *d_lambda_x, *d_lambda_y, *d_lambda_z;
-   int **d_neighbours;
+   float *d_next_polarization, *d_polarization, *d_clock, *d_Ek, *d_lambda_x, *d_lambda_y, *d_lambda_z;
+   int *d_neighbours;
    int i;
 
    // Set GPU Parameters
@@ -288,8 +287,8 @@ void launch_coherence_vector_simulation (float *h_polarization, float *h_clock, 
    cutilSafeCall (cudaMalloc (&d_lambda_x, cells_number*sizeof(float)));
    cutilSafeCall (cudaMalloc (&d_lambda_y, cells_number*sizeof(float)));
    cutilSafeCall (cudaMalloc (&d_lambda_z, cells_number*sizeof(float)));
-   cutilSafeCall (cudaMallocPitch (&d_Ek, &Ek_pitch, sizeof(float)*neighbours_number, cells_number));
-   cutilSafeCall (cudaMallocPitch (&d_neighbours, &neighbours_pitch, sizeof(int)*neighbours_number, cells_number));
+   cutilSafeCall (cudaMalloc (&d_Ek, sizeof(float)*neighbours_number*cells_number));
+   cutilSafeCall (cudaMalloc (&d_neighbours, sizeof(int)*neighbours_number*cells_number));
 
    // Set Memory
    cutilSafeCall (cudaMemcpy (d_polarization, h_polarization, cells_number*sizeof(float), cudaMemcpyHostToDevice));
@@ -297,8 +296,8 @@ void launch_coherence_vector_simulation (float *h_polarization, float *h_clock, 
    cutilSafeCall (cudaMemcpy (d_lambda_x, h_lambda_x, cells_number*sizeof(float), cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_lambda_y, h_lambda_y, cells_number*sizeof(float), cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_lambda_z, h_lambda_z, cells_number*sizeof(float), cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpy2D (d_Ek, Ek_pitch, h_Ek, 0, sizeof(float)*neighbours_number, cells_number, cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpy2D (d_neighbours, neighbours_pitch, h_neighbours, 0, sizeof(int)*neighbours_number, cells_number, cudaMemcpyHostToDevice));
+   cutilSafeCall (cudaMemcpy (d_Ek, h_Ek, sizeof(float)*neighbours_number*cells_number, cudaMemcpyHostToDevice));
+   cutilSafeCall (cudaMemcpy (d_neighbours, h_neighbours, sizeof(int)*neighbours_number*cells_number, cudaMemcpyHostToDevice));
 
    // Set Constants
    cutilSafeCall (cudaMemcpyToSymbol("optimization_options_clock_prefactor", &(optimization_options->clock_prefactor), sizeof(float), 0, cudaMemcpyHostToDevice));
@@ -338,5 +337,6 @@ void launch_coherence_vector_simulation (float *h_polarization, float *h_clock, 
    cudaFree(d_neighbours);  
 
 }
+
 
 
