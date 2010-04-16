@@ -56,4 +56,14 @@ typedef struct
 simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, bistable_OP *options, VectorTable *pvt);
 void bistable_options_dump (bistable_OP *bistable_options, FILE *pfile) ;
 
+// To each cell this structure is connected in order that this particular simulation engine can have its own variables. //
+typedef struct
+  {
+  int number_of_neighbours;
+  QCADCell **neighbours;
+  int *neighbour_layer;
+  double *Ek;
+  double polarization;
+  } bistable_model;
+
 #endif /* _BISTABLE_SIMULATION_H_ */
