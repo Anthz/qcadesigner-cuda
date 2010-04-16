@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include "test_conversion.h"
 
 /*#ifdef GTK_GUI*/
 /*  #include "callback_helpers.h"*/
@@ -55,16 +56,6 @@ bistable_OP bistable_options = {12800, FALSE, 1e-3, 65, 12.9, 9.8e-22, 3.8e-23, 
 /*#else*/
 static int STOP_SIMULATION = 0 ;
 //#endif /* def GTK_GUI */
-
-// To each cell this structure is connected in order that this particular simulation engine can have its own variables. //
-typedef struct
-  {
-  int number_of_neighbours;
-  QCADCell **neighbours;
-  int *neighbour_layer;
-  double *Ek;
-  double polarization;
-  } bistable_model;
 
 static inline double bistable_determine_Ek (QCADCell *cell1, QCADCell *cell2, int layer_separation, bistable_OP *options);
 static inline void bistable_refresh_all_Ek (int number_of_cell_layers, int *number_of_cells_in_layer, QCADCell ***sorted_cells, bistable_OP *options);
@@ -120,7 +111,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 
   // Create per-layer cell arrays to be used by the engine
   simulation_inproc_data_new (design, &number_of_cell_layers, &number_of_cells_in_layer, &sorted_cells) ;
-
+  printf("1.1number of cell x layers: %d\n", number_of_cells_in_layer[0]);
   for(i = 0; i < number_of_cell_layers; i++)
     {
 /*#ifdef REDUCE_DEREF*/
@@ -145,6 +136,8 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
       total_cells++;
       }
     }
+    
+
 
   // if we are performing a vector table simulation we consider only the activated inputs //
   if(SIMULATION_TYPE == VECTOR_TABLE)
@@ -213,6 +206,11 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 
   // -- refresh all the kink energies to all the cells neighbours within the radius of effect -- //
   bistable_refresh_all_Ek (number_of_cell_layers, number_of_cells_in_layer, sorted_cells, options);
+  
+  // CUDA: entry point for cuda simulation
+  //controllare number of cell in layer[]
+  test_conversion(sorted_cells, number_of_cell_layers, number_of_cells_in_layer);
+  
 
   // randomize the cells in the design so as to minimize any numerical problems associated //
   // with having cells simulated in some predefined order. //
