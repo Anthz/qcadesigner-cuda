@@ -12,6 +12,7 @@ TODO:
 #include <cutil_inline.h>
 #include <cuda.h>
 #include "cuPrintf.cu"
+#include "structs.h"
 
 #include <math.h>
 
@@ -65,36 +66,6 @@ __constant__ float options_clock_shift;
 __constant__ float options_relaxation;
 __constant__ float options_time_step;
 __constant__ int options_algorithm;
-
-
-// MODIFIED coherence_OP struct (from coherence_vector.h)
-typedef struct
-{
-   float T;
-   float relaxation;
-   float time_step;
-   float duration;
-   float clock_high;
-   float clock_low;
-   float clock_shift;
-   float clock_amplitude_factor;
-   float radius_of_effect;
-   float epsilonR;
-   float layer_separation;
-   int algorithm;
-} CUDA_coherence_OP;
-
-// MODIFIED coherence_optimizations struct (from coherence_vector.c)
-typedef struct
-{
-   float clock_prefactor;
-   float clock_shift;
-   float four_pi_over_number_samples;
-   float two_pi_over_number_samples;
-   float hbar_over_kBT;
-} CUDA_coherence_optimizations;
-
-
 
 
 __device__ inline float slope_x (float t, float PEk, float Gamma, float lambda_x, float lambda_y, float lambda_z)
@@ -227,9 +198,10 @@ __global__ void kernel (float* d_next_polarization, float *d_polarization, float
 
       // Generate next clock
       //generate_clock_at_sample_s (h_clock, cells_number, i, ...);
+      /* TEMP */ clock_value = d_clock[th_index];
 
       PEk = 0;
-      
+   
       for (i = 0; i < neighbours_number; i++)
       {
 	 nb_index = d_neighbours[th_index*neighbours_number+i];
@@ -249,6 +221,8 @@ __global__ void kernel (float* d_next_polarization, float *d_polarization, float
       d_lambda_z[th_index] = next_lambda_z;
       
       d_next_polarization[th_index] = next_lambda_z;
+
+      cuPrintf("polarization: %f\tclock: %f\tlambda: %f %f %f\tEk: %f\n", d_polarization[th_index], clock_value, d_lambda_x[th_index], d_lambda_y[th_index], d_lambda_z[th_index], d_Ek[th_index]);
    }
 
 }
@@ -315,17 +289,21 @@ void launch_coherence_vector_simulation (float *h_polarization, float *h_clock, 
    // For each sample...
    for (i = 0; i < iterations; i++)
    {
+      printf("Inizio simulazione -- Iterazione %d\n", i); 
+
       // Launch Kernel
       kernel<<< grid, threads >>> (d_next_polarization, d_polarization, d_clock, d_lambda_x, d_lambda_y, d_lambda_z, d_Ek, d_neighbours, cells_number, neighbours_number, i);
 
       // Wait Device
       cudaThreadSynchronize ();
 
+      cudaPrintfDisplay(stdout, true);
+
       // Set Memory for the next iteration
       cutilSafeCall (cudaMemcpy (d_polarization, d_next_polarization, cells_number*sizeof(float), cudaMemcpyDeviceToDevice));
 
-      // Get desidered iteration results from GPU
-      
+      // Test -- Get desidered iteration results from GPU
+      cutilSafeCall (cudaMemcpy (h_polarization, d_next_polarization, cells_number*sizeof(float), cudaMemcpyDeviceToHost));
    }
 
    // Free-up resources
