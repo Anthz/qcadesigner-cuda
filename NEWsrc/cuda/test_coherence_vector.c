@@ -2,6 +2,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include "structs.h"
+
 #define NUM_CELLS 100
 #define NUM_NEIGH_FIX 4
 #define __DEBUG_MODE__
@@ -42,6 +44,8 @@ int main ()
    float Ek[NUM_CELLS][NUM_NEIGH_FIX];
    int neighbours[NUM_CELLS][NUM_NEIGH_FIX];
    int iterations = 1;
+   CUDA_coherence_OP options;
+   CUDA_coherence_optimizations optimization_options;
 
    // Generate random polarizations, clock, lambda
    for (i = 0; i < NUM_CELLS; i++)
@@ -63,10 +67,31 @@ int main ()
       for (j = 0; j < NUM_NEIGH_FIX; j++)
 	 neighbours[i][j] = randint(0, NUM_CELLS-1);
 
+   // Generate Random Options
+   options.T = randfloat(0, 10);
+   options.relaxation = randfloat(0, 10);
+   options.time_step = randfloat(0, 10);
+   options.duration = randfloat(0, 10);
+   options.clock_high = randfloat(0, 10);
+   options.clock_low = randfloat(0, 10);
+   options.clock_shift = randfloat(0, 10);
+   options.clock_amplitude_factor = randfloat(0, 10);
+   options.radius_of_effect = randfloat(0, 10);
+   options.epsilonR = randfloat(0, 10);
+   options.layer_separation = randfloat(0, 10);
+   options.algorithm = 1;
+
+   // Generate Random Optimization Options
+   optimization_options.clock_prefactor = randfloat(0, 10);
+   optimization_options. clock_shift = randfloat(0, 10);
+   optimization_options.four_pi_over_number_samples = randfloat(0, 10);
+   optimization_options.two_pi_over_number_samples = randfloat(0, 10);
+   optimization_options.hbar_over_kBT = randfloat(0, 10);
+
 #ifdef __DEBUG_MODE__
    FILE *fp;
 
-   fp = fopen("log.txt", "w");
+   fp = fopen("log/log.txt", "w");
    fprintf(fp,"Index\t||\tPolarization\t||\tClock\t||\tLambda\t||\tNeighbours\t||\tEk\n");
    for (i = 0; i < NUM_CELLS; i++)
    {
@@ -99,7 +124,11 @@ int main ()
 #endif
 
    // Launch Simulation
-   launch_coherence_vector_simulation (polarization, clock, lambda_x, lambda_y, lambda_z, Ek, neighbours, NUM_CELLS, NUM_NEIGH_FIX, iterations);
+   launch_coherence_vector_simulation (polarization, clock, lambda_x, lambda_y, lambda_z, Ek, neighbours, NUM_CELLS, NUM_NEIGH_FIX, iterations, &options, &optimization_options);
+
+   for (i = 0; i < NUM_CELLS; i++)
+      printf("polarization[%d] = %f\n", i, polarization);
+
    
    return 0;
 
