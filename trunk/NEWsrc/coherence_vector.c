@@ -430,7 +430,49 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
   //5th: kernel can process the evolution from s to s+1 using local data and 
   //     updates the state of the cell it is working on
   //6th: repeat 4-5 until total number of samples are computed
-  //7th: copy everything from device memory to host memory, mapping correctly 
+  //7th: copy everything from device memory to host memory, mapping correctly
+   
+   // Generate CUDA-Compatible structures
+   float *polarization, *clock, *lambda_x, *lambda_y, *lambda_z, *Ek;
+   int *neighbours
+   int cells_number;
+   int neighbours_number;
+   CUDA_coherence_OP *options;
+   CUDA_coherence_optimizations *optimization_options;
+
+   // Compute the number of cells and the max neighbours count
+   cells_number = 0;
+   neighbours_number = 0;
+   for (i = 0; i < number_of_cell_layers; i++)
+   {
+      for (j = 0; j < number_of_cells_in_layer[i]; j++)
+      {
+	 if (((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours > neighbours_number)
+	    neighbours_number = ((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours;
+      }
+      cells_number += number_of_cells_in_layer[i];
+   }
+
+   // Allocate CUDA-Compatible structures
+   polarization = (float*) malloc (sizeof(float)*cells_number);
+   clock =        (float*) malloc (sizeof(float)*cells_number);
+   lambda_x =     (float*) malloc (sizeof(float)*cells_number);
+   lambda_y =     (float*) malloc (sizeof(float)*cells_number);
+   lambda_z =     (float*) malloc (sizeof(float)*cells_number);
+   Ek =		  (float*) malloc (sizeof(float)*cells_number*neighbours_number);
+   neighbours =   (int*)   malloc (sizeof(float)*cells_number*neighbours_number);
+   
+   // Fill CUDA-Compatible structures
+   for (i = 0; i < number_of_cell_layers; i++)
+   {
+      for (j = 0; j < number_of_cells_in_layer[i]; j++)
+      {
+      }
+   }
+
+
+   launch_coherence_vector_simulation (float *h_polarization, float *h_clock, float *h_lambda_x, float *h_lambda_y, float *h_lambda_z, float *h_Ek, int *h_neighbours, int cells_number, int neighbours_number, int iterations, CUDA_coherence_OP *options, CUDA_coherence_optimizations *optimization_options)
+ 
   #endif
 
   // Free the neigbours and Ek array introduced by this simulation//
