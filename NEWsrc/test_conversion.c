@@ -9,6 +9,8 @@ int **h_neighbours, cells_number=0,i,j;
 
 extern void test_conversion(QCADCell*** sorted_cells, int number_of_cell_layers, int *number_of_cells_in_layer){
   
+int iLayer, iCell, neighbours_number = 0;
+
   //find cells number
   for( i=0; i<number_of_cell_layers; i++){
     cells_number += number_of_cells_in_layer[i];
@@ -17,8 +19,6 @@ extern void test_conversion(QCADCell*** sorted_cells, int number_of_cell_layers,
   
   //allocate structures
   sorted_cells_to_CUDA_Structures(sorted_cells,&h_polarization,&h_clock,&h_Ek,&h_neighbours,cells_number, number_of_cell_layers, number_of_cells_in_layer);
-  
- int neighbours_number = 0,iLayer,iCell;
  
  //init neighbours_number
  for( iLayer = 0; iLayer < number_of_cell_layers; iLayer++){
