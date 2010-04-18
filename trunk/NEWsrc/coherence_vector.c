@@ -436,42 +436,91 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
    float *polarization, *clock, *lambda_x, *lambda_y, *lambda_z, *Ek;
    int *neighbours
    int cells_number;
-   int neighbours_number;
-   CUDA_coherence_OP *options;
-   CUDA_coherence_optimizations *optimization_options;
+   int max_neighbours_number;
+   CUDA_coherence_OP *CUDA_options;
+   CUDA_coherence_optimizations *CUDA_optimization;
+   int index;
 
-   // Compute the number of cells and the max neighbours count
+   // Compute the number of cells, the max neighbours count and set the cuda_id field of each cell
    cells_number = 0;
-   neighbours_number = 0;
+   max_neighbours_number = 0;
+   index = 0;
    for (i = 0; i < number_of_cell_layers; i++)
    {
       for (j = 0; j < number_of_cells_in_layer[i]; j++)
       {
-	 if (((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours > neighbours_number)
-	    neighbours_number = ((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours;
+	 if (((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours > max_neighbours_number)
+	    max_neighbours_number = ((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours;
+   
+         sorted_cells[i][j]->cuda_id = index;
+
+         index++;
       }
       cells_number += number_of_cells_in_layer[i];
    }
 
    // Allocate CUDA-Compatible structures
-   polarization = (float*) malloc (sizeof(float)*cells_number);
-   clock =        (float*) malloc (sizeof(float)*cells_number);
-   lambda_x =     (float*) malloc (sizeof(float)*cells_number);
-   lambda_y =     (float*) malloc (sizeof(float)*cells_number);
-   lambda_z =     (float*) malloc (sizeof(float)*cells_number);
-   Ek =		  (float*) malloc (sizeof(float)*cells_number*neighbours_number);
-   neighbours =   (int*)   malloc (sizeof(float)*cells_number*neighbours_number);
-   
+   polarization =               (float*) malloc (sizeof(float)*cells_number);
+   clock =                      (float*) malloc (sizeof(float)*cells_number);
+   lambda_x =                   (float*) malloc (sizeof(float)*cells_number);
+   lambda_y =                   (float*) malloc (sizeof(float)*cells_number);
+   lambda_z =                   (float*) malloc (sizeof(float)*cells_number);
+   Ek =	                        (float*) malloc (sizeof(float)*cells_number*max_neighbours_number);
+   neighbours =                 (int*) malloc (sizeof(int)*cells_number*max_neighbours_number);
+   CUDA_options =               (CUDA_coherence_OP*) malloc (sizeof(CUDA_coherence_OP));
+   CUDA_optimizations_options = (CUDA_coherence_optimizations*) malloc (sizeof(CUDA_coherence_optimizations));
+
    // Fill CUDA-Compatible structures
+   index = 0;
    for (i = 0; i < number_of_cell_layers; i++)
    {
       for (j = 0; j < number_of_cells_in_layer[i]; j++)
       {
+         polarization[index] = qcad_cell_calculate_polarization(*sorted_cells[i][j]);
+         //clock[index] = ???;
+         lambda_x[index] = (sorted_cells[i][j]->cell_model)->lambda_x;
+         lambda_y[index] = (sorted_cells[i][j]->cell_model)->lambda_y;
+         lambda_z[index] = (sorted_cells[i][j]->cell_model)->lambda_z;
+         for (k = 0; k < max_neighbours_number; k++)
+         {
+            if (k < (sorted_cells[i][j]->cell_model)->number_of_neighbours)
+            {
+               Ek[index*max_neighbours_number+k] = (sorted_cells[i][j]->cell_model)->Ek[k];
+               neighbours[index*max_neighbours_number+k] = ((sorted_cells[i][j]->cell_model)->neighbours[k])->cuda_id;
+            }
+            else
+            {
+               Ek[index*max_neighbours_number+k] = -1;
+               neighbours[index*max_neighbours_number+k] = -1;
+            }
+         }
+         index++;
       }
    }
 
+   CUDA_options->T                      = options->T;
+   CUDA_options->relaxation             = options->relaxation;
+   CUDA_options->time_step              = options->time_step;
+   CUDA_options->duration               = options->duration;
+   CUDA_options->clock_high             = options->clock_high;
+   CUDA_options->clock_low              = options->clock_low;
+   CUDA_options->clock_shift            = options->clock_shift;
+   CUDA_options->clock_amplitude_factor = options->clock_amplitude_factor;
+   CUDA_options->radius_of_effect       = options->radius_of_effect;
+   CUDA_options->epsilonR               = options->epsilonR;
+   CUDA_options->layer_separation       = options->layer_separation;
+   CUDA_options->algorithm              = options->algorithm;
 
-   launch_coherence_vector_simulation (float *h_polarization, float *h_clock, float *h_lambda_x, float *h_lambda_y, float *h_lambda_z, float *h_Ek, int *h_neighbours, int cells_number, int neighbours_number, int iterations, CUDA_coherence_OP *options, CUDA_coherence_optimizations *optimization_options)
+
+   CUDA_optimization_options->clock_prefactor             = optimization_options.clock_prefactor;
+   CUDA_optimization_options->clock_shift                 = optimization_options.clock_shift;
+   CUDA_optimization_options->four_pi_over_number_samples = optimization_options.four_pi_over_number_samples;
+   CUDA_optimization_options->two_pi_over_number_samples  = optimization_options.two_pi_over_number_samples;
+   CUDA_optimization_options->hbar_over_kBT               = optimization_options.hbar_over_kBT;
+
+   // Launch GPU Simulation
+   launch_coherence_vector_simulation (polarization, clock, lambda_x, lambda_y, lambda_z, Ek, neighbours, cells_number, 
+                                       max_neighbours_number, number_samples,CUDA_options, CUDA_optimization_options);
  
   #endif
 

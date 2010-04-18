@@ -88,6 +88,7 @@ typedef struct
   double potential;
   } QCADCellDot;
 
+// Added int CUDA_id for CUDA
 typedef struct
   {
   QCADDesignObject parent_instance ;
@@ -100,6 +101,7 @@ typedef struct
   QCADLabel *label ;
   gboolean bLabelRemoved ;
   char *host_name ;
+  int cuda_id;
   } QCADCell ;
 
 typedef struct
