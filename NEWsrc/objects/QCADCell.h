@@ -111,7 +111,7 @@ typedef struct
   QCADCellOptions default_cell_options ;
 
   /* signals */
-//  void (*cell_function_changed) (GObject *object, gpointer user_data) ; 
+  void (*cell_function_changed) (GObject *object, gpointer user_data) ; 
   } QCADCellClass ;
 
 GType qcad_cell_get_type () ;

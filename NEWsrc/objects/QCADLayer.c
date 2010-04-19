@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////
 // QCADesigner                                          //
-// Copyright 2002 Konrad Walus                          //
+// cCopyright 2002 Konrad Walus                          //
 // All Rights Reserved                                  //
 // Author: Konrad Walus                                 //
 // Email: qcadesigner@gmail.com                         //
@@ -76,7 +76,7 @@ static gboolean unserialize (QCADDesignObject *obj, FILE *pfile) ;
 /*static void serialize (QCADDesignObject *obj, FILE *pfile) ;*/
 //#endif /* def STDIO_FILEIO */
 /*static QCADDesignObject *hit_test (QCADDesignObject *obj, int x, int y) ;*/
-/*static void copy (QCADDesignObject *src, QCADDesignObject *dst) ;*/
+static void copy (QCADDesignObject *src, QCADDesignObject *dst) ;
 
 static void qcad_compound_do_interface_init (gpointer interface, gpointer interface_data) ;
 static void qcad_do_container_interface_init (gpointer interface, gpointer interface_data) ;
@@ -91,8 +91,8 @@ static void qcad_layer_track_new_object (QCADLayer *layer, QCADDesignObject *obj
 /*static void qcad_layer_draw_foreach (QCADDesignObject *obj, gpointer data) ;*/
 //#endif /* def GTK_GUI */
 
-/*static void qcad_layer_compound_do_added (QCADCompoundDO *cdo, QCADDesignObject *obj, gpointer data) ;*/
-/*static void qcad_layer_compound_do_removed (QCADCompoundDO *cdo, QCADDesignObject *obj, gpointer data) ;*/
+static void qcad_layer_compound_do_added (QCADCompoundDO *cdo, QCADDesignObject *obj, gpointer data) ;
+static void qcad_layer_compound_do_removed (QCADCompoundDO *cdo, QCADDesignObject *obj, gpointer data) ;
 /*static void qcad_design_object_selected (QCADDesignObject *obj, gpointer data) ;*/
 static void qcad_design_object_destroyed (gpointer data, GObject *obj) ;
 
@@ -148,7 +148,7 @@ static void qcad_layer_class_init (QCADDesignObjectClass *klass, gpointer data)
 //#endif  def STDIO_FILEIO 
   G_OBJECT_CLASS (klass)->finalize = qcad_layer_instance_finalize ;
 /*  QCAD_DESIGN_OBJECT_CLASS (klass)->hit_test         = hit_test ;*/
-/*  QCAD_DESIGN_OBJECT_CLASS (klass)->copy             = copy ;*/
+  QCAD_DESIGN_OBJECT_CLASS (klass)->copy             = copy ;
   }
 
 static void qcad_compound_do_interface_init (gpointer interface, gpointer interface_data)
@@ -285,8 +285,8 @@ static gboolean qcad_layer_do_container_add (QCADDOContainer *container, QCADDes
   qcad_layer_track_new_object (layer, obj, layer->lstObjs = g_list_prepend (layer->lstObjs, obj), NULL) ;
   if (QCAD_IS_COMPOUND_DO (obj))
     {
-/*    g_signal_connect (G_OBJECT (obj), "added", (GCallback)qcad_layer_compound_do_added, layer) ;*/
-/*    g_signal_connect (G_OBJECT (obj), "removed", (GCallback)qcad_layer_compound_do_removed, layer) ;*/
+    g_signal_connect (G_OBJECT (obj), "added", (GCallback)qcad_layer_compound_do_added, layer) ;
+    g_signal_connect (G_OBJECT (obj), "removed", (GCallback)qcad_layer_compound_do_removed, layer) ;
     for (obj_child = qcad_compound_do_first (QCAD_COMPOUND_DO (obj)) ; ; obj_child = qcad_compound_do_next (QCAD_COMPOUND_DO (obj)))
       {
       if (NULL != obj_child)
@@ -298,23 +298,23 @@ static gboolean qcad_layer_do_container_add (QCADDOContainer *container, QCADDes
   return TRUE ;
   }
 
-/*static void qcad_layer_compound_do_removed (QCADCompoundDO *cdo, QCADDesignObject *obj, gpointer data)*/
-/*  {*/
-/*  OBJECT_TRACK_STRUCT *ots = g_object_get_data (G_OBJECT (obj), "ots") ;*/
+static void qcad_layer_compound_do_removed (QCADCompoundDO *cdo, QCADDesignObject *obj, gpointer data)
+  {
+  OBJECT_TRACK_STRUCT *ots = g_object_get_data (G_OBJECT (obj), "ots") ;
 
-/*  if (NULL == ots) return ;*/
+  if (NULL == ots) return ;
 
-/*  if (NULL != ots->llSel)*/
-/*    if (NULL != ots->layer)*/
-/*      if (NULL != ots->layer->lstSelObjs)*/
-/*        {*/
-/*        ots->layer->lstSelObjs = g_list_delete_link (ots->layer->lstSelObjs, ots->llSel) ;*/
-/*        ots->llSel = NULL ;*/
-/*        }*/
-/*  }*/
+  if (NULL != ots->llSel)
+    if (NULL != ots->layer)
+      if (NULL != ots->layer->lstSelObjs)
+        {
+        ots->layer->lstSelObjs = g_list_delete_link (ots->layer->lstSelObjs, ots->llSel) ;
+        ots->llSel = NULL ;
+        }
+  }
 
-/*static void qcad_layer_compound_do_added (QCADCompoundDO *cdo, QCADDesignObject *obj, gpointer data)*/
-/*  {qcad_layer_track_new_object (QCAD_LAYER (data), obj, NULL, QCAD_DESIGN_OBJECT (cdo)) ;}*/
+static void qcad_layer_compound_do_added (QCADCompoundDO *cdo, QCADDesignObject *obj, gpointer data)
+  {qcad_layer_track_new_object (QCAD_LAYER (data), obj, NULL, QCAD_DESIGN_OBJECT (cdo)) ;}
 
 static void qcad_layer_track_new_object (QCADLayer *layer, QCADDesignObject *obj, GList *llDeSel, QCADDesignObject *parent)
   {
@@ -881,34 +881,34 @@ static gboolean unserialize (QCADDesignObject *obj, FILE *pfile)
 /*  }*/
 //#endif /* def STDIO_FILEIO */
 
-/*static void copy (QCADDesignObject *src, QCADDesignObject *dst)*/
-/*  {*/
-/*  GList *llItr = NULL ;*/
-/*  QCADLayer *srcLayer = NULL, *dstLayer = NULL ;*/
+static void copy (QCADDesignObject *src, QCADDesignObject *dst)
+  {
+  GList *llItr = NULL ;
+  QCADLayer *srcLayer = NULL, *dstLayer = NULL ;
 
-/*  if (NULL == src || NULL == dst) return ;*/
-/*  if (!(QCAD_IS_LAYER (src) && QCAD_IS_LAYER (dst))) return ;*/
-/*  srcLayer = QCAD_LAYER (src) ;*/
-/*  dstLayer = QCAD_LAYER (dst) ;*/
+  if (NULL == src || NULL == dst) return ;
+  if (!(QCAD_IS_LAYER (src) && QCAD_IS_LAYER (dst))) return ;
+  srcLayer = QCAD_LAYER (src) ;
+  dstLayer = QCAD_LAYER (dst) ;
 
-/*  dstLayer->type = srcLayer->type ;*/
+  dstLayer->type = srcLayer->type ;
 /*  dstLayer->status = srcLayer->status ;*/
-/*  dstLayer->pszDescription = (NULL == srcLayer->pszDescription ? NULL : g_strdup (srcLayer->pszDescription)) ;*/
+  dstLayer->pszDescription = (NULL == srcLayer->pszDescription ? NULL : g_strdup (srcLayer->pszDescription)) ;
 
-/*  for (llItr = g_list_last (srcLayer->lstObjs) ; llItr != NULL ; llItr = llItr->prev)*/
-/*    {*/
-/*    if (NULL != llItr->data)*/
-/*      qcad_do_container_add (QCAD_DO_CONTAINER (dstLayer),*/
-/*        qcad_design_object_new_from_object (QCAD_DESIGN_OBJECT (llItr->data))) ;*/
-/*    if (llItr == srcLayer->llContainerIter)*/
-/*      dstLayer->llContainerIter = dstLayer->lstObjs ;*/
-/*    }*/
+  for (llItr = g_list_last (srcLayer->lstObjs) ; llItr != NULL ; llItr = llItr->prev)
+    {
+    if (NULL != llItr->data)
+      qcad_do_container_add (QCAD_DO_CONTAINER (dstLayer),
+        qcad_design_object_new_from_object (QCAD_DESIGN_OBJECT (llItr->data))) ;
+    if (llItr == srcLayer->llContainerIter)
+      dstLayer->llContainerIter = dstLayer->lstObjs ;
+    }
 /*#ifdef GTK_GUI*/
 /*  // SHALLOW COPY of combo item*/
 /*  dstLayer->combo_item = srcLayer->combo_item ;*/
 //#endif /* def GTK_GUI */
-/*  // NOT COPYING THE DEFAULT PROPERTIES HASH TABLE !!!*/
-/*  }*/
+  // NOT COPYING THE DEFAULT PROPERTIES HASH TABLE !!!
+  }
 
 /*static QCADDesignObject *hit_test (QCADDesignObject *obj, int x, int y)*/
 /*  {*/

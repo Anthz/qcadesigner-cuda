@@ -56,7 +56,7 @@ static void qcad_substrate_instance_finalize (GObject *object) ;
 static void qcad_substrate_set_property (GObject *object, guint property_id, const GValue *value, GParamSpec *pspec) ;
 static void qcad_substrate_get_property (GObject *object, guint property_id, GValue *value, GParamSpec *pspec) ;
 
-/*static void copy (QCADDesignObject *src, QCADDesignObject *dst) ;*/
+static void copy (QCADDesignObject *src, QCADDesignObject *dst) ;
 /*#ifdef GTK_GUI*/
 /*static void draw (QCADDesignObject *obj, GdkDrawable *dst, GdkFunction rop) ;*/
 /*#ifdef UNDO_REDO*/
@@ -123,7 +123,7 @@ static void qcad_substrate_class_init (QCADStretchyObjectClass *klass, gpointer 
 /*  QCAD_DESIGN_OBJECT_CLASS (klass)->serialize = serialize ;*/
   QCAD_DESIGN_OBJECT_CLASS (klass)->unserialize = unserialize ;
 //#endif /* def STDIO_FILEIO */
-/*  QCAD_DESIGN_OBJECT_CLASS (klass)->copy = copy ;*/
+  QCAD_DESIGN_OBJECT_CLASS (klass)->copy = copy ;
 
   g_object_class_install_property (G_OBJECT_CLASS (klass), QCAD_SUBSTRATE_PROPERTY_SPACING,
     g_param_spec_double ("spacing", "Grid Spacing", "Grid Spacing [nm]",
@@ -199,13 +199,13 @@ void qcad_substrate_snap_point (QCADSubstrate *subs, double *px, double *py)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-/*static void copy (QCADDesignObject *src, QCADDesignObject *dst)*/
-/*  {*/
+static void copy (QCADDesignObject *src, QCADDesignObject *dst)
+  {
 /*  DBG_OO_CP (fprintf (stderr, "QCADSubstrate::copy:Entering\n")) ;*/
-/*  QCAD_DESIGN_OBJECT_CLASS (g_type_class_peek (g_type_parent (QCAD_TYPE_SUBSTRATE)))->copy (src, dst) ;*/
-/*  QCAD_SUBSTRATE (dst)->grid_spacing = QCAD_SUBSTRATE (src)->grid_spacing ;*/
+  QCAD_DESIGN_OBJECT_CLASS (g_type_class_peek (g_type_parent (QCAD_TYPE_SUBSTRATE)))->copy (src, dst) ;
+  QCAD_SUBSTRATE (dst)->grid_spacing = QCAD_SUBSTRATE (src)->grid_spacing ;
 /*  DBG_OO_CP (fprintf (stderr, "QCADSubstrate::copy:Leaving\n")) ;*/
-/*  }*/
+  }
 
 /*static char *PostScript_instance (QCADDesignObject *obj, gboolean bColour)*/
 /*  {*/

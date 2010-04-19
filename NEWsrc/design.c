@@ -70,9 +70,9 @@ static gboolean design_bus_layout_bus_data_unserialize (EXP_ARRAY *cell_indices,
 /*#ifdef DBG_WEAK_REFS*/
 /*static void design_selection_object_array_member_destroyed (gpointer data, gpointer ex_obj) ;*/
 //#endif /* def DBG_WEAK_REFS */
-/*static void qcad_layer_design_object_added (QCADLayer *layer, QCADDesignObject *obj, gpointer data) ;*/
-/*static void qcad_layer_design_object_removed (QCADLayer *layer, QCADDesignObject *obj, gpointer data) ;*/
-/*static void cell_function_changed (QCADCell *cell, DESIGN *design) ;*/
+static void qcad_layer_design_object_added (QCADLayer *layer, QCADDesignObject *obj, gpointer data) ;
+static void qcad_layer_design_object_removed (QCADLayer *layer, QCADDesignObject *obj, gpointer data) ;
+static void cell_function_changed (QCADCell *cell, DESIGN *design) ;
 static void design_bus_layout_next_unassigned_cell (BUS_LAYOUT_ITER *bus_layout_iter) ;
 
 /*#ifdef GTK_GUI*/
@@ -140,16 +140,16 @@ DESIGN *design_copy (DESIGN *design)
     new_design->lstLayers = g_list_prepend (new_design->lstLayers,
       new_layer = QCAD_LAYER (qcad_design_object_new_from_object (QCAD_DESIGN_OBJECT (llItr->data)))) ;
 
-/*    g_signal_connect (G_OBJECT (new_layer), "added",   (GCallback)qcad_layer_design_object_added,   new_design) ;*/
-/*    g_signal_connect (G_OBJECT (new_layer), "removed", (GCallback)qcad_layer_design_object_removed, new_design) ;*/
+    g_signal_connect (G_OBJECT (new_layer), "added",   (GCallback)qcad_layer_design_object_added,   new_design) ;
+    g_signal_connect (G_OBJECT (new_layer), "removed", (GCallback)qcad_layer_design_object_removed, new_design) ;
 
     // Artificially call the "added" callback for the new layer
-/*    for (llItrObj = new_layer->lstObjs ; llItrObj != NULL ; llItrObj = llItrObj->next)*/
-/*      {*/
-/*      if (QCAD_IS_CELL (llItrObj->data))*/
-/*        g_signal_connect (G_OBJECT (llItrObj->data), "cell-function-changed", (GCallback)cell_function_changed, new_design) ;*/
-/*      qcad_layer_design_object_added (new_layer, QCAD_DESIGN_OBJECT (llItrObj->data), new_design) ;*/
-/*      }*/
+    for (llItrObj = new_layer->lstObjs ; llItrObj != NULL ; llItrObj = llItrObj->next)
+      {
+      if (QCAD_IS_CELL (llItrObj->data))
+        g_signal_connect (G_OBJECT (llItrObj->data), "cell-function-changed", (GCallback)cell_function_changed, new_design) ;
+      qcad_layer_design_object_added (new_layer, QCAD_DESIGN_OBJECT (llItrObj->data), new_design) ;
+      }
 
     if (NULL == new_design->lstLastLayer)
       new_design->lstLastLayer = new_design->lstLayers ;
@@ -200,14 +200,14 @@ void design_layer_add (DESIGN *design, QCADLayer *layer)
   GList *llItr = NULL ;
 
   design->lstLayers = g_list_prepend (design->lstLayers, layer) ;
-/*  g_signal_connect (G_OBJECT (layer), "added", (GCallback)qcad_layer_design_object_added, design) ;*/
-/*  g_signal_connect (G_OBJECT (layer), "removed", (GCallback)qcad_layer_design_object_removed, design) ;*/
+  g_signal_connect (G_OBJECT (layer), "added", (GCallback)qcad_layer_design_object_added, design) ;
+  g_signal_connect (G_OBJECT (layer), "removed", (GCallback)qcad_layer_design_object_removed, design) ;
 
   // If, upon adding a new layer, said layer already contains objects, then run the "added" callback for
   // each object
-/*  for (llItr = layer->lstObjs ; llItr != NULL ; llItr = llItr->next)*/
-/*    if (NULL != llItr->data)*/
-/*      qcad_layer_design_object_added (layer, llItr->data, design) ;*/
+  for (llItr = layer->lstObjs ; llItr != NULL ; llItr = llItr->next)
+    if (NULL != llItr->data)
+      qcad_layer_design_object_added (layer, llItr->data, design) ;
   }
 
 // Removes the layer and returns the new current layer
@@ -840,15 +840,15 @@ gboolean design_unserialize (DESIGN **pdesign, FILE *pfile)
 /*      set_progress_bar_fraction (get_file_percent (pfile)) ;*/
       if (NULL != (layer = QCAD_LAYER (qcad_design_object_new_from_stream (pfile))))
         {
-/*        g_signal_connect (G_OBJECT (layer), "added",   (GCallback)qcad_layer_design_object_added,   (*pdesign)) ;*/
-/*        g_signal_connect (G_OBJECT (layer), "removed", (GCallback)qcad_layer_design_object_removed, (*pdesign)) ;*/
+        g_signal_connect (G_OBJECT (layer), "added",   (GCallback)qcad_layer_design_object_added,   (*pdesign)) ;
+        g_signal_connect (G_OBJECT (layer), "removed", (GCallback)qcad_layer_design_object_removed, (*pdesign)) ;
         (*pdesign)->lstLayers = g_list_prepend ((*pdesign)->lstLayers, layer) ;
         if (NULL == (*pdesign)->lstLastLayer)
           (*pdesign)->lstLastLayer = (*pdesign)->lstLayers ;
-/*        if (LAYER_TYPE_CELLS == layer->type)*/
-/*          for (llItr = layer->lstObjs ; llItr != NULL ; llItr = llItr->next)*/
-/*            if (QCAD_IS_CELL (llItr->data))*/
-/*              g_signal_connect (G_OBJECT (llItr->data), "cell-function-changed", (GCallback)cell_function_changed, (*pdesign)) ;*/
+        if (LAYER_TYPE_CELLS == layer->type)
+          for (llItr = layer->lstObjs ; llItr != NULL ; llItr = llItr->next)
+            if (QCAD_IS_CELL (llItr->data))
+              g_signal_connect (G_OBJECT (llItr->data), "cell-function-changed", (GCallback)cell_function_changed, (*pdesign)) ;
         }
 /*	printf("----------->QCADLayer read\n"); //DBG*/
       }
@@ -1409,60 +1409,60 @@ static void design_bus_layout_remove_cell (DESIGN *design, QCADCell *cell, QCADC
 /*      	  g_signal_connect (G_OBJECT (llItrCells->data), "cell-function-changed", (GCallback)cell_function_changed, design) ;*/
 /*  }*/
 
-/*static void qcad_layer_design_object_added (QCADLayer *layer, QCADDesignObject *obj, gpointer data)*/
-/*  {*/
-/*  DESIGN *design = (DESIGN *)data ;*/
+static void qcad_layer_design_object_added (QCADLayer *layer, QCADDesignObject *obj, gpointer data)
+  {
+  DESIGN *design = (DESIGN *)data ;
 
-/*  if (QCAD_IS_CELL (obj))*/
-/*    {*/
-/*    g_signal_handlers_disconnect_matched (G_OBJECT (obj), G_SIGNAL_MATCH_FUNC, 0, 0, NULL, cell_function_changed, NULL) ;*/
-/*    g_signal_connect (G_OBJECT (obj), "cell-function-changed", (GCallback)cell_function_changed, design) ;*/
-/*    cell_function_changed (QCAD_CELL (obj), design) ;*/
-/*    }*/
-/*  }*/
+  if (QCAD_IS_CELL (obj))
+    {
+    g_signal_handlers_disconnect_matched (G_OBJECT (obj), G_SIGNAL_MATCH_FUNC, 0, 0, NULL, cell_function_changed, NULL) ;
+    g_signal_connect (G_OBJECT (obj), "cell-function-changed", (GCallback)cell_function_changed, design) ;
+    cell_function_changed (QCAD_CELL (obj), design) ;
+    }
+  }
 
-/*static void qcad_layer_design_object_removed (QCADLayer *layer, QCADDesignObject *obj, gpointer data)*/
-/*  {*/
-/*  DESIGN *design = (DESIGN *)data ;*/
+static void qcad_layer_design_object_removed (QCADLayer *layer, QCADDesignObject *obj, gpointer data)
+  {
+  DESIGN *design = (DESIGN *)data ;
 
-/*  if (QCAD_IS_CELL (obj))*/
-/*    if (QCAD_CELL_INPUT == QCAD_CELL (obj)->cell_function || QCAD_CELL_OUTPUT == QCAD_CELL (obj)->cell_function)*/
-/*      design_rebuild_io_lists (design) ;*/
-/*  }*/
+  if (QCAD_IS_CELL (obj))
+    if (QCAD_CELL_INPUT == QCAD_CELL (obj)->cell_function || QCAD_CELL_OUTPUT == QCAD_CELL (obj)->cell_function)
+      design_rebuild_io_lists (design) ;
+  }
 
-/*static void cell_function_changed (QCADCell *cell, DESIGN *design)*/
-/*  {*/
-/*  int Nix ;*/
+static void cell_function_changed (QCADCell *cell, DESIGN *design)
+  {
+  int Nix ;
 
-/*  if (QCAD_CELL_NORMAL == cell->cell_function)*/
-/*    {*/
-/*    for (Nix = 0 ; Nix < design->bus_layout->inputs->icUsed ; Nix++)*/
-/*      if (exp_array_index_1d (design->bus_layout->inputs, BUS_LAYOUT_CELL, Nix).cell == cell)*/
-/*        {*/
-/*        design_bus_layout_remove_cell (design, cell, QCAD_CELL_INPUT) ;*/
-/*        return ;*/
-/*        }*/
+  if (QCAD_CELL_NORMAL == cell->cell_function)
+    {
+    for (Nix = 0 ; Nix < design->bus_layout->inputs->icUsed ; Nix++)
+      if (exp_array_index_1d (design->bus_layout->inputs, BUS_LAYOUT_CELL, Nix).cell == cell)
+        {
+        design_bus_layout_remove_cell (design, cell, QCAD_CELL_INPUT) ;
+        return ;
+        }
 
-/*    for (Nix = 0 ; Nix < design->bus_layout->outputs->icUsed ; Nix++)*/
-/*      if (exp_array_index_1d (design->bus_layout->outputs, BUS_LAYOUT_CELL, Nix).cell == cell)*/
-/*        {*/
-/*        design_bus_layout_remove_cell (design, cell, QCAD_CELL_OUTPUT) ;*/
-/*        return ;*/
-/*        }*/
-/*    }*/
-/*  else*/
-/*  if (QCAD_CELL_INPUT == cell->cell_function || QCAD_CELL_OUTPUT == cell->cell_function)*/
-/*    {*/
-/*    EXP_ARRAY *io_list = (QCAD_CELL_INPUT == cell->cell_function) ?*/
-/*      	design->bus_layout->inputs :*/
-/*      	design->bus_layout->outputs ;*/
+    for (Nix = 0 ; Nix < design->bus_layout->outputs->icUsed ; Nix++)
+      if (exp_array_index_1d (design->bus_layout->outputs, BUS_LAYOUT_CELL, Nix).cell == cell)
+        {
+        design_bus_layout_remove_cell (design, cell, QCAD_CELL_OUTPUT) ;
+        return ;
+        }
+    }
+  else
+  if (QCAD_CELL_INPUT == cell->cell_function || QCAD_CELL_OUTPUT == cell->cell_function)
+    {
+    EXP_ARRAY *io_list = (QCAD_CELL_INPUT == cell->cell_function) ?
+      	design->bus_layout->inputs :
+      	design->bus_layout->outputs ;
 
-/*    for (Nix = 0 ; Nix < io_list->icUsed ; Nix++)*/
-/*      if (exp_array_index_1d (io_list, BUS_LAYOUT_CELL, Nix).cell == cell)*/
-/*        return ;*/
-/*    }*/
-/*  design_rebuild_io_lists (design) ;*/
-/*  }*/
+    for (Nix = 0 ; Nix < io_list->icUsed ; Nix++)
+      if (exp_array_index_1d (io_list, BUS_LAYOUT_CELL, Nix).cell == cell)
+        return ;
+    }
+  design_rebuild_io_lists (design) ;
+  }
 
 static void design_rebuild_io_lists (DESIGN *design)
   {

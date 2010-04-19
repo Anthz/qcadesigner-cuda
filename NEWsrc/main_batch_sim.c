@@ -138,11 +138,22 @@ int main (int argc, char **argv)
   for (Nix = 0 ; Nix < icSuccesses->icUsed ; Nix++)
     exp_array_index_1d (icSuccesses, int, Nix) = 0 ;
 
+
   for (Nix = 0 ; Nix < number_of_sims ; Nix++)
     {
     fprintf (stderr, "Running simulation %d\n", Nix) ;
     if (NULL != (working_design = design_copy (design)))
       {
+
+/*DeBuG		GList *llItr = NULL, *llItrObj = NULL ;*/
+/*	  	QCADLayer *layer = NULL ;*/
+/*		for (llItr = design->lstLayers ; llItr != NULL ; llItr = llItr->next)*/
+/*		    if (LAYER_TYPE_CELLS == (layer = QCAD_LAYER (llItr->data))->type)*/
+/*		      for (llItrObj = layer->lstObjs ; llItrObj != NULL ; llItrObj = llItrObj->next)*/
+/*			if (NULL != llItrObj->data)*/
+/*				printf("the ass");*/
+/*		getchar();*/
+
       randomize_design_cells (rnd, working_design, 0.0, dTolerance) ;
 
       if (NULL != (sim_data = run_simulation (sim_engine, EXHAUSTIVE_VERIFICATION, working_design, NULL)))

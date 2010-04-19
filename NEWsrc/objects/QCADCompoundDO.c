@@ -37,14 +37,14 @@ static void qcad_compound_do_added   (QCADCompoundDO *container, QCADDesignObjec
 static void qcad_compound_do_removed (QCADCompoundDO *container, QCADDesignObject *obj, gpointer data) ;
 static void qcad_compound_do_class_base_init (gpointer klass) ;
 
-/*enum*/
-/*  {*/
-/*  QCAD_COMPOUND_DO_ADDED_SIGNAL,*/
-/*  QCAD_COMPOUND_DO_REMOVED_SIGNAL,*/
-/*  QCAD_COMPOUND_DO_LAST_SIGNAL*/
-/*  } ;*/
+enum
+  {
+  QCAD_COMPOUND_DO_ADDED_SIGNAL,
+  QCAD_COMPOUND_DO_REMOVED_SIGNAL,
+  QCAD_COMPOUND_DO_LAST_SIGNAL
+  } ;
 
-/*static guint qcad_compound_do_signals[QCAD_COMPOUND_DO_LAST_SIGNAL] = {0} ;*/
+static guint qcad_compound_do_signals[QCAD_COMPOUND_DO_LAST_SIGNAL] = {0} ;
 
 GType qcad_compound_do_get_type ()
   {
@@ -80,15 +80,15 @@ static void qcad_compound_do_class_base_init (gpointer klass)
     ((QCADCompoundDOClass *)klass)->added = qcad_compound_do_added ;
     ((QCADCompoundDOClass *)klass)->removed = qcad_compound_do_removed ;
 
-/*    qcad_compound_do_signals[QCAD_COMPOUND_DO_ADDED_SIGNAL] =*/
-/*      g_signal_new ("added", G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_FIRST,*/
-/*        G_STRUCT_OFFSET (QCADCompoundDOClass, added), NULL, NULL, g_cclosure_marshal_VOID__OBJECT,*/
-/*          G_TYPE_NONE, 1, G_TYPE_OBJECT) ;*/
+    qcad_compound_do_signals[QCAD_COMPOUND_DO_ADDED_SIGNAL] =
+      g_signal_new ("added", G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_FIRST,
+        G_STRUCT_OFFSET (QCADCompoundDOClass, added), NULL, NULL, g_cclosure_marshal_VOID__OBJECT,
+          G_TYPE_NONE, 1, G_TYPE_OBJECT) ;
 
-/*    qcad_compound_do_signals[QCAD_COMPOUND_DO_REMOVED_SIGNAL] =*/
-/*      g_signal_new ("removed", G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_FIRST,*/
-/*        G_STRUCT_OFFSET (QCADCompoundDOClass, removed), NULL, NULL, g_cclosure_marshal_VOID__OBJECT,*/
-/*          G_TYPE_NONE, 1, G_TYPE_OBJECT) ;*/
+    qcad_compound_do_signals[QCAD_COMPOUND_DO_REMOVED_SIGNAL] =
+      g_signal_new ("removed", G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_FIRST,
+        G_STRUCT_OFFSET (QCADCompoundDOClass, removed), NULL, NULL, g_cclosure_marshal_VOID__OBJECT,
+          G_TYPE_NONE, 1, G_TYPE_OBJECT) ;
 
     bFirstCall = FALSE ;
     }
