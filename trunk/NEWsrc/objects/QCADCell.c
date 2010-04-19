@@ -99,7 +99,7 @@ static void qcad_cell_get_property (GObject *object, guint property_id, GValue *
 /*static gboolean button_pressed (GtkWidget *widget, GdkEventButton *event, gpointer data) ;*/
 //#endif /* def GTK_GUI */
 
-/*static void copy (QCADDesignObject *src, QCADDesignObject *dst) ;*/
+static void copy (QCADDesignObject *src, QCADDesignObject *dst) ;
 /*#ifdef GTK_GUI*/
 /*static void draw (QCADDesignObject *obj, GdkDrawable *dst, GdkFunction rop) ;*/
 /*#ifdef UNDO_REDO*/
@@ -155,11 +155,11 @@ static void default_properties_destroy (struct QCADDesignObjectClass *klass, voi
 /*  {0, 0xFFFF, 0xFFFF, 0xFFFF},*/
 /*  } ;*/
 
-/*enum*/
-/*  {*/
-/*  QCAD_CELL_CELL_FUNCTION_CHANGED_SIGNAL,*/
-/*  QCAD_CELL_LAST_SIGNAL*/
-/*  } ;*/
+enum
+  {
+  QCAD_CELL_CELL_FUNCTION_CHANGED_SIGNAL,
+  QCAD_CELL_LAST_SIGNAL
+  } ;
 
 enum
   {
@@ -170,7 +170,7 @@ enum
   QCAD_CELL_PROPERTY_POLARIZATION
   } ;
 
-/*static guint qcad_cell_signals[QCAD_CELL_LAST_SIGNAL] = {0} ;*/
+static guint qcad_cell_signals[QCAD_CELL_LAST_SIGNAL] = {0} ;
 
 GType qcad_cell_get_type ()
   {
@@ -313,7 +313,7 @@ static void qcad_cell_class_init (GObjectClass *klass, gpointer data)
 /*  QCAD_DESIGN_OBJECT_CLASS (klass)->serialize                  = serialize ;*/
   QCAD_DESIGN_OBJECT_CLASS (klass)->unserialize                = unserialize ;
 /*#endif /* def STDIO_FILEIO */
-/*  QCAD_DESIGN_OBJECT_CLASS (klass)->copy                       = copy ;*/
+  QCAD_DESIGN_OBJECT_CLASS (klass)->copy                       = copy ;
 /*  QCAD_DESIGN_OBJECT_CLASS (klass)->move                       = move ;*/
 /*  QCAD_DESIGN_OBJECT_CLASS (klass)->transform                  = transform ;*/
   QCAD_DESIGN_OBJECT_CLASS (klass)->default_properties_get     = default_properties_get ;
@@ -347,10 +347,10 @@ static void qcad_cell_class_init (GObjectClass *klass, gpointer data)
     g_param_spec_double ("polarization", "Polarization", "Cell Polarization",
       -1.0, 1.0, 0.0, G_PARAM_READABLE | G_PARAM_WRITABLE)) ;
 
-/*  qcad_cell_signals[QCAD_CELL_CELL_FUNCTION_CHANGED_SIGNAL] =*/
-/*    g_signal_new ("cell-function-changed", G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_FIRST,*/
-/*      G_STRUCT_OFFSET (QCADCellClass, cell_function_changed), NULL, NULL, g_cclosure_marshal_VOID__VOID,*/
-/*      G_TYPE_NONE, 0) ;*/
+  qcad_cell_signals[QCAD_CELL_CELL_FUNCTION_CHANGED_SIGNAL] =
+    g_signal_new ("cell-function-changed", G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_FIRST,
+      G_STRUCT_OFFSET (QCADCellClass, cell_function_changed), NULL, NULL, g_cclosure_marshal_VOID__VOID,
+      G_TYPE_NONE, 0) ;
 
 /*  DBG_OO (fprintf (stderr, "QCADCell::class_init:Leaving\n")) ;*/
   }
@@ -642,51 +642,51 @@ static QCADDesignObject *qcad_cell_compound_do_next (QCADCompoundDO *cdo)
 static gboolean qcad_cell_compound_do_last (QCADCompoundDO *cdo)
   {return TRUE ;}
 
-/*static void copy (QCADDesignObject *src, QCADDesignObject *dst)*/
-/*  {*/
-/*  int Nix = -1 ;*/
-/*  QCADCell *cellSrc = QCAD_CELL (src), *cellDst = QCAD_CELL (dst) ;*/
+static void copy (QCADDesignObject *src, QCADDesignObject *dst)
+  {
+  int Nix = -1 ;
+  QCADCell *cellSrc = QCAD_CELL (src), *cellDst = QCAD_CELL (dst) ;
 
-/*  QCAD_DESIGN_OBJECT_CLASS (g_type_class_peek (g_type_parent (QCAD_TYPE_CELL)))->copy (src, dst) ;*/
+  QCAD_DESIGN_OBJECT_CLASS (g_type_class_peek (g_type_parent (QCAD_TYPE_CELL)))->copy (src, dst) ;
 
-/*  cellDst->cell_options.cxCell       = cellSrc->cell_options.cxCell ;*/
-/*  cellDst->cell_options.clock        = cellSrc->cell_options.clock ;*/
-/*  cellDst->cell_options.cyCell       = cellSrc->cell_options.cyCell ;*/
-/*  cellDst->cell_options.dot_diameter = cellSrc->cell_options.dot_diameter ;*/
+  cellDst->cell_options.cxCell       = cellSrc->cell_options.cxCell ;
+  cellDst->cell_options.clock        = cellSrc->cell_options.clock ;
+  cellDst->cell_options.cyCell       = cellSrc->cell_options.cyCell ;
+  cellDst->cell_options.dot_diameter = cellSrc->cell_options.dot_diameter ;
 /*  cellDst->cell_options.mode         = cellSrc->cell_options.mode ;*/
-/*  cellDst->cell_function             = cellSrc->cell_function ;*/
-/*  cellDst->bLabelRemoved             = FALSE ;*/
-/*  // CAREFUL ! This is a shallow copy of the cell model*/
-/*  cellDst->cell_model                = cellSrc->cell_model ;*/
-/*  if (NULL != cellSrc->label)*/
-/*    {*/
-/*    cellDst->label = QCAD_LABEL (qcad_design_object_new_from_object (QCAD_DESIGN_OBJECT (cellSrc->label))) ;*/
-/*    g_object_add_weak_pointer (G_OBJECT (cellDst->label), (gpointer *)&(cellDst->label)) ;*/
-/*    }*/
-/*  else*/
-/*    cellDst->label = NULL ;*/
+  cellDst->cell_function             = cellSrc->cell_function ;
+  cellDst->bLabelRemoved             = FALSE ;
+  // CAREFUL ! This is a shallow copy of the cell model
+  cellDst->cell_model                = cellSrc->cell_model ;
+  if (NULL != cellSrc->label)
+    {
+    cellDst->label = QCAD_LABEL (qcad_design_object_new_from_object (QCAD_DESIGN_OBJECT (cellSrc->label))) ;
+    g_object_add_weak_pointer (G_OBJECT (cellDst->label), (gpointer *)&(cellDst->label)) ;
+    }
+  else
+    cellDst->label = NULL ;
 
-/*  if (NULL != cellDst->cell_dots)*/
-/*    free (cellDst->cell_dots) ;*/
-/*  cellDst->cell_dots = NULL ;*/
-/*  cellDst->number_of_dots = 0 ;*/
+  if (NULL != cellDst->cell_dots)
+    free (cellDst->cell_dots) ;
+  cellDst->cell_dots = NULL ;
+  cellDst->number_of_dots = 0 ;
 
-/*  if (cellSrc->number_of_dots > 0)*/
-/*    {*/
-/*    cellDst->cell_dots = malloc (cellSrc->number_of_dots * sizeof (QCADCellDot)) ;*/
-/*    cellDst->number_of_dots = cellSrc->number_of_dots ;*/
+  if (cellSrc->number_of_dots > 0)
+    {
+    cellDst->cell_dots = malloc (cellSrc->number_of_dots * sizeof (QCADCellDot)) ;
+    cellDst->number_of_dots = cellSrc->number_of_dots ;
 
-/*    for (Nix = 0 ; Nix < cellDst->number_of_dots ; Nix++)*/
-/*      {*/
-/*      cellDst->cell_dots[Nix].x         = cellSrc->cell_dots[Nix].x ;*/
-/*      cellDst->cell_dots[Nix].y         = cellSrc->cell_dots[Nix].y ;*/
-/*      cellDst->cell_dots[Nix].diameter  = cellSrc->cell_dots[Nix].diameter ;*/
-/*      cellDst->cell_dots[Nix].charge    = cellSrc->cell_dots[Nix].charge ;*/
-/*      cellDst->cell_dots[Nix].spin      = cellSrc->cell_dots[Nix].spin ;*/
-/*      cellDst->cell_dots[Nix].potential = cellSrc->cell_dots[Nix].potential ;*/
-/*      }*/
-/*    }*/
-/*  }*/
+    for (Nix = 0 ; Nix < cellDst->number_of_dots ; Nix++)
+      {
+      cellDst->cell_dots[Nix].x         = cellSrc->cell_dots[Nix].x ;
+      cellDst->cell_dots[Nix].y         = cellSrc->cell_dots[Nix].y ;
+      cellDst->cell_dots[Nix].diameter  = cellSrc->cell_dots[Nix].diameter ;
+      cellDst->cell_dots[Nix].charge    = cellSrc->cell_dots[Nix].charge ;
+      cellDst->cell_dots[Nix].spin      = cellSrc->cell_dots[Nix].spin ;
+      cellDst->cell_dots[Nix].potential = cellSrc->cell_dots[Nix].potential ;
+      }
+    }
+  }
 
 static GList *add_unique_types (QCADDesignObject *obj, GList *lst)
   {
@@ -1077,6 +1077,7 @@ static gboolean unserialize (QCADDesignObject *obj, FILE *fp)
       if (!strncmp (pszLine, "[TYPE:", 6))
         {
         tokenize_line_type (pszLine, strlen (pszLine), &pszValue, ':') ;
+	
 
         if (!strcmp (pszValue, QCAD_TYPE_STRING_DESIGN_OBJECT))
           {
@@ -1657,8 +1658,8 @@ void qcad_cell_set_function (QCADCell *cell, QCADCellFunction function)
 /*  if (NULL != cell->label)*/
 /*    qcad_design_object_set_selected (QCAD_DESIGN_OBJECT (cell->label), QCAD_DESIGN_OBJECT (cell)->bSelected) ;*/
 
-/*  if (old_function != function)*/
-/*    g_signal_emit (cell, qcad_cell_signals[QCAD_CELL_CELL_FUNCTION_CHANGED_SIGNAL], 0) ;*/
+  if (old_function != function)
+    g_signal_emit (cell, qcad_cell_signals[QCAD_CELL_CELL_FUNCTION_CHANGED_SIGNAL], 0) ;
   }
 
 /*void qcad_cell_scale (QCADCell *cell, double dScale, double dxOrigin, double dyOrigin)*/
@@ -1713,7 +1714,7 @@ void qcad_cell_set_label (QCADCell *cell, char *pszLabel)
   if (0 == pszLabel[0])
     if (NULL != cell->label)
       {
-/*      g_signal_emit_by_name (G_OBJECT (cell), "removed", cell->label) ;*/
+      g_signal_emit_by_name (G_OBJECT (cell), "removed", cell->label) ;
       g_object_unref (cell->label) ;
       cell->bLabelRemoved = TRUE ;
       return ;
@@ -1723,7 +1724,7 @@ void qcad_cell_set_label (QCADCell *cell, char *pszLabel)
     {
     cell->label = QCAD_LABEL (g_object_new (QCAD_TYPE_LABEL, NULL)) ;
     g_object_add_weak_pointer (G_OBJECT (cell->label), (gpointer *)&(cell->label)) ;
-/*    g_signal_emit_by_name (G_OBJECT (cell), "added", cell->label) ;*/
+    g_signal_emit_by_name (G_OBJECT (cell), "added", cell->label) ;
     cell->bLabelRemoved = FALSE ;
     }
 

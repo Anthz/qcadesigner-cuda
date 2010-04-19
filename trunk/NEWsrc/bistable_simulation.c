@@ -111,7 +111,9 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 
   // Create per-layer cell arrays to be used by the engine
   simulation_inproc_data_new (design, &number_of_cell_layers, &number_of_cells_in_layer, &sorted_cells) ;
-  printf("1.1number of cell x layers: %d\n", number_of_cells_in_layer[0]);
+
+ printf("1.1number of cell x layers: %d\n", number_of_cells_in_layer[0]);
+
   for(i = 0; i < number_of_cell_layers; i++)
     {
 /*#ifdef REDUCE_DEREF*/
