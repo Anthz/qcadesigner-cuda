@@ -11,10 +11,13 @@ extern void sorted_cells_to_CUDA_Structures(QCADCell ***sorted_cells, float **h_
  //init neighbours_number
  for( iLayer = 0; iLayer < number_of_cell_layers; iLayer++){
     for (iCell = 0; iCell < number_of_cells_in_layer[iLayer];iCell++){
-      if(neighbours_number < ((bistable_model *)sorted_cells[iLayer][iCell]->cell_model)->number_of_neighbours)
+      if(neighbours_number < ((bistable_model *)sorted_cells[iLayer][iCell]->cell_model)->number_of_neighbours){
+	printf("cella %d,%d, vicini %d\n",iLayer,iCell,((bistable_model *)sorted_cells[iLayer][iCell]->cell_model)->number_of_neighbours);
 	neighbours_number = ((bistable_model *)sorted_cells[iLayer][iCell]->cell_model)->number_of_neighbours;
+      }
     }
- } 
+ }
+
  
  *h_polarization = (float*) malloc(cells_number*sizeof(float));
  *h_clock = (float*) malloc(cells_number*sizeof(float));
