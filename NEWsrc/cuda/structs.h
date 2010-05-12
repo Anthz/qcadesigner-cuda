@@ -1,3 +1,6 @@
+#ifndef _STRUCTS_H_
+#define _STRUCTS_H_
+
 // MODIFIED coherence_OP struct (from coherence_vector.h)
 typedef struct
 {
@@ -25,3 +28,4 @@ typedef struct
    float hbar_over_kBT;
 } CUDA_coherence_optimizations;
 
+#endif /* _STRUCTS_H_ */

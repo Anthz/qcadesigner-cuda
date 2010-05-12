@@ -1,5 +1,5 @@
-#include "objects/QCADCell.h"
-#include "bistable_simulation.h"
+#include "../objects/QCADCell.h"
+#include "../bistable_simulation.h"
 #include <stdlib.h>
 
  int *tmp;
