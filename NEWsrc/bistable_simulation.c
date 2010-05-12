@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include "cuda/test_conversion.h"
+#include "cuda/conversion.h"
 
 /*#ifdef GTK_GUI*/
 /*  #include "callback_helpers.h"*/
@@ -207,12 +207,15 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   // -- refresh all the kink energies to all the cells neighbours within the radius of effect -- //
   bistable_refresh_all_Ek (number_of_cell_layers, number_of_cells_in_layer, sorted_cells, options);
 
-  
-  // CUDA: entry point for cuda simulation
-  //controllare number of cell in layer[]
-  test_conversion(sorted_cells, number_of_cell_layers, number_of_cells_in_layer);
-  
+#ifdef CUDA  
+  // initialize pointer to structures
+  float *h_polarization, *h_clock, **h_Ek;
+  int **h_neighbours;
+  //find cells number
+  //
+  sorted_cells_to_CUDA_Structures(sorted_cells,&h_polarization,&h_clock,&h_Ek,&h_neighbours, number_of_cell_layers, number_of_cells_in_layer);
 
+#else  
   // randomize the cells in the design so as to minimize any numerical problems associated //
   // with having cells simulated in some predefined order. //
   // randomize the order in which the cells are simulated //
@@ -229,7 +232,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
       sorted_cells[Nix][idxCell1] = sorted_cells[Nix][idxCell2] ;
       sorted_cells[Nix][idxCell2] = swap ;
       }
-
+#endif
   // -- get and print the total initialization time -- //
   if((end_time = time (NULL)) < 0)
      fprintf(stderr, "Could not get end time\n");
@@ -241,7 +244,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 /*  set_progress_bar_fraction (0.0) ;*/
 
   // perform the iterations over all samples //
-#ifndef CUDA	
+#ifndef CUDA //skip the normal simulation procedure	
 /*#ifdef REDUCE_DEREF*/
 /*  // Dereference some structures now so we don't do it over and over in the loop*/
 /*  sim_data_number_samples = sim_data->number_samples ;*/
@@ -400,12 +403,12 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
     if(TRUE == STOP_SIMULATION)
       j = sim_data_number_samples ;
     }//for number of samples
-#else
+#else //defined CUDA
 /* insert code here to use CUDA
 if we want to modify only this piece of code we need to find postcondition and ensure them. maybe it would be simpler to modify the entire function.
 another ifndef branch can be declared earlier to avoid some unused initializations. 
 */
-#endif
+#endif //defined CUDA
 
   // Free the neigbours and Ek array introduced by this simulation//
   for (k = 0; k < number_of_cell_layers; k++)
