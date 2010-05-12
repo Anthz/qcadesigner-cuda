@@ -1,6 +1,6 @@
-#include "bistable_simulation.h"
+#include "../bistable_simulation.h"
 #include "conversion.h"
-#include "objects/QCADCell.h"
+#include "../objects/QCADCell.h"
 
 
 //common variables

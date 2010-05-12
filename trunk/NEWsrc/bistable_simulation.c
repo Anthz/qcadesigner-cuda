@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include "test_conversion.h"
+#include "cuda/test_conversion.h"
 
 /*#ifdef GTK_GUI*/
 /*  #include "callback_helpers.h"*/
@@ -39,7 +39,7 @@
   #define _(s) s
 //#endif /* def GTK_GUI */
 #include "objects/QCADCell.h"
-#include "simulation.h"
+#include "cuda/simulation.h"
 #include "bistable_simulation.h"
 /*#include "custom_widgets.h"*/
 #include "global_consts.h"
