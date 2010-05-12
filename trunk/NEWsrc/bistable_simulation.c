@@ -39,7 +39,7 @@
   #define _(s) s
 //#endif /* def GTK_GUI */
 #include "objects/QCADCell.h"
-#include "cuda/simulation.h"
+#include "simulation.h"
 #include "bistable_simulation.h"
 /*#include "custom_widgets.h"*/
 #include "global_consts.h"
@@ -206,6 +206,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 
   // -- refresh all the kink energies to all the cells neighbours within the radius of effect -- //
   bistable_refresh_all_Ek (number_of_cell_layers, number_of_cells_in_layer, sorted_cells, options);
+
   
   // CUDA: entry point for cuda simulation
   //controllare number of cell in layer[]
