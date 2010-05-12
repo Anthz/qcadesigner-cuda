@@ -31,7 +31,7 @@ int iLayer, iCell, neighbours_number = 0;
 
 //  printf("\ncells: %d, layers: %d cells per layer 0: %d, neighbours: %d",cells_number,number_of_cell_layers, number_of_cells_in_layer[0],neighbours_number);
   //look at the structure.
- /* printf("Polarization:\n");
+  /*printf("Polarization:\n");
   for(i =0;i< cells_number;i++){
     printf("%d: %f\n",i,h_polarization[i]);
   }
@@ -39,25 +39,25 @@ int iLayer, iCell, neighbours_number = 0;
   printf("\nClock:\n");
   for( i =0;i< cells_number;i++){
     printf("%d: %f\n",i,h_clock[i]);
-  }
-  /*
+  }*/
+  
   printf("\nKink Energy:\n");
   for( i =0;i< cells_number;i++){
     printf("%d: ",i);
     for( j=0;j< neighbours_number;j++){
-      printf("%f ",h_Ek[i][j]);
+      printf("%g ",h_Ek[i][j]);
     }
     printf("\n");
-  }*/
+  }
   
-  printf("\nNeighbours:\n");
+  /*printf("\nNeighbours:\n");
   for( i =0;i< cells_number;i++){
     printf("%d: ",i);
     for( j=0;j< neighbours_number;j++){
       printf("%d ",h_neighbours[i][j]);
     }
     printf("\n");
-  }
+  }*/
 //  system("PAUSE");
 }
 
