@@ -600,3 +600,4 @@ void bistable_options_dump (bistable_OP *bistable_options, FILE *pfile)
 	fprintf (stderr, "bistable_options->layer_separation          = %e [nm]\n", bistable_options->layer_separation) ;
 	fprintf (stderr, "bistable_options->randomize_cells           = %s\n",      bistable_options->randomize_cells ? "TRUE" : "FALSE") ;
   }
+
