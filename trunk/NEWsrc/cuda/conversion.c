@@ -57,6 +57,16 @@ tmp = (int*)malloc(cells_number*sizeof(int));
     }
  }
 counter =0;
+//init neighbours values to -1
+  for( iLayer = 0; iLayer < number_of_cell_layers; iLayer++){
+    for (iCell = 0; iCell < number_of_cells_in_layer[iLayer];iCell++){
+      for(i=0;i<neighbours_number;i++){
+       (*h_neighbours)[counter][i] = -1;	
+      }
+     counter++;
+    }
+ }
+counter =0;
 
 
  //fill structures 
@@ -66,7 +76,8 @@ counter =0;
       (*h_clock)[counter] = sorted_cells[iLayer][iCell]->cell_options.clock;
       for ( iNeighbour = 0; iNeighbour < ((bistable_model *)(sorted_cells[iLayer][iCell]->cell_model))->number_of_neighbours;iNeighbour++){
 	(*h_Ek)[counter][iNeighbour]=((bistable_model *)(sorted_cells[iLayer][iCell]->cell_model))->Ek[iNeighbour];
-	(*h_neighbours)[counter][iNeighbour]= position_in_CUDA_array(((QCADCell*)((bistable_model *)(sorted_cells[iLayer][iCell]->cell_model))->neighbours[iNeighbour])->id,cells_number);
+        if(sorted_cells[iLayer][iCell]->cell_function != QCAD_CELL_INPUT && sorted_cells[iLayer][iCell]->cell_function != QCAD_CELL_FIXED)
+	  (*h_neighbours)[counter][iNeighbour]= position_in_CUDA_array(((QCADCell*)((bistable_model *)(sorted_cells[iLayer][iCell]->cell_model))->neighbours[iNeighbour])->id,cells_number);
 
 	}
        counter++;
@@ -116,6 +127,16 @@ tmp = (int*)malloc(cells_number*sizeof(int));
     }
  }
 counter =0;
+//init neighbours values to -1
+  for( iLayer = 0; iLayer < number_of_cell_layers; iLayer++){
+    for (iCell = 0; iCell < number_of_cells_in_layer[iLayer];iCell++){
+      for(i=0;i<neighbours_number;i++){
+       (*h_neighbours)[counter*neighbours_number + i] = -1;
+      }
+    counter++;
+    }
+ }
+counter =0;
 
 
  //fill structures 
@@ -125,7 +146,8 @@ counter =0;
       (*h_clock)[counter] = sorted_cells[iLayer][iCell]->cell_options.clock;
       for ( iNeighbour = 0; iNeighbour < ((bistable_model *)(sorted_cells[iLayer][iCell]->cell_model))->number_of_neighbours;iNeighbour++){
 	(*h_Ek)[(counter*neighbours_number) + iNeighbour]=((bistable_model *)(sorted_cells[iLayer][iCell]->cell_model))->Ek[iNeighbour];
-	(*h_neighbours)[(counter*neighbours_number) + iNeighbour]= position_in_CUDA_array(((QCADCell*)((bistable_model *)(sorted_cells[iLayer][iCell]->cell_model))->neighbours[iNeighbour])->id,cells_number);
+	if(sorted_cells[iLayer][iCell]->cell_function != QCAD_CELL_INPUT && sorted_cells[iLayer][iCell]->cell_function != QCAD_CELL_FIXED)
+	  (*h_neighbours)[(counter*neighbours_number) + iNeighbour]= position_in_CUDA_array(((QCADCell*)((bistable_model *)(sorted_cells[iLayer][iCell]->cell_model))->neighbours[iNeighbour])->id,cells_number);
 
 	}
        counter++;
