@@ -1,4 +1,4 @@
-CC = gcc
+CC = nvcc
 GLIB=`pkg-config gtk+-2.0 --cflags --libs glib-2.0`
 FLAGS=-g
 
