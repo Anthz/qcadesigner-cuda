@@ -44,7 +44,7 @@
 /*#include "custom_widgets.h"*/
 #include "global_consts.h"
 
-//#define CUDA //uncomment this to use CUDA technology
+#define CUDA //uncomment this to use CUDA technology
 //#define REDUCE_DEREF
 
 //!Options for the bistable simulation engine
@@ -208,12 +208,17 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   bistable_refresh_all_Ek (number_of_cell_layers, number_of_cells_in_layer, sorted_cells, options);
 
 #ifdef CUDA  
-  // initialize pointer to structures
-  float *h_polarization, *h_clock, **h_Ek;
-  int **h_neighbours;
-  //find cells number
-  //
-  sorted_cells_to_CUDA_Structures(sorted_cells,&h_polarization,&h_clock,&h_Ek,&h_neighbours, number_of_cell_layers, number_of_cells_in_layer);
+  // initialize pointer to array structures
+  float *h_polarization, *h_clock, *h_Ek;
+  int *h_neighbours;
+  //initialize pointer to matrix structures
+  //float *h_polarization, *h_clock, **h_Ek;
+  //int **h_neighbours;
+
+  //Fill matrix structures
+  //sorted_cells_to_CUDA_Structures_matrix(sorted_cells,&h_polarization,&h_clock,&h_Ek,&h_neighbours, number_of_cell_layers, number_of_cells_in_layer);
+  //Fill array structures
+  sorted_cells_to_CUDA_Structures_array(sorted_cells,&h_polarization,&h_clock,&h_Ek,&h_neighbours, number_of_cell_layers, number_of_cells_in_layer);
 
 #else  
   // randomize the cells in the design so as to minimize any numerical problems associated //
@@ -243,8 +248,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 
 /*  set_progress_bar_fraction (0.0) ;*/
 
-  // perform the iterations over all samples //
-#ifndef CUDA //skip the normal simulation procedure	
+  // perform the iterations over all samples //	
 /*#ifdef REDUCE_DEREF*/
 /*  // Dereference some structures now so we don't do it over and over in the loop*/
 /*  sim_data_number_samples = sim_data->number_samples ;*/
@@ -269,6 +273,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   #define design_bus_layout_outputs design_bus_layout->outputs
   #define design_bus_layout_outputs_icUsed design_bus_layout_outputs->icUsed
 /*#endif*/
+#ifndef CUDA //skip the normal simulation procedure
   for (j = 0; j < sim_data_number_samples ; j++)
     {
     if (j % 10 == 0)
