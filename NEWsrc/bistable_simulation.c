@@ -207,20 +207,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   // -- refresh all the kink energies to all the cells neighbours within the radius of effect -- //
   bistable_refresh_all_Ek (number_of_cell_layers, number_of_cells_in_layer, sorted_cells, options);
 
-#ifdef CUDA  
-  // initialize pointer to array structures
-  float *h_polarization, *h_clock, *h_Ek;
-  int *h_neighbours;
-  //initialize pointer to matrix structures
-  //float *h_polarization, *h_clock, **h_Ek;
-  //int **h_neighbours;
-
-  //Fill matrix structures
-  //sorted_cells_to_CUDA_Structures_matrix(sorted_cells,&h_polarization,&h_clock,&h_Ek,&h_neighbours, number_of_cell_layers, number_of_cells_in_layer);
-  //Fill array structures
-  sorted_cells_to_CUDA_Structures_array(sorted_cells,&h_polarization,&h_clock,&h_Ek,&h_neighbours, number_of_cell_layers, number_of_cells_in_layer);
-
-#else  
+ 
   // randomize the cells in the design so as to minimize any numerical problems associated //
   // with having cells simulated in some predefined order. //
   // randomize the order in which the cells are simulated //
@@ -237,7 +224,6 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
       sorted_cells[Nix][idxCell1] = sorted_cells[Nix][idxCell2] ;
       sorted_cells[Nix][idxCell2] = swap ;
       }
-#endif
   // -- get and print the total initialization time -- //
   if((end_time = time (NULL)) < 0)
      fprintf(stderr, "Could not get end time\n");
@@ -273,7 +259,30 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   #define design_bus_layout_outputs design_bus_layout->outputs
   #define design_bus_layout_outputs_icUsed design_bus_layout_outputs->icUsed
 /*#endif*/
-#ifndef CUDA //skip the normal simulation procedure
+#ifdef CUDA  
+  // initialize pointer to array structures
+  float *h_polarization, *h_clock, *h_Ek,h_clock_data[4];
+  int *h_neighbours,max_neighbours,ambros;
+  //initialize pointer to matrix structures
+  //float *h_polarization, *h_clock, **h_Ek;
+  //int **h_neighbours;
+
+  //Fill matrix structures
+  //sorted_cells_to_CUDA_Structures_matrix(sorted_cells,&h_polarization,&h_clock,&h_Ek,&h_neighbours, number_of_cell_layers, number_of_cells_in_layer);
+  //Fill array structures
+  sorted_cells_to_CUDA_Structures_array(sorted_cells,&h_polarization,&h_clock,&h_Ek,&h_neighbours, number_of_cell_layers, number_of_cells_in_layer,&max_neighbours);
+
+
+  for (j = 0; j < sim_data_number_samples ; j++){
+    //call cisco's function
+    for(ambros=0; ambros<4;ambros++){
+      h_clock_data[ambros]=sim_data->clock_data[ambros].data[j];
+    } 
+    launch_bistable_simulation(h_polarization,h_Ek,h_clock,h_clock_data,h_neighbours,max_neighbours,max_iterations_per_sample);
+  }
+
+
+#else //CUDA
   for (j = 0; j < sim_data_number_samples ; j++)
     {
     if (j % 10 == 0)
@@ -408,11 +417,6 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
     if(TRUE == STOP_SIMULATION)
       j = sim_data_number_samples ;
     }//for number of samples
-#else //defined CUDA
-/* insert code here to use CUDA
-if we want to modify only this piece of code we need to find postcondition and ensure them. maybe it would be simpler to modify the entire function.
-another ifndef branch can be declared earlier to avoid some unused initializations. 
-*/
 #endif //defined CUDA
 
   // Free the neigbours and Ek array introduced by this simulation//
