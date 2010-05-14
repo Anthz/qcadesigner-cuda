@@ -1,8 +1,7 @@
 /* ========================================================================== */
 /*                                                                            */
 /*  CUDA_bistable_iteration.cu                                                */
-/*  
-//  0- controllare che non vi siano scritte delle porcate da me medesimo
+/*    0- controllare che non vi siano scritte delle porcate da me medesimo*/
 /*  1- valutare possibilità di unrollare il loop sui neighbours               */
 /*  (visto che ne stabiliamo il numero di iterazioni a priori)                */
 /*  2- il controllo sulle celle fixed crea una bella divergenza... proposte?  */
@@ -12,7 +11,8 @@
 
 #include <cutil_inline.h>
 #include <cuda.h>
-#include "cuPrintf.cu"
+//#include "cuPrintf.cu"
+
 
 #include <math.h>
 
@@ -25,7 +25,6 @@
    int nb_idx;   // Neighbour index
    int q;
    int current_clock_state;   //could be 0, 1, 2 or 3
-   float old_polarization;
    float new_polarization;
    float polarization_math;
    
@@ -67,21 +66,21 @@
           //  d_stability[thr_idx] = stable;
         }
       
+	else 
+         //for FIXED and INPUT type cells polarization remains the same
+         d_next_polarization[thr_idx] = d_polarization[thr_idx]; 
       }
-      else 
-        //for FIXED and INPUT type cells polarization remains the same
-        d_next_polarization[thr_idx] = d_polarization[thr_idx]; 
+      
     }
-   }
-
+   
 extern "C"
-void launch_bistable_simulation(float *h_polarization, float *h_Ek, int *h_clock_state, float *h_clock_data, int *h_neighbours, int neighbours_number, int iterations)
+void launch_bistable_simulation(float *h_polarization, float *h_Ek, int *h_clock_state, float *h_clock_data, int *h_neighbours, int cells_number, int neighbours_number, int iterations_per_sample)
 {
 
 
  // Variables
    float *d_next_polarization, *d_polarization, *d_clock_data, *d_Ek;
-   int *d_neighbours, d_clock_state;
+   int *d_neighbours, *d_clock_state;
    int i;
 
    // Set GPU Parameters
@@ -90,7 +89,7 @@ void launch_bistable_simulation(float *h_polarization, float *h_Ek, int *h_clock
 
    // Set Devices
    cudaSetDevice (cutGetMaxGflopsDeviceId());
-   cudaPrintfInit ();
+//   cudaPrintfInit ();
 
    // Initialize Memory
    cutilSafeCall (cudaMalloc (&d_next_polarization, cells_number * sizeof(float))); 
@@ -113,10 +112,10 @@ void launch_bistable_simulation(float *h_polarization, float *h_Ek, int *h_clock
 
 
   // For each sample...
-   for (i = 0; i < max_iterations_per_sample; i++) //we are not considering stability
+   for (i = 0; i < iterations_per_sample; i++) //we are not considering stability
    {
       // Launch Kernel
-      kernel<<< grid, threads >>> (d_polarization, d_next_polarization, d_clock_state, d_clock_data, d_Ek, d_neighbours, int cells_number, int neighbours_number);
+      bistable_kernel<<< grid, threads >>> (d_polarization, d_next_polarization, d_clock_state, d_clock_data, d_Ek, d_neighbours, cells_number, neighbours_number);
 
       // Wait Device
       cudaThreadSynchronize ();
@@ -132,7 +131,7 @@ void launch_bistable_simulation(float *h_polarization, float *h_Ek, int *h_clock
       
       
 // Free-up resources
-   cudaPrintfEnd();
+//   cudaPrintfEnd();
    cudaFree(d_next_polarization);
    cudaFree(d_polarization);
    cudaFree(d_clock_state);
