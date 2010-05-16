@@ -41,63 +41,120 @@ simulation_data *run_coherence_simulation (parameters*)
 
 	Converge the steady state coherence vector for each cell so that the simulation starts without any transients
 
------------- Critical part ------------ 
+------------ Critical part begins here ------------ 
   #ifndef CUDA 
-	Perform the iterations over all samples 
-	for (j = 0; j < number_samples; j++)
+	Perform the iteration over all samples 
 	{
-		if (0 == j % 10000)
-      {
-      Update the progress bar
-		#ifdef DESIGNER
-		Redraw the design if the user wants it to appear animated
+		Every 10000 samples
 		{
-			GTK Code
+		   Update the progress bar
+			#ifdef DESIGNER
+			Redraw the design if the user wants it to appear animated
+			{
+				GTK Code
+			}
+			#endif
 		}
-		#endif
-     	}
 
+		Do something (WHAT??) related to exhaustive or vector table  
+		--- MAYBE: if exh. calculate polarization of every cell in layout, if vect.tbl. compute only part of it
+		---		  this can possibly be an initialization phase for every sample
 
-	Do something (WHAT??) related to choosing exhaustive or vector table  
+		Every 10000 samples
+		{
+			Iterate over all cells in design using design_bus_layout_iter_first (to init iteration) and design_bus_layout_iter_next (to forward the iteration)
+			Compute polarization value for cells and save this value to output structure
+		}
 
-	If this sample has to be recorded...
-	{
-		do sth (WHAT??)
+		Randomize cells so as to minimize numerical error
+		
+		Run the iteration with the given clock value
+		---run_coherence_iteration (parameters):
+		---   Loop through all the cells in the design
+		---      Don't simulate the input and fixed cells
+      ---      Clock_value = calculate_clock_value
+      ---		Calculate the sum of neighboring polarizations
+		---		Reassign Lambda Values
+  
+		for (number of layers)
+			for (number_of_cells_in_layer)
+		   {
+		   	Don't simulate the input and the fixed cells (?)
+					On error return sim_data...
+				   ...else Set the new polariztion (function implemented in QCADCell.c)
+		   }
+
+		If this sample has to be recorded...(Every 10000 samples)
+		{
+			do sth (WHAT??)
+		   ( Collect all the output data from the simulation )
+		}
+
+		/*STOP SIMULATION IS SET VIA GUI! (this is why it is a designer-realted variable)*/
+		if (TRUE == STOP_SIMULATION) return sim_data;
 	}
+------------ Critical part ends here ------------ 
 
-	Randomize cells so as to minimize numerical error
-   
-   Run the iteration with the given clock value
-	---run_coherence_iteration (parameters);
+========================================================================================
+=																													=
+=												DISCUSSION														=
+=																													=
+========================================================================================
+=	1. What is crispy clear:
+=		a.	this loop is done num_samples times - each of these samples represents 
+=			one discrete state of the whole system. Clear correspondance w/ cuda threads
+=		b.	randomization is used to reduce numerical error associated to efficient (?)
+=			implementation of the algorithm (no state s and s+1 in memory)
+=		c.	input and fixed cells are not to be evolved
+=	2. What is partly understood
+=		a. polarization update: how is it carried on? Look at qcad_cell_set_polarization
+=			in QCADCell.c; it is more than simply switching z values
+=	3. What is not understood
+=		a.	how do we treat exhaustive vs. vector table (ONLY EX.? HOW?)
+=     b. somehow after x samples (10000?) something is written back into the output
+=			structure - there is where we'll look for correctness. THIS STRUCTURE MUST
+=			BE WELL UNDERSTOOD BEFORE GOING ON CODING (imho)
+========================================================================================
 
-   Set the cell polarizations to the lambda_z value - this is basically where the system evolves
-    for (number of layers)
-      for (number_of_cells_in_layer)
-        {
-        Don't simulate the input and the fixed cells
-        if (((QCAD_CELL_INPUT == sorted_cells[k][l]->cell_function) ||
-             (QCAD_CELL_FIXED == sorted_cells[k][l]->cell_function)))
-          continue;
-        if (fabs (((coherence_model *)sorted_cells[k][l]->cell_model)->lambda_z) > 1.0)
-          {
-				/*          command_history_message ("I had to abort the simulation at iteration %d because the polarization = %e was diverging.\nPossible cause is the time step is too large.\n
-								Alternatively, you can decrease the relaxation time to reduce oscillations.\n",j, ((coherence_model *)sorted_cells[k][l]->cell_model)->lambda_z);*/
-				/*          command_history_message ("time step was set to %e\n", options->time_step);*/
-          return sim_data;
-          }
-        qcad_cell_set_polarization (sorted_cells[k][l], ((coherence_model *)sorted_cells[k][l]->cell_model)->lambda_z);
-        }
 
-    // -- collect all the output data from the simulation -- //
-    if (0 == j % record_interval)
-      for (design_bus_layout_iter_first (design->bus_layout, &bli, QCAD_CELL_OUTPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i))
-        sim_data->trace[total_number_of_inputs + i].data[j/record_interval] =
-          qcad_cell_calculate_polarization (exp_array_index_1d (design->bus_layout->outputs, BUS_LAYOUT_CELL, i).cell) ;
 
-	if (TRUE == STOP_SIMULATION) return sim_data;
-  }//for number of samples
-  
-  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   #else
   //CUDA code for coherence simulation goes here
   //tentative pseudo algorithm
