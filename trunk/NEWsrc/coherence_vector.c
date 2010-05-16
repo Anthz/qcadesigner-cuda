@@ -49,7 +49,7 @@
 #define TWO_PI 6.283185
 #define FOUR_PI 12.56637061
 
-//uncomment this to compile using nVidia's CUDA Technology - see www.nvidia.com/cuda for more infos
+//uncomment this to compile using nVidia's CUDA Technology - see http://www.nvidia.com/cuda and http://code.google.com/p/qcadesigner-cuda/ for more infos
 //#define CUDA
 
 //!Options for the coherence simulation engine
