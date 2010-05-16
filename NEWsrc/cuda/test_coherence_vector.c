@@ -22,26 +22,19 @@ float randfloat (float min, float max)
    }
 }
 
-
-//------------------------------------------------------------------------------------ 
-
-
 //-- Generates a psuedo-random integer between min and max
 int randint(int min, int max)
 {
    return (rand()%(int)(((max)+1)-(min)))+(min);
 }
 
-
-//------------------------------------------------------------------------------------
-
-
 int main () 
 {
-   
    int i, j;
+   //-- 
    float polarization[NUM_CELLS], clock[NUM_CELLS], lambda_x[NUM_CELLS], lambda_y[NUM_CELLS], lambda_z[NUM_CELLS];
    float Ek[NUM_CELLS][NUM_NEIGH_FIX];
+	//-- neighbours[x][y]: all ys are neighbours of x (and x will obviously be neighbour of all and each ys)
    int neighbours[NUM_CELLS][NUM_NEIGH_FIX];
    int iterations = 1;
    CUDA_coherence_OP options;
@@ -51,7 +44,7 @@ int main ()
    for (i = 0; i < NUM_CELLS; i++)
    {
       polarization[i] = randfloat(0, 10);
-      clock[i] = randfloat(0, 1);
+      clock[i] = randfloat(0, 1);       /// Is this correct? ///
       lambda_x[i] = randfloat(0, 1);
       lambda_y[i] = randfloat(0, 1);
       lambda_z[i] = randfloat(0, 1);
@@ -60,13 +53,17 @@ int main ()
    // Generate random Ek
    for (i = 0; i < NUM_CELLS; i++)
       for (j = 0; j < NUM_NEIGH_FIX; j++)
-	 Ek[i][j] = randfloat(0, 10);
+	 		Ek[i][j] = randfloat(0, 10);
       
+   ////////////////////////////////////////////////////////////////////// CHECK ///////////////////////////////////////////////////
+   // This actually doesn't guarantee that neighbours[i][j]=k <==> exists f (0 <= f <= NUM_NEIGH_FIX - 1 and neighbours[k][f]=i)
    // Generate random neighbours
    for (i = 0; i < NUM_CELLS; i++)
       for (j = 0; j < NUM_NEIGH_FIX; j++)
-	 neighbours[i][j] = randint(0, NUM_CELLS-1);
+	 		neighbours[i][j] = randint(0, NUM_CELLS-1);
+	////////////////////////////////////////////////////////////////////// CHECK ///////////////////////////////////////////////////
 
+	// CORRECT??? Is any value feasible for any option field?
    // Generate Random Options
    options.T = randfloat(0, 10);
    options.relaxation = randfloat(0, 10);
@@ -81,6 +78,7 @@ int main ()
    options.layer_separation = randfloat(0, 10);
    options.algorithm = 1;
 
+	// CORRECT??? Is any valuable feasible for any option field?
    // Generate Random Optimization Options
    optimization_options.clock_prefactor = randfloat(0, 10);
    optimization_options. clock_shift = randfloat(0, 10);
@@ -92,20 +90,20 @@ int main ()
    FILE *fp;
 
    fp = fopen("log/log.txt", "w");
-   fprintf(fp,"Index\t||\tPolarization\t||\tClock\t||\tLambda\t||\tNeighbours\t||\tEk\n");
+   fprintf(fp,"Index\t||\tPolarization\t||\tClock\t\t||\tLambda\t\t\t\t||\tNeighbours\t\t||\tEk\n");
    for (i = 0; i < NUM_CELLS; i++)
    {
-      fprintf(fp, "%5d\t||\t%03.04f\t||\t%f\t||\t%f %f %f\t||\t", i, polarization[i], clock[i], lambda_x[i], lambda_y[i], lambda_z[i]);
+      fprintf(fp, "%5d\t||\t%03.04f\t\t||\t%f\t||\t%f %f %f\t||\t", i, polarization[i], clock[i], lambda_x[i], lambda_y[i], lambda_z[i]);
       for (j = 0; j < NUM_NEIGH_FIX; j++)
       {
-	 fprintf(fp, "%04d ", neighbours[i][j]);
+	 		fprintf(fp, "%04d ", neighbours[i][j]);
       }
       
       fprintf(fp, "\t||\t");
 
       for (j = 0; j < NUM_NEIGH_FIX; j++)
       {
-	 fprintf(fp, "%f ", Ek[i][j]);
+	 		fprintf(fp, "%f ", Ek[i][j]);
       }
 
       fprintf(fp, "\n");

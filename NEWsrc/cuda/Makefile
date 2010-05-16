@@ -10,7 +10,8 @@ NVCFLAGS= \
 
 CFLAGS= \
 	 -L$(CUDAROOT)/lib64  \
-	 -L$(CUDASDKROOT)/C/lib
+	 -L$(CUDASDKROOT)/C/lib\
+	 -g
 
 OBJECTS =\
 	coherence_vector_NO_PITCH.o \
