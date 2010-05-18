@@ -66,7 +66,7 @@ simulation_data *run_coherence_simulation (parameters*)
 			Compute polarization value for cells and save this value to output structure
 		}
 
-		Randomize cells so as to minimize numerical error
+		| Randomize cells so as to minimize numerical error | NOT WITH CUDA
 		
 		Run the iteration with the given clock value
 		---run_coherence_iteration (parameters):
