@@ -46,8 +46,8 @@ bistable_OP *open_bistable_options_file (char *pszFName) ;
 //gboolean create_file (gchar *file_name, DESIGN *design) ;
 //void create_file_fp (FILE *pfile, DESIGN *design) ;
 //void create_simulation_output_file (char *pszFName, SIMULATION_OUTPUT *sim_output) ;
-//void create_simulation_output_file_fp (FILE *pfile, SIMULATION_OUTPUT *sim_output) ;
-//void simulation_data_serialize (FILE *fp, simulation_data *sim_data) ;
+void create_simulation_output_file_fp (FILE *pfile, SIMULATION_OUTPUT *sim_output) ;
+void simulation_data_serialize (FILE *fp, simulation_data *sim_data) ;
 //void export_block (char *pszFName, DESIGN *design) ;
 //void export_block_fp (FILE *pfile, DESIGN *design) ;
 

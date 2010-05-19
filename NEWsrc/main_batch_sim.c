@@ -158,6 +158,35 @@ int main (int argc, char **argv)
 
       if (NULL != (sim_data = run_simulation (sim_engine, EXHAUSTIVE_VERIFICATION, working_design, NULL)))
         {
+//looking in sim_data 
+	FILE *file;
+	file = fopen("file","w");
+	SIMULATION_OUTPUT sim_output;
+	sim_output.sim_data = sim_data;
+	sim_output.bus_layout = NULL;
+	create_simulation_output_file_fp (file, &sim_output);
+/*	
+	printf("\nnumber of samples %d",sim_data->number_samples);
+	printf("\nnumber of traces %d",sim_data->number_of_traces);
+	int i,sample;
+        char tmp1[20],*tmp2;
+	
+        for(i=0;i<sim_data->number_of_traces;i++){
+	  printf("\ndata label for trace %d: %s",i,sim_data->trace->data_labels);
+	  fputs("\nProssima Traccia\n",file);
+	}
+        for(sample=0;sample<sim_data->number_samples;sample++)
+	  {
+            sprintf(tmp1, "%lf", sim_data->trace->data[sample]);
+            tmp2 = malloc(sizeof(tmp1)+sizeof(char));
+            strcpy(tmp2,tmp1);
+            strcat(tmp2,"\n");
+	    fputs(tmp2,file);
+	  }
+        fclose(file);*/
+
+	
+
 /*        input_hcs = exp_array_new (sizeof (HONEYCOMB_DATA *), 1) ;*/
 /*        output_hcs = exp_array_new (sizeof (HONEYCOMB_DATA *), 1) ;*/
         // For each bus, create the appropriate HONEYCOMB_DATA, fill it in with

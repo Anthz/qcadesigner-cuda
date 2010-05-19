@@ -40,7 +40,7 @@
 /*#include "custom_widgets.h"*/
 #include "objects/QCADDOContainer.h"
 
-#define FLOATS_PER_LINE 5
+#define FLOATS_PER_LINE 1 // default 5 messo a 1 per gnuplot.
 
 #define DBG_FIO(s)
 
@@ -52,7 +52,7 @@
 /*static void read_options(FILE *project_file, double *pgrid_spacing);*/
 /*static char *get_identifier(char *buffer);*/
 /*static QCADDesignObject *legacy_read_cell_from_stream (FILE *stream) ;*/
-/*static void serialize_trace (FILE *fp, struct TRACEDATA *trace, int icSamples) ;*/
+static void serialize_trace (FILE *fp, struct TRACEDATA *trace, int icSamples) ;
 /*static void unserialize_trace (FILE *pfile, struct TRACEDATA *trace, int icSamples) ;*/
 /*static void unserialize_trace_data (FILE *pfile, struct TRACEDATA *trace, int icSamples) ;*/
 static coherence_OP *open_coherence_options_file_fp (FILE *fp) ;
@@ -553,61 +553,60 @@ gboolean check_project_file_magic_fp (FILE *pfile, double *pversion)
 /*  fclose (fp) ;*/
 /*  }*/
 
-/*void create_simulation_output_file_fp (FILE *pfile, SIMULATION_OUTPUT *sim_output)*/
-/*  {*/
-/*  fprintf (pfile, "[SIMULATION_OUTPUT]\n") ;*/
-/*  if (NULL != sim_output->sim_data)*/
-/*    simulation_data_serialize (pfile, sim_output->sim_data) ;*/
-/*  if (NULL != sim_output->bus_layout)*/
-/*    design_bus_layout_serialize (sim_output->bus_layout, pfile) ;*/
-/*  fprintf (pfile, "[#SIMULATION_OUTPUT]\n") ;*/
-/*  }*/
+void create_simulation_output_file_fp (FILE *pfile, SIMULATION_OUTPUT *sim_output)
+  {
+  fprintf (pfile, "[SIMULATION_OUTPUT]\n") ;
+  if (NULL != sim_output->sim_data)
+    simulation_data_serialize (pfile, sim_output->sim_data) ;
+  //if (NULL != sim_output->bus_layout)
+    //design_bus_layout_serialize (sim_output->bus_layout, pfile) ;
+  fprintf (pfile, "[#SIMULATION_OUTPUT]\n") ;
+  }
 
-/*void simulation_data_serialize (FILE *pfile, simulation_data *sim_data)*/
-/*  {*/
-/*  int Nix ;*/
+void simulation_data_serialize (FILE *pfile, simulation_data *sim_data)
+  {
+  int Nix ;
 
-/*  fprintf (pfile, "[SIMULATION_DATA]\n") ;*/
-/*  fprintf (pfile, "number_samples=%d\n", sim_data->number_samples) ;*/
-/*  fprintf (pfile, "number_of_traces=%d\n", sim_data->number_of_traces) ;*/
-/*  fprintf (pfile, "[TRACES]\n") ;*/
-/*  for (Nix = 0 ; Nix < sim_data->number_of_traces ; Nix++)*/
-/*    serialize_trace (pfile, &(sim_data->trace[Nix]), sim_data->number_samples) ;*/
-/*  fprintf (pfile, "[#TRACES]\n[CLOCKS]\n") ;*/
-/*  for (Nix = 0 ; Nix < 4 ; Nix++)*/
-/*    serialize_trace (pfile, &(sim_data->clock_data[Nix]), sim_data->number_samples) ;*/
-/*  fprintf (pfile, "[#CLOCKS]\n") ;*/
-/*  fprintf (pfile, "[#SIMULATION_DATA]\n") ;*/
-/*  }*/
+  fprintf (pfile, "[SIMULATION_DATA]\n") ;
+  fprintf (pfile, "number_samples=%d\n", sim_data->number_samples) ;
+  fprintf (pfile, "number_of_traces=%d\n", sim_data->number_of_traces) ;
+  fprintf (pfile, "[TRACES]\n") ;
+  for (Nix = 0 ; Nix < sim_data->number_of_traces ; Nix++)
+    serialize_trace (pfile, &(sim_data->trace[Nix]), sim_data->number_samples) ;
+  fprintf (pfile, "[#TRACES]\n[CLOCKS]\n") ;
+  for (Nix = 0 ; Nix < 4 ; Nix++)
+    serialize_trace (pfile, &(sim_data->clock_data[Nix]), sim_data->number_samples) ;
+  fprintf (pfile, "[#CLOCKS]\n") ;
+  fprintf (pfile, "[#SIMULATION_DATA]\n") ;
+  }
 
-/*static void serialize_trace (FILE *pfile, struct TRACEDATA *trace, int icSamples)*/
-/*  {*/
-/*  int Nix ;*/
-/*  int idx = 0 ;*/
-/*  int sample_idx = 0 ;*/
+static void serialize_trace (FILE *pfile, struct TRACEDATA *trace, int icSamples)
+  {
+  int Nix ;
+  int idx = 0 ;
+  int sample_idx = 0 ;
 
-/*  fprintf (pfile, "[TRACE]\n") ;*/
-/*  fprintf (pfile, "data_labels=%s\n", trace->data_labels) ;*/
-/*  fprintf (pfile, "trace_function=%d\n", trace->trace_function) ;*/
-/*  fprintf (pfile, "drawtrace=%s\n", trace->drawtrace ? "TRUE" : "FALSE") ;*/
-/*  fprintf (pfile, "[TRACE_DATA]\n") ;*/
-/*  for (Nix = 0 ; Nix < icSamples - 1 ; Nix += FLOATS_PER_LINE)*/
-/*    {*/
-/*    for (idx = 0 ; idx < FLOATS_PER_LINE ; idx++)*/
-/*      if ((sample_idx = Nix + idx) < icSamples - 1)*/
-/*        fprintf (pfile, "%e ", trace->data[sample_idx]) ;*/
-/*      else*/
-/*        break ;*/
-/*    if (sample_idx < icSamples - 1)*/
-/*      fprintf (pfile, "\n") ;*/
-/*    }*/
+  fprintf (pfile, "[TRACE]\n") ;
+  fprintf (pfile, "data_labels=%s\n", trace->data_labels) ;
+  fprintf (pfile, "trace_function=%d\n", trace->trace_function) ;
+  fprintf (pfile, "drawtrace=%s\n", trace->drawtrace ? "TRUE" : "FALSE") ;
+  fprintf (pfile, "[TRACE_DATA]\n") ;
+  for (Nix = 0 ; Nix < icSamples - 1 ; Nix += FLOATS_PER_LINE)
+    {
+    for (idx = 0 ; idx < FLOATS_PER_LINE ; idx++)
+      if ((sample_idx = Nix + idx) < icSamples - 1)
+        fprintf (pfile, "%e ", trace->data[sample_idx]) ;
+      else
+        break ;
+    if (sample_idx < icSamples - 1)
+      fprintf (pfile, "\n") ;
+    }
 
-/*  fprintf (pfile, "%e\n", trace->data[icSamples - 1]) ;*/
+  fprintf (pfile, "%e\n", trace->data[icSamples - 1]) ;
 
-/*  fprintf (pfile, "[#TRACE_DATA]\n") ;*/
-/*  fprintf (pfile, "[#TRACE]\n") ;*/
-/*  }*/
-
+  fprintf (pfile, "[#TRACE_DATA]\n") ;
+  fprintf (pfile, "[#TRACE]\n") ;
+  }
 /*SIMULATION_OUTPUT *open_simulation_output_file (char *pszFName)*/
 /*  {*/
 /*  FILE *pfile = NULL ;*/

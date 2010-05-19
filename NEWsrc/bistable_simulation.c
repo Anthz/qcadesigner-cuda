@@ -44,8 +44,11 @@
 /*#include "custom_widgets.h"*/
 #include "global_consts.h"
 
-#define CUDA //uncomment this to use CUDA technology
+//#define CUDA //uncomment this to use CUDA technology
 //#define REDUCE_DEREF
+#ifdef CUDA
+#include "cuda/bistable_cuda.cuh"
+#endif
 
 //!Options for the bistable simulation engine
 //This variable is used by multiple source files
