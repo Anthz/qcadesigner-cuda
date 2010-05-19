@@ -180,7 +180,7 @@ __device__ inline float eval_next_lambda_z (float t, float PEk, float Gamma, flo
 }
 
 
-__device__ inline float generate_clock_at_sample_s (unsigned int clock_num, unsigned long int sample, unsigned long int number_samples, int total_number_of_inputs, const CUDA_coherence_OP *options, int SIMULATION_TYPE /*, VectorTable *pvt*/)
+__device__ inline float generate_clock_at_sample_s (unsigned int clock_num, unsigned long int sample, unsigned long int number_samples, int total_number_of_inputs, const CUDA_coherence_OP *options, /*int SIMULATION_TYPE , VectorTable *pvt*/)
 {
    float clock = 0;
 
@@ -226,7 +226,7 @@ __global__ void kernel (float* d_next_polarization, float *d_polarization, float
       t = options_time_step * sample_number;
 
       // Generate next clock
-      //generate_clock_at_sample_s (h_clock, cells_number, i, ...);
+      clock_value=generate_clock_at_sample_s (h_clock, cells_number, i, ...);
 
       PEk = 0;
       
