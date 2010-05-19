@@ -25,6 +25,8 @@
 //                                                      //
 //////////////////////////////////////////////////////////
 
+#define CUDA //uncomment this to use CUDA technology
+
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
@@ -44,11 +46,8 @@
 /*#include "custom_widgets.h"*/
 #include "global_consts.h"
 
-//#define CUDA //uncomment this to use CUDA technology
+
 //#define REDUCE_DEREF
-#ifdef CUDA
-#include "cuda/bistable_cuda.cuh"
-#endif
 
 //!Options for the bistable simulation engine
 //This variable is used by multiple source files
@@ -107,6 +106,18 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   QCADCell *cell;
 
   STOP_SIMULATION = FALSE;
+  
+  
+#ifdef CUDA
+  float *h_polarization, *h_Ek, *h_clock_data;
+  int *h_neighbours, max_neighbours, *h_cell_clock;
+  int ambros;
+  
+  //initialize pointer to matrix structures
+  //float *h_polarization, *h_cell_clock, **h_Ek;
+  //int **h_neighbours;
+#endif //CUDA
+  
 
   // -- get the starting time for the simulation -- //
   if((start_time = time (NULL)) < 0)
@@ -209,7 +220,9 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 
   // -- refresh all the kink energies to all the cells neighbours within the radius of effect -- //
   bistable_refresh_all_Ek (number_of_cell_layers, number_of_cells_in_layer, sorted_cells, options);
-
+  
+  
+#ifndef CUDA
  
   // randomize the cells in the design so as to minimize any numerical problems associated //
   // with having cells simulated in some predefined order. //
@@ -230,7 +243,9 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   // -- get and print the total initialization time -- //
   if((end_time = time (NULL)) < 0)
      fprintf(stderr, "Could not get end time\n");
+#endif //CUDA
 
+	 
 /*  command_history_message("Total initialization time: %g s\n", (double)(end_time - start_time));*/
 
 /*  command_history_message("Starting Simulation\n");*/
@@ -251,6 +266,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 /*  design_bus_layout_outputs = design_bus_layout->outputs ;*/
 /*  design_bus_layout_outputs_icUsed = design_bus_layout_outputs->icUsed ;*/
 /*#else*/
+
   #define sim_data_number_samples sim_data->number_samples
   #define pvt_inputs pvt->inputs
   #define pvt_inputs_icUsed pvt_inputs->icUsed
@@ -261,57 +277,47 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   #define design_bus_layout_inputs_icUsed design_bus_layout_inputs->icUsed
   #define design_bus_layout_outputs design_bus_layout->outputs
   #define design_bus_layout_outputs_icUsed design_bus_layout_outputs->icUsed
+  
 /*#endif*/
-#ifdef CUDA  
-  // initialize pointer to array structures
-  float *h_polarization, *h_clock, *h_Ek,h_clock_data[4];
-  int *h_neighbours,max_neighbours,ambros;
-  //initialize pointer to matrix structures
-  //float *h_polarization, *h_clock, **h_Ek;
-  //int **h_neighbours;
 
-  //Fill matrix structures
-  //sorted_cells_to_CUDA_Structures_matrix(sorted_cells,&h_polarization,&h_clock,&h_Ek,&h_neighbours, number_of_cell_layers, number_of_cells_in_layer);
+#ifdef CUDA
+//Fill matrix structures
+  //sorted_cells_to_CUDA_Structures_matrix(sorted_cells,&h_polarization,&h_cell_clock,&h_Ek,&h_neighbours, number_of_cell_layers, number_of_cells_in_layer);
   //Fill array structures
-  sorted_cells_to_CUDA_Structures_array(sorted_cells,&h_polarization,&h_clock,&h_Ek,&h_neighbours, number_of_cell_layers, number_of_cells_in_layer,&max_neighbours);
+	sorted_cells_to_CUDA_Structures_array(sorted_cells, &h_polarization,&h_cell_clock, &h_clock_data, &h_Ek, 
+	&h_neighbours, number_of_cell_layers, number_of_cells_in_layer, &max_neighbours, sim_data->clock_data, sim_data_number_samples);
 
 
-  for (j = 0; j < sim_data_number_samples ; j++){
-    //call cisco's function
-    for(ambros=0; ambros<4;ambros++){
-      h_clock_data[ambros]=sim_data->clock_data[ambros].data[j];
-    } 
-    launch_bistable_simulation(h_polarization,h_Ek,h_clock,h_clock_data,h_neighbours,max_neighbours,max_iterations_per_sample);
-  }
+    launch_bistable_simulation(h_polarization,h_Ek,h_cell_clock,h_clock_data,h_neighbours,total_cells,max_neighbours,max_iterations_per_sample);
+#else //if not CUDA
 
-
-#else //CUDA
   for (j = 0; j < sim_data_number_samples ; j++)
-    {
-    if (j % 10 == 0)
-      {
-      // write the completion percentage to the command history window //
-/*      set_progress_bar_fraction ((float) j / (float) sim_data_number_samples) ;*/
-      // redraw the design if the user wants it to appear animated //
-      if(options->animate_simulation)
-        {
-        // update the charges to reflect the polarizations so that they can be animated //
-        for(icLayers = 0; icLayers < number_of_cell_layers; icLayers++)
-          {
-/*#ifdef REDUCE_DEREF*/
-/*          number_of_cells_in_current_layer = number_of_cells_in_layer[icLayers] ;*/
-/*          for(icCellsInLayer = 0; icCellsInLayer < number_of_cells_in_current_layer; icCellsInLayer++)*/
-/*#else*/
-          for(icCellsInLayer = 0; icCellsInLayer < number_of_cells_in_layer[icLayers]; icCellsInLayer++)
-/*#endif*/
-            qcad_cell_set_polarization(sorted_cells[icLayers][icCellsInLayer],((bistable_model *)sorted_cells[icLayers][icCellsInLayer]->cell_model)->polarization);
-          }
-/*#ifdef DESIGNER*/
-/*        redraw_async(NULL);*/
-/*        gdk_flush () ;*/
-//#endif /* def DESIGNER */
-        }
-      }
+  {
+  
+    // if (j % 10 == 0)
+      // {
+      // // write the completion percentage to the command history window //
+// /*      set_progress_bar_fraction ((float) j / (float) sim_data_number_samples) ;*/
+      // // redraw the design if the user wants it to appear animated //
+      // if(options->animate_simulation)
+        // {
+        // // update the charges to reflect the polarizations so that they can be animated //
+        // for(icLayers = 0; icLayers < number_of_cell_layers; icLayers++)
+          // {
+// /*#ifdef REDUCE_DEREF*/
+// /*          number_of_cells_in_current_layer = number_of_cells_in_layer[icLayers] ;*/
+// /*          for(icCellsInLayer = 0; icCellsInLayer < number_of_cells_in_current_layer; icCellsInLayer++)*/
+// /*#else*/
+          // for(icCellsInLayer = 0; icCellsInLayer < number_of_cells_in_layer[icLayers]; icCellsInLayer++)
+// /*#endif*/
+            // qcad_cell_set_polarization(sorted_cells[icLayers][icCellsInLayer],((bistable_model *)sorted_cells[icLayers][icCellsInLayer]->cell_model)->polarization);
+          // }
+// /*#ifdef DESIGNER*/
+// /*        redraw_async(NULL);*/
+// /*        gdk_flush () ;*/
+// //#endif /* def DESIGNER */
+        // }
+      // }
 
     // -- for each of the (VECTOR_TABLE => active?) inputs -- //
     if (EXHAUSTIVE_VERIFICATION == SIMULATION_TYPE)
@@ -324,6 +330,10 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
         if (exp_array_index_1d (pvt_inputs, VT_INPUT, i).active_flag)
           ((bistable_model *)exp_array_index_1d (pvt_inputs, VT_INPUT, i).input->cell_model)->polarization =
             sim_data->trace[i].data[j] = exp_array_index_2d (pvt_vectors, gboolean, (j * pvt_vectors_icUsed) / sim_data_number_samples, i) ? 1 : -1 ;
+			
+			
+
+
 
     // randomize the order in which the cells are simulated to try and minimize numerical errors
     // associated with the imposed simulation order.
@@ -407,6 +417,9 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
         }
       }//WHILE !STABLE
 
+
+
+
     if (VECTOR_TABLE == SIMULATION_TYPE)
       for (design_bus_layout_iter_first (design_bus_layout, &bli, QCAD_CELL_INPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i))
         if (!exp_array_index_1d (pvt_inputs, VT_INPUT, i).active_flag)
@@ -420,7 +433,8 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
     if(TRUE == STOP_SIMULATION)
       j = sim_data_number_samples ;
     }//for number of samples
-#endif //defined CUDA
+	
+#endif //CUDA
 
   // Free the neigbours and Ek array introduced by this simulation//
   for (k = 0; k < number_of_cell_layers; k++)
