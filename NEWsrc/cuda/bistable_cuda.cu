@@ -5,6 +5,9 @@
 /*  1- valutare possibilità di unrollare il loop sui neighbours               */
 /*  (visto che ne stabiliamo il numero di iterazioni a priori)                */
 /*  2- il controllo sulle celle fixed crea una bella divergenza... proposte?  */
+/*  3- 19maggio: clock_data troooppo grande
+/*  --> meglio farsi una memcpy ogni sample di clock_data[4] e d_polarization
+	con i nuovi valori di polarizzazione degli input (ancora DA MODIFICARE!)*/
 
 /* ========================================================================== */
 
@@ -18,13 +21,13 @@
 
 #define BLOCK_DIM 256
 
-  __global__ void bistable_kernel (float* d_polarization, float *d_next_polarization, int *d_clock_state, float *d_clock_data, float *d_Ek, int *d_neighbours, int cells_number, int neighbours_number)
+  __global__ void bistable_kernel (float* d_polarization, float *d_next_polarization, int *d_cell_clock, float *d_clock_data, float *d_Ek, int *d_neighbours, int cells_number, int neighbours_number, int sample)
   {
 
    int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
    int nb_idx;   // Neighbour index
    int q;
-   int current_clock_state;   //could be 0, 1, 2 or 3
+   int current_cell_clock;   //could be 0, 1, 2 or 3
    float new_polarization;
    float polarization_math;
    
@@ -43,8 +46,8 @@
         }
          
          //math = math / 2 * gamma
-         current_clock_state = d_clock_state[thr_idx];
-         polarization_math /= (2.0 * d_clock_data[current_clock_state]); // ...abbozzo
+         current_cell_clock  = d_cell_clock[thr_idx];
+         polarization_math /= (2.0 * d_clock_data[sample*4 + current_cell_clock]); // ...abbozzo
          
          // -- calculate the new cell polarization -- //
          // if math < 0.05 then math/sqrt(1+math^2) ~= math with error <= 4e-5
@@ -74,13 +77,13 @@
     }
    
 extern "C"
-void launch_bistable_simulation(float *h_polarization, float *h_Ek, int *h_clock_state, float *h_clock_data, int *h_neighbours, int cells_number, int neighbours_number, int iterations_per_sample)
+void launch_bistable_simulation(float *h_polarization, float *h_Ek, int *h_cell_clock, float *h_clock_data, int *h_neighbours, int cells_number, int neighbours_number, int number_of_samples, int iterations_per_sample)
 {
 
-
+printf("\nentrato nella launch!\n");
  // Variables
    float *d_next_polarization, *d_polarization, *d_clock_data, *d_Ek;
-   int *d_neighbours, *d_clock_state;
+   int *d_neighbours, *d_cell_clock;
    int i;
 
    // Set GPU Parameters
@@ -94,47 +97,47 @@ void launch_bistable_simulation(float *h_polarization, float *h_Ek, int *h_clock
    // Initialize Memory
    cutilSafeCall (cudaMalloc (&d_next_polarization, cells_number * sizeof(float))); 
    cutilSafeCall (cudaMalloc (&d_polarization, cells_number * sizeof(float))); 
-   cutilSafeCall (cudaMalloc (&d_clock_state, cells_number * sizeof(int)));
-   cutilSafeCall (cudaMalloc (&d_clock_data, 4 * sizeof(float)));
+   cutilSafeCall (cudaMalloc (&d_cell_clock, cells_number * sizeof(int)));
+   cutilSafeCall (cudaMalloc (&d_clock_data, 4 * number_of_samples * sizeof(float)));
    cutilSafeCall (cudaMalloc (&d_Ek, sizeof(float)*neighbours_number*cells_number));
    cutilSafeCall (cudaMalloc (&d_neighbours, sizeof(int)*neighbours_number*cells_number));
 
    // Set Memory
    cutilSafeCall (cudaMemcpy (d_polarization, h_polarization, cells_number * sizeof(float), cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpy (d_clock_state, h_clock_state, cells_number * sizeof(int), cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpy (d_clock_data, h_clock_data, 4 * sizeof(float), cudaMemcpyHostToDevice));
+   cutilSafeCall (cudaMemcpy (d_cell_clock, h_cell_clock, cells_number * sizeof(int), cudaMemcpyHostToDevice));
+   cutilSafeCall (cudaMemcpy (d_clock_data, h_clock_data, 4 * number_of_samples * sizeof(float), cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_Ek, h_Ek, sizeof(float) * neighbours_number * cells_number, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_neighbours, h_neighbours, sizeof(int) * neighbours_number * cells_number, cudaMemcpyHostToDevice));
+int j;
+
+ for (j = 0; j < number_of_samples ; j++)
+  {
 
 
-
-
-
-
-  // For each sample...
+  // In each sample...
    for (i = 0; i < iterations_per_sample; i++) //we are not considering stability
    {
       // Launch Kernel
-      bistable_kernel<<< grid, threads >>> (d_polarization, d_next_polarization, d_clock_state, d_clock_data, d_Ek, d_neighbours, cells_number, neighbours_number);
+      bistable_kernel<<< grid, threads >>> (d_polarization, d_next_polarization, d_cell_clock, d_clock_data, d_Ek, d_neighbours, cells_number, neighbours_number, j);
 
       // Wait Device
       cudaThreadSynchronize ();
-
       
       // Set Memory for the next iteration
       cutilSafeCall (cudaMemcpy (d_polarization, d_next_polarization, cells_number * sizeof(float), cudaMemcpyDeviceToDevice));
-
       
-      }
-      // Get desidered iteration results from GPU
-      cutilSafeCall (cudaMemcpy (h_polarization, d_polarization, cells_number * sizeof(float), cudaMemcpyDeviceToHost));
+    }
+	// Get desidered iteration results from GPU
+   cutilSafeCall (cudaMemcpy (h_polarization, d_polarization, cells_number * sizeof(float), cudaMemcpyDeviceToHost));
+  }
+      
       
       
 // Free-up resources
 //   cudaPrintfEnd();
    cudaFree(d_next_polarization);
    cudaFree(d_polarization);
-   cudaFree(d_clock_state);
+   cudaFree(d_cell_clock);
    cudaFree(d_clock_data);
    cudaFree(d_Ek);
    cudaFree(d_neighbours);  
