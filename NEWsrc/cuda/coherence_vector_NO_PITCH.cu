@@ -153,32 +153,18 @@ __device__ inline float eval_next_lambda_z (float t, float PEk, float Gamma, flo
 
 __device__ inline float generate_clock_at_sample_s (unsigned int clock_num, unsigned long int sample, unsigned long int number_samples, int total_number_of_inputs, const CUDA_coherence_OP *options, int SIMULATION_TYPE /*, VectorTable *pvt*/)
 {
-   float clock = 0;
+/*
+   float clock = optimization_options_clock_prefactor * cos (((float) (1 << total_number_of_inputs)) * (float) sample * optimization_options_four_pi_over_number_samples - PI * (float)clock_num * 0.5) + optimization_options_clock_shift + options_clock_shift;
 
-   /*
-   if (SIMULATION_TYPE == EXHAUSTIVE_VERIFICATION)
-   {
-   */
-      clock = optimization_options_clock_prefactor * cos (((float) (1 << total_number_of_inputs)) * (float) sample * optimization_options_four_pi_over_number_samples - PI * (float)clock_num * 0.5) + optimization_options_clock_shift + options_clock_shift;
-
-      // Saturate the clock at the clock high and low values
-      clock = CLAMP (clock, options_clock_low, options_clock_high) ;
-   /*
-   }
-   else
-   if (SIMULATION_TYPE == VECTOR_TABLE)
-      {
-      clock = clock_prefactor * cos (((float)pvt->vectors->icUsed) * (float) sample * optimization_options.two_pi_over_number_samples - PI * (float)clock_num * 0.5) + optimization_options.clock_shift + options->clock_shift;
-
-      // Saturate the clock at the clock high and low values
-      clock = CLAMP (clock, options->clock_low, options->clock_high) ;
-      }
-   */
-   return clock;
+   // Saturate the clock at the clock high and low values
+	clock = CLAMP (clock, options_clock_low, options_clock_high) ;
+	return clock;
+*/
+	return CLAMP (optimization_options_clock_prefactor * cos (((float) (1 << total_number_of_inputs)) * (float) sample * optimization_options_four_pi_over_number_samples - PI * (float)clock_num * 0.5) + optimization_options_clock_shift + options_clock_shift, options_clock_low, options_clock_high);
 }
 
-
-__global__ void kernel (float* d_next_polarization, float *d_polarization, float *d_clock, float *d_lambda_x, float *d_lambda_y, float *d_lambda_z, float *d_Ek, int *d_neighbours, int cells_number, int neighbours_number, int sample_number)
+/*
+__global__ void kernelIterationParallelOptimized (float* d_next_polarization, float *d_polarization, float *d_lambda_x, float *d_lambda_y, float *d_lambda_z, float *d_Ek, int *d_neighbours, int cells_number, int neighbours_number, int sample_number, int number_of_inputs)
 {
 
    int th_index = blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
@@ -190,15 +176,65 @@ __global__ void kernel (float* d_next_polarization, float *d_polarization, float
    float lambda_y, next_lambda_y;
    float lambda_z, next_lambda_z;
    float t;
+   int total_number_of_inputs = number_of_inputs;
 
    // Only usefull threads must work
    if (th_index < cells_number)
    {
       t = options_time_step * sample_number;
 
-      // Generate next clock
-      //generate_clock_at_sample_s (h_clock, cells_number, i, ...);
-      /* TEMP */ clock_value = d_clock[th_index];
+      // Generate clock
+		clock_value = CLAMP (optimization_options_clock_prefactor * cos (((float) (1 << total_number_of_inputs)) * (float) sample_number * optimization_options_four_pi_over_number_samples - PI * (float)clock_num * 0.5) + optimization_options_clock_shift + options_clock_shift, options_clock_low, options_clock_high);
+
+      PEk = 0;
+   
+      for (i = 0; i < neighbours_number; i++)
+      {
+	 nb_index = d_neighbours[th_index*neighbours_number+i];
+	 PEk += d_polarization[nb_index] * d_Ek[th_index*neighbours_number+nb_index]; 
+      }
+
+      lambda_x = d_lambda_x[th_index];
+      lambda_y = d_lambda_y[th_index];
+      lambda_z = d_lambda_z[th_index];
+
+      next_lambda_x = eval_next_lambda_x (t, PEk, clock_value, lambda_x, lambda_y, lambda_z);
+      next_lambda_y = eval_next_lambda_y (t, PEk, clock_value, lambda_x, lambda_y, lambda_z);
+      next_lambda_z = eval_next_lambda_z (t, PEk, clock_value, lambda_x, lambda_y, lambda_z);
+
+      d_lambda_x[th_index] = next_lambda_x;
+      d_lambda_y[th_index] = next_lambda_y;
+      d_lambda_z[th_index] = next_lambda_z;
+      
+      d_next_polarization[th_index] = next_lambda_z;
+
+      cuPrintf("polarization: %f\tclock: %f\tlambda: %f %f %f\tEk: %f\n", d_polarization[th_index], clock_value, d_lambda_x[th_index], d_lambda_y[th_index], d_lambda_z[th_index], d_Ek[th_index]);
+   }
+
+}
+*/
+
+__global__ void kernelIterationParallel (float* d_next_polarization, float *d_polarization, float *d_lambda_x, float *d_lambda_y, float *d_lambda_z, float *d_Ek, int *d_neighbours, int cells_number, int neighbours_number, int sample_number, int number_of_inputs)
+{
+
+   int th_index = blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
+   int nb_index;   // Neighbour index
+   int i;
+   float clock_value;
+   float PEk;
+   float lambda_x, next_lambda_x;
+   float lambda_y, next_lambda_y;
+   float lambda_z, next_lambda_z;
+   float t;
+   int total_number_of_inputs = number_of_inputs;
+
+   // Only usefull threads must work
+   if (th_index < cells_number)
+   {
+      t = options_time_step * sample_number;
+
+      // Generate clock
+		clock_value = 5; //generate_clock_at_sample_s (h_clock, cells_number, i, ...)
 
       PEk = 0;
    
@@ -238,11 +274,11 @@ __global__ void kernel (float* d_next_polarization, float *d_polarization, float
  \param <iteration> {}
 */
 extern "C"
-void launch_coherence_vector_simulation (float *h_polarization, float *h_clock, float *h_lambda_x, float *h_lambda_y, float *h_lambda_z, float *h_Ek, int *h_neighbours, int cells_number, int neighbours_number, int iterations, CUDA_coherence_OP *options, CUDA_coherence_optimizations *optimization_options)
+void launch_coherence_vector_simulation (float *h_polarization, float *h_lambda_x, float *h_lambda_y, float *h_lambda_z, float *h_Ek, int *h_neighbours, int cells_number, int neighbours_number, int iterations, CUDA_coherence_OP *options, CUDA_coherence_optimizations *optimization_options)
 {
 
    // Variables
-   float *d_next_polarization, *d_polarization, *d_clock, *d_Ek, *d_lambda_x, *d_lambda_y, *d_lambda_z;
+   float *d_next_polarization, *d_polarization, *d_Ek, *d_lambda_x, *d_lambda_y, *d_lambda_z;
    int *d_neighbours;
    int i;
 
@@ -257,7 +293,6 @@ void launch_coherence_vector_simulation (float *h_polarization, float *h_clock, 
    // Initialize Memory
    cutilSafeCall (cudaMalloc (&d_next_polarization, cells_number*sizeof(float))); 
    cutilSafeCall (cudaMalloc (&d_polarization, cells_number*sizeof(float))); 
-   cutilSafeCall (cudaMalloc (&d_clock, cells_number*sizeof(float)));
    cutilSafeCall (cudaMalloc (&d_lambda_x, cells_number*sizeof(float)));
    cutilSafeCall (cudaMalloc (&d_lambda_y, cells_number*sizeof(float)));
    cutilSafeCall (cudaMalloc (&d_lambda_z, cells_number*sizeof(float)));
@@ -266,7 +301,6 @@ void launch_coherence_vector_simulation (float *h_polarization, float *h_clock, 
 
    // Set Memory
    cutilSafeCall (cudaMemcpy (d_polarization, h_polarization, cells_number*sizeof(float), cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpy (d_clock, h_clock, cells_number*sizeof(float), cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_lambda_x, h_lambda_x, cells_number*sizeof(float), cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_lambda_y, h_lambda_y, cells_number*sizeof(float), cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_lambda_z, h_lambda_z, cells_number*sizeof(float), cudaMemcpyHostToDevice));
@@ -292,7 +326,7 @@ void launch_coherence_vector_simulation (float *h_polarization, float *h_clock, 
       printf("Inizio simulazione -- Iterazione %d\n", i); 
 
       // Launch Kernel
-      kernel<<< grid, threads >>> (d_next_polarization, d_polarization, d_clock, d_lambda_x, d_lambda_y, d_lambda_z, d_Ek, d_neighbours, cells_number, neighbours_number, i);
+      kernelIterationParallel<<< grid, threads >>> (d_next_polarization, d_polarization, d_lambda_x, d_lambda_y, d_lambda_z, d_Ek, d_neighbours, cells_number, neighbours_number, i, 10);
 
       // Wait Device
       cudaThreadSynchronize ();
@@ -310,7 +344,6 @@ void launch_coherence_vector_simulation (float *h_polarization, float *h_clock, 
    cudaPrintfEnd();
    cudaFree(d_next_polarization);
    cudaFree(d_polarization);
-   cudaFree(d_clock);
    cudaFree(d_Ek);
    cudaFree(d_neighbours);  
 
