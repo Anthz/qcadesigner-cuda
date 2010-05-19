@@ -122,7 +122,7 @@ int main ()
 #endif
 
    // Launch Simulation
-   launch_coherence_vector_simulation (polarization, clock, lambda_x, lambda_y, lambda_z, Ek, neighbours, NUM_CELLS, NUM_NEIGH_FIX, iterations, &options, &optimization_options);
+   launch_coherence_vector_simulation (polarization,  lambda_x, lambda_y, lambda_z, Ek, neighbours, NUM_CELLS, NUM_NEIGH_FIX, iterations, &options, &optimization_options,10);
 
    for (i = 0; i < NUM_CELLS; i++)
       printf("polarization[%d] = %f\n", i, polarization[i]);
