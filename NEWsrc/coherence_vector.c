@@ -460,15 +460,15 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
    }
 
    // Allocate CUDA-Compatible structures
-   polarization =               (float*) malloc (sizeof(float)*cells_number);
-   clock =                      (float*) malloc (sizeof(float)*cells_number);
-   lambda_x =                   (float*) malloc (sizeof(float)*cells_number);
-   lambda_y =                   (float*) malloc (sizeof(float)*cells_number);
-   lambda_z =                   (float*) malloc (sizeof(float)*cells_number);
-   Ek =	                        (float*) malloc (sizeof(float)*cells_number*max_neighbours_number);
-   neighbours =                 (int*) malloc (sizeof(int)*cells_number*max_neighbours_number);
-   CUDA_options =               (CUDA_coherence_OP*) malloc (sizeof(CUDA_coherence_OP));
-   CUDA_optimizations_options = (CUDA_coherence_optimizations*) malloc (sizeof(CUDA_coherence_optimizations));
+   polarization =						(float*) malloc (sizeof(float)*cells_number);
+   clock =								(float*) malloc (sizeof(float)*cells_number);
+   lambda_x =							(float*) malloc (sizeof(float)*cells_number);
+   lambda_y =							(float*) malloc (sizeof(float)*cells_number);
+   lambda_z =							(float*) malloc (sizeof(float)*cells_number);
+   Ek =									(float*) malloc (sizeof(float)*cells_number*max_neighbours_number);
+   neighbours =						(int*) malloc (sizeof(int)*cells_number*max_neighbours_number);
+   CUDA_options =						(CUDA_coherence_OP*) malloc (sizeof(CUDA_coherence_OP));
+   CUDA_optimizations_options =	(CUDA_coherence_optimizations*) malloc (sizeof(CUDA_coherence_optimizations));
 
    // Fill CUDA-Compatible structures
    index = 0;
@@ -511,7 +511,6 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
    CUDA_options->layer_separation       = options->layer_separation;
    CUDA_options->algorithm              = options->algorithm;
 
-
    CUDA_optimization_options->clock_prefactor             = optimization_options.clock_prefactor;
    CUDA_optimization_options->clock_shift                 = optimization_options.clock_shift;
    CUDA_optimization_options->four_pi_over_number_samples = optimization_options.four_pi_over_number_samples;
@@ -519,9 +518,22 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
    CUDA_optimization_options->hbar_over_kBT               = optimization_options.hbar_over_kBT;
 
    // Launch GPU Simulation
-   launch_coherence_vector_simulation (polarization, clock, lambda_x, lambda_y, lambda_z, Ek, neighbours, cells_number, 
-                                       max_neighbours_number, number_samples,CUDA_options, CUDA_optimization_options);
- 
+    launch_coherence_vector_simulation 
+   (
+   	polarization, 
+   	clock, 
+   	lambda_x, 
+   	lambda_y, 
+   	lambda_z, 
+   	Ek, 
+   	neighbours, 
+   	cells_number,
+   	max_neighbours_number, 
+   	number_samples,
+   	CUDA_options, 
+   	CUDA_optimization_options
+   );
+ 	
   #endif
 
   // Free the neigbours and Ek array introduced by this simulation//
@@ -683,34 +695,94 @@ static double coherence_determine_Ek (QCADCell * cell1, QCADCell * cell2, int la
   return EnergyDiff - EnergySame;
   }// coherence_determine_Ek
 
-//-------------------------------------------------------------------//
+
 // Calculates the clock data at a particular sample
-static inline double calculate_clock_value (unsigned int clock_num, unsigned long int sample, unsigned long int number_samples, int total_number_of_inputs, const coherence_OP *options, int SIMULATION_TYPE, VectorTable *pvt)
-  {
-  double clock = 0;
+static inline double calculate_clock_value 
+(
+	unsigned int clock_num, 
+	unsigned long int sample, 
+	unsigned long int number_samples, 
+	int total_number_of_inputs, 
+	const coherence_OP *options, 
+	int SIMULATION_TYPE, 
+	VectorTable *pvt
+)
+{
+	/*  
+		This function is called in coherence_vector.c like this:
+		clock_value = calculate_clock_value
+		(
+			sorted_cells[i][j]->cell_options.clock, 
+			sample_number, 
+			number_samples, 
+			total_number_of_inputs, 
+			options, 
+			SIMULATION_TYPE, 
+			pvt
+		);
+		1) does sorted_cells[i][j]->cell_options.clock change over time?
+		2) modify pointers to structure so as to hold the actual value and not the 
+			pointer to it
+	*/ 
+   double clock = 0;
+	
+	if (SIMULATION_TYPE == EXHAUSTIVE_VERIFICATION)
+	{
+		clock = 
+				// this is a double, the struct is a global variable of this file
+				optimization_options.clock_prefactor *	
+				// passed as argument
+				cos 
+				(
+					((double) (1 << total_number_of_inputs)) *
+					// passed as argument - the current value of iteration j
+					(double) sample * 
+					// this is a double, the struct is a global variable of this file
+					optimization_options.four_pi_over_number_samples -
+					// constant defined in math.h (?) 
+					PI * 
+					// passed as argument - ???
+					(double)clock_num * 0.5
+				) + 
+				// this is a double, the struct is a global variable of this file
+				optimization_options.clock_shift + 
+				// this is a double, the struct is passed as argument
+				(double)options->clock_shift;
+		/*
+			ACTUAL CALL IN CUDA
+			generate_clock_at_sample_s 
+			(
+				double clock_prefactor
+				int total_number_of_inputs,
+				unsigned long int sample, 
+				double four_pi_over_number_samples,
+				unsigned int clock_num,				
+				double total_clock_shift //sum of last two terms in clock's formula
+			)
+		
+		*/
+		// Saturate the clock at the clock high and low values
+		clock = CLAMP (clock, options->clock_low, options->clock_high) ;
+	}
+	else
+		if (SIMULATION_TYPE == VECTOR_TABLE)
+		{
+			clock = 
+				optimization_options.clock_prefactor *
+				cos (((double)pvt->vectors->icUsed) * 
+				(double) sample * 
+				optimization_options.two_pi_over_number_samples - 
+				PI * 
+				(double)clock_num * 0.5) + 
+				optimization_options.clock_shift + 
+				options->clock_shift;
 
-  if (SIMULATION_TYPE == EXHAUSTIVE_VERIFICATION)
-    {
-    clock = optimization_options.clock_prefactor *
-      cos (((double) (1 << total_number_of_inputs)) * (double) sample * optimization_options.four_pi_over_number_samples - PI * (double)clock_num * 0.5) + optimization_options.clock_shift + options->clock_shift;
+			// Saturate the clock at the clock high and low values
+			clock = CLAMP (clock, options->clock_low, options->clock_high) ;
+		}
 
-    // Saturate the clock at the clock high and low values
-    clock = CLAMP (clock, options->clock_low, options->clock_high) ;
-    }
-  else
-  if (SIMULATION_TYPE == VECTOR_TABLE)
-    {
-    clock = optimization_options.clock_prefactor *
-      cos (((double)pvt->vectors->icUsed) * (double) sample * optimization_options.two_pi_over_number_samples - PI * (double)clock_num * 0.5) + optimization_options.clock_shift + options->clock_shift;
-
-    // Saturate the clock at the clock high and low values
-    clock = CLAMP (clock, options->clock_low, options->clock_high) ;
-    }
-
-  return clock;
-  }// calculate_clock_value
-
-//-------------------------------------------------------------------//
+	return clock;
+}// calculate_clock_value
 
 // Next value of lambda x with choice of algorithm
 static inline double lambda_x_next (double t, double PEk, double Gamma, double lambda_x, double lambda_y, double lambda_z, const coherence_OP *options)
