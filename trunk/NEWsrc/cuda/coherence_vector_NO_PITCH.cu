@@ -98,6 +98,9 @@ __device__ inline float slope_z (float t, float PEk, float Gamma, float lambda_x
 // Next value of lambda x with choice of options_algorithm
 __device__ inline float eval_next_lambda_x (float t, float PEk, float Gamma, float lambda_x, float lambda_y, float lambda_z)
 {
+	// TODO Possible implementation: adopt register to register intermediate
+	// value, removing k1, k2, k3, k4 - if there are enough registers on the 
+	// tesla for all the possible running warps
    float k1 = options_time_step * slope_x (t, PEk, Gamma, lambda_x, lambda_y, lambda_z);
    float k2, k3, k4;
 
@@ -157,6 +160,7 @@ __device__ inline float eval_next_lambda_z (float t, float PEk, float Gamma, flo
       return 0;
 }
 
+
 // OK!
 __device__ inline float generate_clock_at_sample_s 
 (
@@ -187,6 +191,7 @@ __device__ inline float generate_clock_at_sample_s
 	);
 }
 
+// TODO check for further corrections and todos inside code
 __global__ void kernelIterationParallel 
 (
 	float *d_next_polarization,
