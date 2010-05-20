@@ -518,7 +518,7 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
    CUDA_optimization_options->hbar_over_kBT               = optimization_options.hbar_over_kBT;
 
    // Launch GPU Simulation
-    launch_coherence_vector_simulation 
+   launch_coherence_vector_simulation 
    (
    	polarization, 
    	clock, 
@@ -593,7 +593,7 @@ static void run_coherence_iteration (int sample_number, int number_of_cell_layer
       // Calculate the sum of neighboring polarizations //
       num_neighbours = ((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours;
       for (q = 0 ; q < num_neighbours ; q++)
-        PEk += (qcad_cell_calculate_polarization (((coherence_model *)sorted_cells[i][j]->cell_model)->neighbours[q]))*((coherence_model *)sorted_cells[i][j]->cell_model)->Ek[q];
+			PEk += (qcad_cell_calculate_polarization (((coherence_model *)sorted_cells[i][j]->cell_model)->neighbours[q]))*((coherence_model *)sorted_cells[i][j]->cell_model)->Ek[q];
 
       lambda_x = ((coherence_model *)sorted_cells[i][j]->cell_model)->lambda_x;
       lambda_y = ((coherence_model *)sorted_cells[i][j]->cell_model)->lambda_y;
@@ -610,7 +610,7 @@ static void run_coherence_iteration (int sample_number, int number_of_cell_layer
   }//run_iteration
 
 //-------------------------------------------------------------------//
-// -- refreshes the array of Ek values for each cell in the design this is done to speed up the simulation
+// refreshes the array of Ek values for each cell in the design this is done to speed up the simulation
 // since we can assume no design changes durring the simulation we can precompute all the Ek values then
 // use them as necessary throughout the simulation -- //
 static void coherence_refresh_all_Ek (int number_of_cell_layers, int *number_of_cells_in_layer, QCADCell ***sorted_cells, coherence_OP *options)
@@ -720,9 +720,11 @@ static inline double calculate_clock_value
 			SIMULATION_TYPE, 
 			pvt
 		);
-		1) does sorted_cells[i][j]->cell_options.clock change over time?
-		2) modify pointers to structure so as to hold the actual value and not the 
-			pointer to it
+		Q1) does sorted_cells[i][j]->cell_options.clock change over time?
+		Q2) modify pointers to structure so as to hold the actual value and not the 
+			 pointer to it
+		A1) probably not - verified in coherence_vector.c
+		A2) done
 	*/ 
    double clock = 0;
 	
@@ -748,19 +750,7 @@ static inline double calculate_clock_value
 				optimization_options.clock_shift + 
 				// this is a double, the struct is passed as argument
 				(double)options->clock_shift;
-		/*
-			ACTUAL CALL IN CUDA
-			generate_clock_at_sample_s 
-			(
-				double clock_prefactor
-				int total_number_of_inputs,
-				unsigned long int sample, 
-				double four_pi_over_number_samples,
-				unsigned int clock_num,				
-				double total_clock_shift //sum of last two terms in clock's formula
-			)
 		
-		*/
 		// Saturate the clock at the clock high and low values
 		clock = CLAMP (clock, options->clock_low, options->clock_high) ;
 	}
@@ -890,7 +880,8 @@ static int compareCoherenceQCells (const void *p1, const void *p2)
 
 void coherence_options_dump (coherence_OP *coherence_options, FILE *pfile)
   {
-  fprintf (stderr, "coherence_options_dump:\n") ;
+	// pfile??
+	fprintf (stderr, "coherence_options_dump:\n") ;
 	fprintf (stderr, "coherence_options->T                         = %e [K]\n",  coherence_options->T) ;
 	fprintf (stderr, "coherence_options->relaxation                = %e [s]\n",  coherence_options->relaxation) ;
 	fprintf (stderr, "coherence_options->time_step                 = %e [s]\n",  coherence_options->time_step) ;
