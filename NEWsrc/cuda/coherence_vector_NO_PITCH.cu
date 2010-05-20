@@ -51,6 +51,9 @@ TODO:
 #define HBAR 1.0545887e-34
 #define PRECISION 1e-5
 
+// Debug-related defines
+#define DEBUG_ON
+
 
 // Coherence Optimization
 __constant__ float optimization_options_clock_prefactor;
@@ -67,6 +70,10 @@ __constant__ float options_relaxation;
 __constant__ float options_time_step;
 __constant__ int options_algorithm;
 
+// Other constants
+__constant__ float clock_total_shift;
+// TODO
+// __constant__ float d_clock ???
 
 __device__ inline float slope_x (float t, float PEk, float Gamma, float lambda_x, float lambda_y, float lambda_z)
 {
@@ -150,21 +157,51 @@ __device__ inline float eval_next_lambda_z (float t, float PEk, float Gamma, flo
       return 0;
 }
 
-
-__device__ inline float generate_clock_at_sample_s (unsigned int clock_num, unsigned long int sample, unsigned long int number_samples, int total_number_of_inputs, const CUDA_coherence_OP *options, int SIMULATION_TYPE /*, VectorTable *pvt*/)
+// OK!
+__device__ inline float generate_clock_at_sample_s 
+(
+	float clock_prefactor,
+	int total_number_of_inputs,
+	unsigned long int sample, 
+	float four_pi_over_number_samples,
+	unsigned int clock_num,				
+	float total_clock_shift, //sum of last two terms in original clock's formula
+	float options_clock_low,
+	float	options_clock_high
+)
 {
-/*
-   float clock = optimization_options_clock_prefactor * cos (((float) (1 << total_number_of_inputs)) * (float) sample * optimization_options_four_pi_over_number_samples - PI * (float)clock_num * 0.5) + optimization_options_clock_shift + options_clock_shift;
-
-   // Saturate the clock at the clock high and low values
-	clock = CLAMP (clock, options_clock_low, options_clock_high) ;
-	return clock;
-*/
-	return CLAMP (optimization_options_clock_prefactor * cos (((float) (1 << total_number_of_inputs)) * (float) sample * optimization_options_four_pi_over_number_samples - PI * (float)clock_num * 0.5) + optimization_options_clock_shift + options_clock_shift, options_clock_low, options_clock_high);
+	return CLAMP 
+	(
+		clock_prefactor * 
+		cos 
+		(
+			((float) (1 << total_number_of_inputs)) * 
+			(float)sample * 
+			four_pi_over_number_samples - 
+			(float)PI * 
+			(float)clock_num * 0.5
+		) + 
+		total_clock_shift,
+		options_clock_low,
+		options_clock_high
+	);
 }
 
-/*
-__global__ void kernelIterationParallelOptimized (float* d_next_polarization, float *d_polarization, float *d_lambda_x, float *d_lambda_y, float *d_lambda_z, float *d_Ek, int *d_neighbours, int cells_number, int neighbours_number, int sample_number, int number_of_inputs)
+__global__ void kernelIterationParallel 
+(
+	float *d_next_polarization,
+	float *d_polarization, 
+	float *d_lambda_x, 
+	float *d_lambda_y, 
+	float *d_lambda_z, 
+	float *d_Ek, 
+	unsigned int *d_clock,
+	int *d_neighbours, 
+	int cells_number, 
+	int neighbours_number, 
+	int sample_number, 
+	int total_number_of_inputs
+)
 {
 
    int th_index = blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
@@ -176,28 +213,39 @@ __global__ void kernelIterationParallelOptimized (float* d_next_polarization, fl
    float lambda_y, next_lambda_y;
    float lambda_z, next_lambda_z;
    float t;
-   int total_number_of_inputs = number_of_inputs;
 
-   // Only usefull threads must work
-   if (th_index < cells_number)
+   // Only useful threads must work
+   if (th_index < cells_number /*TODO && cell must not be INPUT or FIXED*/ )
    {
-      t = options_time_step * sample_number;
-
       // Generate clock
-		clock_value = CLAMP (optimization_options_clock_prefactor * cos (((float) (1 << total_number_of_inputs)) * (float) sample_number * optimization_options_four_pi_over_number_samples - PI * (float)clock_num * 0.5) + optimization_options_clock_shift + options_clock_shift, options_clock_low, options_clock_high);
+      clock_value = 
+		   generate_clock_at_sample_s 
+			(
+				optimization_options_clock_prefactor, 
+				total_number_of_inputs,
+				sample_number,
+				optimization_options_four_pi_over_number_samples,
+				d_clock[th_index],
+				clock_total_shift,
+				options_clock_low,
+				options_clock_high
+			);
 
       PEk = 0;
-   
       for (i = 0; i < neighbours_number; i++)
       {
-	 nb_index = d_neighbours[th_index*neighbours_number+i];
-	 PEk += d_polarization[nb_index] * d_Ek[th_index*neighbours_number+nb_index]; 
+	 		nb_index = d_neighbours[th_index*neighbours_number+i];
+	 		PEk += d_polarization[nb_index] * d_Ek[th_index*neighbours_number+nb_index];
+	 		// TODO Hyp: d_EK of i > actual_numof_neighbours == 1?
       }
 
+		// TODO Optimization: remove these three floats and use them directly into 
+		// subsequent calls
       lambda_x = d_lambda_x[th_index];
       lambda_y = d_lambda_y[th_index];
       lambda_z = d_lambda_z[th_index];
 
+      t = options_time_step * sample_number;
       next_lambda_x = eval_next_lambda_x (t, PEk, clock_value, lambda_x, lambda_y, lambda_z);
       next_lambda_y = eval_next_lambda_y (t, PEk, clock_value, lambda_x, lambda_y, lambda_z);
       next_lambda_z = eval_next_lambda_z (t, PEk, clock_value, lambda_x, lambda_y, lambda_z);
@@ -206,59 +254,15 @@ __global__ void kernelIterationParallelOptimized (float* d_next_polarization, fl
       d_lambda_y[th_index] = next_lambda_y;
       d_lambda_z[th_index] = next_lambda_z;
       
+      // TODO in the original code this is outside the run_iteration; I suggest 
+      // to leave it there because it's associated to other code (exclude from 
+      // update FIXED and INPUT cells, terminate if the modulus of polarization 
+      // exceeds 1
       d_next_polarization[th_index] = next_lambda_z;
-
-      cuPrintf("polarization: %f\tclock: %f\tlambda: %f %f %f\tEk: %f\n", d_polarization[th_index], clock_value, d_lambda_x[th_index], d_lambda_y[th_index], d_lambda_z[th_index], d_Ek[th_index]);
-   }
-
-}
-*/
-
-__global__ void kernelIterationParallel (float* d_next_polarization, float *d_polarization, float *d_lambda_x, float *d_lambda_y, float *d_lambda_z, float *d_Ek, int *d_neighbours, int cells_number, int neighbours_number, int sample_number, int number_of_inputs)
-{
-
-   int th_index = blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
-   int nb_index;   // Neighbour index
-   int i;
-   float clock_value;
-   float PEk;
-   float lambda_x, next_lambda_x;
-   float lambda_y, next_lambda_y;
-   float lambda_z, next_lambda_z;
-   float t;
-   int total_number_of_inputs = number_of_inputs;
-
-   // Only usefull threads must work
-   if (th_index < cells_number)
-   {
-      t = options_time_step * sample_number;
-
-      // Generate clock
-		clock_value = 5; //generate_clock_at_sample_s (h_clock, cells_number, i, ...)
-
-      PEk = 0;
-   
-      for (i = 0; i < neighbours_number; i++)
-      {
-	 nb_index = d_neighbours[th_index*neighbours_number+i];
-	 PEk += d_polarization[nb_index] * d_Ek[th_index*neighbours_number+nb_index]; 
-      }
-
-      lambda_x = d_lambda_x[th_index];
-      lambda_y = d_lambda_y[th_index];
-      lambda_z = d_lambda_z[th_index];
-
-      next_lambda_x = eval_next_lambda_x (t, PEk, clock_value, lambda_x, lambda_y, lambda_z);
-      next_lambda_y = eval_next_lambda_y (t, PEk, clock_value, lambda_x, lambda_y, lambda_z);
-      next_lambda_z = eval_next_lambda_z (t, PEk, clock_value, lambda_x, lambda_y, lambda_z);
-
-      d_lambda_x[th_index] = next_lambda_x;
-      d_lambda_y[th_index] = next_lambda_y;
-      d_lambda_z[th_index] = next_lambda_z;
       
-      d_next_polarization[th_index] = next_lambda_z;
-
-      cuPrintf("polarization: %f\tclock: %f\tlambda: %f %f %f\tEk: %f\n", d_polarization[th_index], clock_value, d_lambda_x[th_index], d_lambda_y[th_index], d_lambda_z[th_index], d_Ek[th_index]);
+		#ifdef DEBUG_ON
+      cuPrintf("polarization: %f\tclock: %f\tlambda: %f %f %f\tEk: %f\td_clock[%d]: %d\n", d_polarization[th_index], clock_value, d_lambda_x[th_index], d_lambda_y[th_index], d_lambda_z[th_index], d_Ek[th_index],th_index,d_clock[th_index]);
+      #endif
    }
 
 }
@@ -273,14 +277,17 @@ __global__ void kernelIterationParallel (float* d_next_polarization, float *d_po
  \param <neighbours_number> {}
  \param <iteration> {}
 */
+
 extern "C"
-void launch_coherence_vector_simulation (float *h_polarization, float *h_lambda_x, float *h_lambda_y, float *h_lambda_z, float *h_Ek, int *h_neighbours, int cells_number, int neighbours_number, int iterations, CUDA_coherence_OP *options, CUDA_coherence_optimizations *optimization_options)
+void launch_coherence_vector_simulation (float *h_polarization, float *h_lambda_x, float *h_lambda_y, float *h_lambda_z, float *h_Ek, unsigned int *h_clock, int *h_neighbours, int cells_number, int neighbours_number, int iterations, CUDA_coherence_OP *options, CUDA_coherence_optimizations *optimization_options, unsigned int total_number_of_inputs)
 {
 
    // Variables
    float *d_next_polarization, *d_polarization, *d_Ek, *d_lambda_x, *d_lambda_y, *d_lambda_z;
+   unsigned int *d_clock;
    int *d_neighbours;
    int i;
+   float total_clock_shift = optimization_options->clock_shift + options->clock_shift;
 
    // Set GPU Parameters
    dim3 threads (BLOCK_DIM);
@@ -292,7 +299,8 @@ void launch_coherence_vector_simulation (float *h_polarization, float *h_lambda_
 
    // Initialize Memory
    cutilSafeCall (cudaMalloc (&d_next_polarization, cells_number*sizeof(float))); 
-   cutilSafeCall (cudaMalloc (&d_polarization, cells_number*sizeof(float))); 
+   cutilSafeCall (cudaMalloc (&d_polarization, cells_number*sizeof(float)));
+   cutilSafeCall (cudaMalloc (&d_clock, cells_number*sizeof(unsigned int)));
    cutilSafeCall (cudaMalloc (&d_lambda_x, cells_number*sizeof(float)));
    cutilSafeCall (cudaMalloc (&d_lambda_y, cells_number*sizeof(float)));
    cutilSafeCall (cudaMalloc (&d_lambda_z, cells_number*sizeof(float)));
@@ -301,6 +309,7 @@ void launch_coherence_vector_simulation (float *h_polarization, float *h_lambda_
 
    // Set Memory
    cutilSafeCall (cudaMemcpy (d_polarization, h_polarization, cells_number*sizeof(float), cudaMemcpyHostToDevice));
+   cutilSafeCall (cudaMemcpy (d_clock, h_clock, cells_number*sizeof(unsigned int), cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_lambda_x, h_lambda_x, cells_number*sizeof(float), cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_lambda_y, h_lambda_y, cells_number*sizeof(float), cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_lambda_z, h_lambda_z, cells_number*sizeof(float), cudaMemcpyHostToDevice));
@@ -319,14 +328,74 @@ void launch_coherence_vector_simulation (float *h_polarization, float *h_lambda_
    cutilSafeCall (cudaMemcpyToSymbol("options_relaxation", &(options->relaxation), sizeof(float), 0, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpyToSymbol("options_time_step", &(options->time_step), sizeof(float), 0, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpyToSymbol("options_algorithm", &(options->algorithm), sizeof(int), 0, cudaMemcpyHostToDevice));
+   cutilSafeCall (cudaMemcpyToSymbol("clock_total_shift", &(total_clock_shift), sizeof(float), 0, cudaMemcpyHostToDevice));
 
    // For each sample...
    for (i = 0; i < iterations; i++)
    {
-      printf("Inizio simulazione -- Iterazione %d\n", i); 
-
+		// -------------------------------TODO--------------------------------- //
+		//										PAY ATTENTION										//
+		// -------------------------------------------------------------------- //		
+		//		Lots of things missing - see code coherence_vector.c					//
+		//		We must add some code pre and post kernelIterationParallel 			//
+		//		to save results and to keep updating the cpu data [check]			//
+		//																								//
+			/*
+			for 
+			(
+				idxMasterBitOrder = 0, 
+				design_bus_layout_iter_first 
+					( design->bus_layout, &bli, QCAD_CELL_INPUT, &i ) ; 
+				i > -1 ;
+				design_bus_layout_iter_next ( &bli, &i), 
+				idxMasterBitOrder++
+			)
+			{
+				qcad_cell_set_polarization		// TODO
+				( 
+					exp_array_index_1d (
+						design->bus_layout->inputs, 
+						BUS_LAYOUT_CELL, 
+						i ).cell
+					,
+					dPolarization = 
+					(	
+						-sin (
+									((double) (1 << idxMasterBitOrder)) * 
+									(double) j * 
+									optimization_options.four_pi_over_number_samples)
+								) > 0 ? 1 : -1
+				);
+				if (0 == j % record_interval)	//TODO
+					sim_data->trace[i].data[j/record_interval] = dPolarization ;
+				
+				if (0 == j % record_interval)	// TODO
+				{
+					for 
+					(			
+						design_bus_layout_iter_first 
+							( design->bus_layout, &bli, QCAD_CELL_INPUT, &i ) ; 
+						i > -1 ;
+						design_bus_layout_iter_next ( &bli, &i), 
+					)
+					{
+						sim_data->trace[i].data[j/record_interval] =
+							qcad_cell_calculate_polarization 
+							(
+								exp_array_index_1d 
+									(design->bus_layout->inputs, BUS_LAYOUT_CELL, i).cell
+							);
+					}
+				}
+			*/
+		//																								//
+		// -------------------------------------------------------------------- //		
+      
       // Launch Kernel
-      kernelIterationParallel<<< grid, threads >>> (d_next_polarization, d_polarization, d_lambda_x, d_lambda_y, d_lambda_z, d_Ek, d_neighbours, cells_number, neighbours_number, i, 10);
+		#ifdef DEBUG_ON
+      	printf("Iteration# %d\n", i); 
+      #endif
+      kernelIterationParallel<<< grid, threads >>> (d_next_polarization, d_polarization, d_lambda_x, d_lambda_y, d_lambda_z, d_Ek, d_clock, d_neighbours, cells_number, neighbours_number, i, total_number_of_inputs);
 
       // Wait Device
       cudaThreadSynchronize ();
@@ -338,6 +407,75 @@ void launch_coherence_vector_simulation (float *h_polarization, float *h_lambda_
 
       // Test -- Get desidered iteration results from GPU
       cutilSafeCall (cudaMemcpy (h_polarization, d_next_polarization, cells_number*sizeof(float), cudaMemcpyDeviceToHost));
+		
+		// -------------------------------TODO--------------------------------- //
+		//										PAY ATTENTION										//
+		// -------------------------------------------------------------------- //		
+		//		Lots of things missing - see code coherence_vector.c					//
+		//		We must add some code pre and post kernelIterationParallel 			//
+		//		to save results and to keep updating the cpu data [check]			//
+		/*
+		
+		
+		// -- Set the cell polarizations to the lambda_z value -- //
+		for (k = 0; k < number_of_cell_layers; k++)
+			for (l = 0; l < number_of_cells_in_layer[k]; l++)
+			{
+				// don't simulate the input and fixed cells //
+				if 
+				(
+					(
+						(QCAD_CELL_INPUT == sorted_cells[k][l]->cell_function) ||
+						(QCAD_CELL_FIXED == sorted_cells[k][l]->cell_function)
+					)
+				)
+					continue;
+					
+				// if polarization went mad, abort
+				if 
+				(
+					fabs
+					(
+						((coherence_model *)sorted_cells[k][l]->cell_model)->lambda_z
+					) > 1.0
+				)
+				{
+					//abort
+					return sim_data;
+				}
+				
+				// if everything goes well, update polarizations for next cycle
+				qcad_cell_set_polarization	// TODO at the moment implemented in krnl
+				(
+					sorted_cells[k][l], 
+					((coherence_model *)sorted_cells[k][l]->cell_model)->lambda_z
+				);
+			}
+			
+		   // collect all the output data from the simulation
+			if (0 == j % record_interval)	// TODO
+			{
+				for 
+				(			
+					design_bus_layout_iter_first 
+						( design->bus_layout, &bli, QCAD_CELL_OUTPUT, &i ) ; 
+					i > -1 ;
+					design_bus_layout_iter_next ( &bli, &i), 
+				)
+				{
+					sim_data->trace[total_number_of_inputs+i].data[j/record_interval] =
+						qcad_cell_calculate_polarization 
+						(
+							exp_array_index_1d 
+								(design->bus_layout->outputs, BUS_LAYOUT_CELL, i).cell
+						);
+				}
+			}
+
+		if (TRUE == STOP_SIMULATION) return sim_data;
+
+		*/
+		// -------------------------------------------------------------------- //
    }
 
    // Free-up resources

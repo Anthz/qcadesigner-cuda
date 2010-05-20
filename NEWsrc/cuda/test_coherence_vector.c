@@ -8,6 +8,8 @@
 #define NUM_NEIGH_FIX 4
 #define __DEBUG_MODE__
 
+// TODO if we wanna use this code to test the kernel, we should remember to 
+// adjust all params to be meaningful
 
 //-- Generates a psuedo-random float between min and max
 float randfloat (float min, float max)
@@ -31,15 +33,15 @@ int randint(int min, int max)
 int main () 
 {
    int i, j;
-   //-- 
    float polarization[NUM_CELLS], clock[NUM_CELLS], lambda_x[NUM_CELLS], lambda_y[NUM_CELLS], lambda_z[NUM_CELLS];
    float Ek[NUM_CELLS][NUM_NEIGH_FIX];
 	//-- neighbours[x][y]: all ys are neighbours of x (and x will obviously be neighbour of all and each ys)
    int neighbours[NUM_CELLS][NUM_NEIGH_FIX];
-   int iterations = 1;
+   int iterations = 2;
    CUDA_coherence_OP options;
    CUDA_coherence_optimizations optimization_options;
 
+	/////////////////////// TODO ////////////////////////////////
    // Generate random polarizations, clock, lambda
    for (i = 0; i < NUM_CELLS; i++)
    {
@@ -55,14 +57,16 @@ int main ()
       for (j = 0; j < NUM_NEIGH_FIX; j++)
 	 		Ek[i][j] = randfloat(0, 10);
       
-   ////////////////////////////////////////////////////////////////////// CHECK ///////////////////////////////////////////////////
-   // This actually doesn't guarantee that neighbours[i][j]=k <==> exists f (0 <= f <= NUM_NEIGH_FIX - 1 and neighbours[k][f]=i)
+   //////////////////////// TODO ///////////////////////////////
+   // This actually doesn't guarantee that 
+   // neighbours[i][j]=k <==> exists f (0 <= f <= NUM_NEIGH_FIX - 1 
+   // and neighbours[k][f]=i)
    // Generate random neighbours
    for (i = 0; i < NUM_CELLS; i++)
       for (j = 0; j < NUM_NEIGH_FIX; j++)
 	 		neighbours[i][j] = randint(0, NUM_CELLS-1);
-	////////////////////////////////////////////////////////////////////// CHECK ///////////////////////////////////////////////////
 
+	/////////////////////// TODO ////////////////////////////////
 	// CORRECT??? Is any value feasible for any option field?
    // Generate Random Options
    options.T = randfloat(0, 10);
@@ -78,6 +82,7 @@ int main ()
    options.layer_separation = randfloat(0, 10);
    options.algorithm = 1;
 
+	/////////////////////// TODO ////////////////////////////////
 	// CORRECT??? Is any valuable feasible for any option field?
    // Generate Random Optimization Options
    optimization_options.clock_prefactor = randfloat(0, 10);
@@ -90,6 +95,12 @@ int main ()
    FILE *fp;
 
    fp = fopen("log/log.txt", "w");
+   if(fp == NULL)
+   {
+   	fprintf(stderr, "error opening file\n");
+   	return -1;
+   }
+   	
    fprintf(fp,"Index\t||\tPolarization\t||\tClock\t\t||\tLambda\t\t\t\t||\tNeighbours\t\t||\tEk\n");
    for (i = 0; i < NUM_CELLS; i++)
    {
