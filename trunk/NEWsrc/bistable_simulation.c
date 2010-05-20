@@ -111,6 +111,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 #ifdef CUDA
   float *h_polarization, *h_Ek, *h_clock_data;
   int *h_neighbours, max_neighbours, *h_cell_clock;
+  int *input_indexes, input_number;
   int ambros;
   
   //initialize pointer to matrix structures
@@ -285,8 +286,8 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   //sorted_cells_to_CUDA_Structures_matrix(sorted_cells,&h_polarization,&h_cell_clock,&h_Ek,&h_neighbours, number_of_cell_layers, number_of_cells_in_layer);
   //Fill array structures
 	sorted_cells_to_CUDA_Structures_array(sorted_cells, &h_polarization,&h_cell_clock, &h_clock_data, &h_Ek, 
-	&h_neighbours, number_of_cell_layers, number_of_cells_in_layer, &max_neighbours, sim_data->clock_data, sim_data_number_samples);
-
+		&h_neighbours, number_of_cell_layers, number_of_cells_in_layer, &max_neighbours, &input_indexes, 
+		&input_number, sim_data->clock_data, sim_data_number_samples);
 
     launch_bistable_simulation(h_polarization,h_Ek,h_cell_clock,h_clock_data,h_neighbours,total_cells,max_neighbours,max_iterations_per_sample);
 #else //if not CUDA
