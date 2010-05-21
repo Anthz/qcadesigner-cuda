@@ -46,6 +46,10 @@
 
 #define DBG_OPEN(s)
 
+#define MEAN_THRESHOLD 0.5
+#define ONE_THRESHOLD 0.7
+#define MINUS_ONE_THRESHOLD 0.7
+
 // ---------------------------------------------------------------------------------------- //
 
 /*static gboolean legacy_open_project_file (FILE *fd, DESIGN **pdesign) ;*/
@@ -53,6 +57,8 @@
 /*static char *get_identifier(char *buffer);*/
 /*static QCADDesignObject *legacy_read_cell_from_stream (FILE *stream) ;*/
 static void serialize_trace (FILE *fp, struct TRACEDATA *trace, int icSamples) ;
+static void serialize_trace_cuda (FILE *fp, struct TRACEDATA *trace, int icSamples,float delay, int n_input) ;
+static void serialize_trace_binary_cuda (FILE *fp, struct TRACEDATA *trace, int icSamples,float delay, int n_input) ;
 /*static void unserialize_trace (FILE *pfile, struct TRACEDATA *trace, int icSamples) ;*/
 /*static void unserialize_trace_data (FILE *pfile, struct TRACEDATA *trace, int icSamples) ;*/
 static coherence_OP *open_coherence_options_file_fp (FILE *fp) ;
@@ -1023,3 +1029,133 @@ static bistable_OP *open_bistable_options_file_fp (FILE *pfile)
 /*        exp_array_index_1d (bus->cell_indices, int, Nix1)).bIsInBus = TRUE ;*/
 /*    }*/
 /*  }*/
+
+//same as create_simulation_output_file_fp but doesn't care about buses.
+void create_simulation_output_file_fp_cuda (FILE *pfile, SIMULATION_OUTPUT *sim_output, float delay)
+  {
+//  fprintf (pfile, "[SIMULATION_OUTPUT]\n") ;
+  if (NULL != sim_output->sim_data)
+    simulation_data_serialize_cuda (pfile, sim_output->sim_data,delay) ;
+  //if (NULL != sim_output->bus_layout)
+    //design_bus_layout_serialize (sim_output->bus_layout, pfile) ;
+//  fprintf (pfile, "[#SIMULATION_OUTPUT]\n") ;
+  }
+
+//same as simulation_data_serialize but doesn't print clocks.
+void simulation_data_serialize_cuda (FILE *pfile, simulation_data *sim_data, float delay)
+  {
+  int Nix ;
+
+//  fprintf (pfile, "[SIMULATION_DATA]\n") ;
+//  fprintf (pfile, "number_samples=%d\n", sim_data->number_samples) ;
+//  fprintf (pfile, "number_of_traces=%d\n", sim_data->number_of_traces) ;
+//  fprintf (pfile, "[TRACES]\n") ;
+  int n_input=0;
+  for (Nix = 0 ; Nix < sim_data->number_of_traces ; Nix++)
+    if(sim_data->trace[Nix].trace_function == 1 )
+       n_input++;
+  for (Nix = 0 ; Nix < sim_data->number_of_traces ; Nix++)
+    serialize_trace_cuda (pfile, &(sim_data->trace[Nix]), sim_data->number_samples, delay, n_input) ;
+/*  fprintf (pfile, "[#TRACES]\n[CLOCKS]\n") ;
+  for (Nix = 0 ; Nix < 4 ; Nix++)
+    serialize_trace (pfile, &(sim_data->clock_data[Nix]), sim_data->number_samples) ;
+  fprintf (pfile, "[#CLOCKS]\n") ;
+  fprintf (pfile, "[#SIMULATION_DATA]\n") ;*/
+  }
+//same as serialize_trace but only print Output (if trace->function = 2) 
+//also adds '#' before everything that it's not a number. so that it's compatible with gnuplot.
+static void serialize_trace_cuda (FILE *pfile, struct TRACEDATA *trace, int icSamples, float delay, int n_input)
+  {
+  int Nix ;
+  int idx = 0 ;
+  int sample_idx = 0 ;
+
+  if(trace->trace_function == 2){
+    fprintf (pfile, "#[TRACE]\n") ;
+    fprintf (pfile, "#data_labels=%s\n", trace->data_labels) ;
+  /*fprintf (pfile, "trace_function=%d\n", trace->trace_function) ;
+    fprintf (pfile, "drawtrace=%s\n", trace->drawtrace ? "TRUE" : "FALSE") ;*/
+    fprintf (pfile, "#[TRACE_DATA]\n") ;
+    int start_delay;
+    start_delay = icSamples*delay/pow(2,n_input+1);
+    for (Nix = start_delay ; Nix < icSamples - 1 ; Nix += FLOATS_PER_LINE)
+      {
+      for (idx = 0 ; idx < FLOATS_PER_LINE ; idx++)
+        if ((sample_idx = Nix + idx) < icSamples - 1)
+          fprintf (pfile, "%e ", trace->data[sample_idx]) ;
+        else
+          break ;
+      if (sample_idx < icSamples - 1)
+        fprintf (pfile, "\n") ;
+      }
+    fprintf (pfile, "%e\n", trace->data[icSamples - 1]) ;
+    fprintf (pfile, "#[#TRACE_DATA]\n") ;
+    fprintf (pfile, "#[#TRACE]\n") ;
+   }
+  }
+
+/*Create binary file*/
+void create_simulation_output_binary_cuda (FILE *pfile, SIMULATION_OUTPUT *sim_output, float delay)
+  {
+//  fprintf (pfile, "[SIMULATION_OUTPUT]\n") ;
+  if (NULL != sim_output->sim_data)
+    simulation_data_serialize_binary_cuda (pfile, sim_output->sim_data,delay) ;
+  //if (NULL != sim_output->bus_layout)
+    //design_bus_layout_serialize (sim_output->bus_layout, pfile) ;
+//  fprintf (pfile, "[#SIMULATION_OUTPUT]\n") ;
+  }
+
+//same as simulation_data_serialize but doesn't print clocks.
+void simulation_data_serialize_binary_cuda (FILE *pfile, simulation_data *sim_data, float delay)
+  {
+  int Nix ;
+//  fprintf (pfile, "[SIMULATION_DATA]\n") ;
+//  fprintf (pfile, "number_samples=%d\n", sim_data->number_samples) ;
+//  fprintf (pfile, "number_of_traces=%d\n", sim_data->number_of_traces) ;
+//  fprintf (pfile, "[TRACES]\n") ;
+  int n_input=0;
+  for (Nix = 0 ; Nix < sim_data->number_of_traces ; Nix++)
+    if(sim_data->trace[Nix].trace_function == 1 )
+       n_input++;
+  for (Nix = 0 ; Nix < sim_data->number_of_traces ; Nix++)
+    serialize_trace_binary_cuda (pfile, &(sim_data->trace[Nix]), sim_data->number_samples, delay, n_input) ;
+/*  fprintf (pfile, "[#TRACES]\n[CLOCKS]\n") ;
+  for (Nix = 0 ; Nix < 4 ; Nix++)
+    serialize_trace (pfile, &(sim_data->clock_data[Nix]), sim_data->number_samples) ;
+  fprintf (pfile, "[#CLOCKS]\n") ;
+  fprintf (pfile, "[#SIMULATION_DATA]\n") ;*/
+  }
+//same as serialize_trace but only print Output (if trace->function = 2) 
+//also adds '#' before everything that it's not a number. so that it's compatible with gnuplot.
+static void serialize_trace_binary_cuda (FILE *pfile, struct TRACEDATA *trace, int icSamples, float delay, int n_input)
+  {
+  int Nix,Nix2 ;
+  int idx = 0 ;
+  int sample_idx = 0 ;
+  if(trace->trace_function == 2){
+  /*fprintf (pfile, "#[TRACE]\n") ;
+    fprintf (pfile, "#data_labels=%s\n", trace->data_labels) ;
+    fprintf (pfile, "trace_function=%d\n", trace->trace_function) ;
+    fprintf (pfile, "drawtrace=%s\n", trace->drawtrace ? "TRUE" : "FALSE") ;
+    fprintf (pfile, "#[TRACE_DATA]\n") ;*/
+    int start_delay;
+    start_delay = icSamples*delay/pow(2,n_input+1);
+    int step;
+    step = icSamples/pow(2,n_input+1);
+    float mean=0;           
+    for(Nix = start_delay; Nix < icSamples-1; Nix +=step){
+      mean = trace ->data[Nix];
+      for(Nix2 = 1; Nix2<step;Nix2++){
+        if(trace->data[Nix+Nix2] > MEAN_THRESHOLD || trace->data[Nix+Nix2]< -MEAN_THRESHOLD)
+	  mean = mean + (trace->data[Nix+Nix2]);
+      }
+     mean = mean / step;
+     if(mean > 1 - ONE_THRESHOLD && mean < 1 + ONE_THRESHOLD)
+      fprintf(pfile,"1\n");
+     if(mean > -1 - MINUS_ONE_THRESHOLD && mean < -1 + MINUS_ONE_THRESHOLD)
+      fprintf(pfile,"0\n");
+    }
+  /*fprintf (pfile, "#[#TRACE_DATA]\n") ;
+    fprintf (pfile, "#[#TRACE]\n") ;*/
+   }
+  }
