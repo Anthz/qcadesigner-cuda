@@ -62,6 +62,8 @@ static int STOP_SIMULATION = 0 ;
 static inline double bistable_determine_Ek (QCADCell *cell1, QCADCell *cell2, int layer_separation, bistable_OP *options);
 static inline void bistable_refresh_all_Ek (int number_of_cell_layers, int *number_of_cells_in_layer, QCADCell ***sorted_cells, bistable_OP *options);
 
+//void launch_bistable_simulation(float *h_polarization, float *h_Ek, int *h_clock_state, float *h_clock_data, int *h_neighbours, int cells_number, int neighbours_number, int iterations_per_sample);
+
 //-------------------------------------------------------------------//
 // -- this is the main simulation procedure -- //
 //-------------------------------------------------------------------//
@@ -285,11 +287,12 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 //Fill matrix structures
   //sorted_cells_to_CUDA_Structures_matrix(sorted_cells,&h_polarization,&h_cell_clock,&h_Ek,&h_neighbours, number_of_cell_layers, number_of_cells_in_layer);
   //Fill array structures
+printf("\nConversione Strutture...\n");
 	sorted_cells_to_CUDA_Structures_array(sorted_cells, &h_polarization,&h_cell_clock, &h_clock_data, &h_Ek, 
 		&h_neighbours, number_of_cell_layers, number_of_cells_in_layer, &max_neighbours, &input_indexes, 
 		&input_number, sim_data->clock_data, sim_data_number_samples);
-
-    launch_bistable_simulation(h_polarization,h_Ek,h_cell_clock,h_clock_data,h_neighbours,total_cells,max_neighbours,max_iterations_per_sample);
+printf("\n....ESEGUITA\n");
+    launch_bistable_simulation(h_polarization,h_Ek,h_cell_clock,h_clock_data,h_neighbours,total_cells,max_neighbours, sim_data_number_samples, max_iterations_per_sample);
 #else //if not CUDA
 
   for (j = 0; j < sim_data_number_samples ; j++)

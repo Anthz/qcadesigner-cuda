@@ -21,8 +21,7 @@ int position_in_CUDA_array(int cell_id, int lenght){
 
 
 void sorted_cells_to_CUDA_Structures_array(QCADCell ***sorted_cells, float **h_polarization, int **h_cell_clock, float **h_clock_data, float **h_Ek, 
-						int **h_neighbours, int number_of_cell_layers, int *number_of_cells_in_layer, int* neighbours_number, int** input_indexes, 
-						int* input_number, struct TRACEDATA *clock_source, int number_of_samples){
+					int **h_neighbours, int number_of_cell_layers, int *number_of_cells_in_layer, int* neighbours_number, 						int** input_indexes, int* input_number, struct TRACEDATA *clock_source, int number_of_samples){
   
  // Allocate memory for all needed structures
  int i,iLayer, iCell, iNeighbour;
@@ -37,10 +36,9 @@ void sorted_cells_to_CUDA_Structures_array(QCADCell ***sorted_cells, float **h_p
 for(j = 0; j < number_of_samples; j++)
   {
     for(ambros=0; ambros<4;ambros++){
-      *(h_clock_data)[j * 4 + ambros] = (float)clock_source[ambros].data[j];
+      (*h_clock_data)[j * 4 + ambros] = (float)clock_source[ambros].data[j];
     }
   } 
-
 
 
 for(i = 0; i < number_of_cell_layers; i++)
