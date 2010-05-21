@@ -412,7 +412,10 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 
             // If any cells polarization has changed beyond this threshold
             // then the entire circuit is assumed to have not converged.
-            stable = (fabs (new_polarization - old_polarization) <= tolerance) ;
+			//
+			// 			====> "&& stable" added by Miglie
+			//
+            stable = (fabs (new_polarization - old_polarization) <= tolerance) && stable ;
             }
           }
         }
