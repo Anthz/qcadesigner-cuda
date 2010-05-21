@@ -160,11 +160,16 @@ int main (int argc, char **argv)
         {
 //looking in sim_data 
 	FILE *file;
-	file = fopen("file","w");
+	file = fopen("file_output","w");
+	FILE *file2;
+	file2 = fopen("file_binary","w");
 	SIMULATION_OUTPUT sim_output;
 	sim_output.sim_data = sim_data;
 	sim_output.bus_layout = NULL;
-	create_simulation_output_file_fp (file, &sim_output);
+	create_simulation_output_file_fp_cuda (file, &sim_output,1.25); // TODO: load the delay from simulation option file. delay = #whiched clock phase / 4
+	create_simulation_output_binary_cuda (file2, &sim_output,1.25); // TODO: load the delay
+        fclose(file);
+        fclose(file2);
 /*	
 	printf("\nnumber of samples %d",sim_data->number_samples);
 	printf("\nnumber of traces %d",sim_data->number_of_traces);
