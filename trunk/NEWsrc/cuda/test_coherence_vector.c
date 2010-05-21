@@ -37,7 +37,7 @@ int main ()
    float Ek[NUM_CELLS][NUM_NEIGH_FIX];
 	//-- neighbours[x][y]: all ys are neighbours of x (and x will obviously be neighbour of all and each ys)
    int neighbours[NUM_CELLS][NUM_NEIGH_FIX];
-   int iterations = 2;
+   int iterations = 1;
    CUDA_coherence_OP options;
    CUDA_coherence_optimizations optimization_options;
 
