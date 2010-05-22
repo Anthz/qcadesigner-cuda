@@ -1,5 +1,5 @@
 [BISTABLE_OPTIONS]
-number_of_samples= 128000
+number_of_samples= 1000
 animate_simulation= 0
 convergence_tolerance= 0.001000
 radius_of_effect= 65.0000

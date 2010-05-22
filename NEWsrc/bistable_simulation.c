@@ -34,6 +34,7 @@
 #include <time.h>
 #include "cuda/conversion.h"
 
+
 /*#ifdef GTK_GUI*/
 /*  #include "callback_helpers.h"*/
 /*  #include "support.h"*/
@@ -291,6 +292,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 		&h_neighbours, number_of_cell_layers, number_of_cells_in_layer, &max_neighbours, &input_indexes, 
 		&input_number/*, sim_data->clock_data, sim_data_number_samples*/);
 
+
     launch_bistable_simulation(
 		h_polarization,
 		h_Ek,
@@ -308,7 +310,8 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 		options->clock_low,
 		options->clock_high,
 		input_values_number,
-		input_values
+		input_values,
+		tolerance		
 		);
 
 #else //if not CUDA
