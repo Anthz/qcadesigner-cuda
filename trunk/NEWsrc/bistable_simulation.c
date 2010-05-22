@@ -25,7 +25,7 @@
 //                                                      //
 //////////////////////////////////////////////////////////
 
-#define CUDA //uncomment this to use CUDA technology
+//#define CUDA //uncomment this to use CUDA technology
 
 #include <stdlib.h>
 #include <math.h>
@@ -68,7 +68,7 @@ static inline void bistable_refresh_all_Ek (int number_of_cell_layers, int *numb
 //-------------------------------------------------------------------//
 simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, bistable_OP *options, VectorTable *pvt)
   {
-  int i, j, k, l, total_cells = 0 ;
+  int i, j, k,counter, l, total_cells = 0 ;
   int icLayers, icCellsInLayer;
   time_t start_time, end_time;
   simulation_data *sim_data = NULL ;
@@ -114,9 +114,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   int *h_neighbours, max_neighbours, *h_cell_clock;
   int *input_indexes, input_number;
   int ambros;
-  int input_values_number = -1; //Exhaustive verification
-  char *input_values;
-  
+  counter = 0;
   //initialize pointer to matrix structures
   //float *h_polarization, *h_cell_clock, **h_Ek;
   //int **h_neighbours;
@@ -315,10 +313,14 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 		);
 
 #else //if not CUDA
-
+  printf("inizio simulazione\n");
+  time_t t1;
   for (j = 0; j < sim_data_number_samples ; j++)
   {
-  
+   if(j%1000 ==0){
+    time(&t1);
+    printf("sample: %d time elapsed from begin: %d\n",j,(int) (t1));
+    }
     // if (j % 10 == 0)
       // {
       // // write the completion percentage to the command history window //
@@ -395,6 +397,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
     while (!stable && iteration < max_iterations_per_sample)
       {
       iteration++;
+      counter++;
       // -- assume that the circuit is stable -- //
       stable = TRUE;
 
@@ -461,6 +464,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
     if(TRUE == STOP_SIMULATION)
       j = sim_data_number_samples ;
     }//for number of samples
+printf("\ncounter: %d",counter);
 	
 #endif //CUDA
 
