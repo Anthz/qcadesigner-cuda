@@ -32,6 +32,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <glib.h>
+#include <time.h>
 #include "fileio.h"
 #include "design.h"
 //#include "graph_dialog.h"
@@ -58,6 +59,8 @@ int main (int argc, char **argv)
 
   int sim_engine = BISTABLE ;
   int Nix, Nix1, Nix2 ;
+  time_t t_start, t_end;
+  
   DESIGN *design = NULL, *working_design = NULL ;
   simulation_data *sim_data = NULL ;
   GRand *rnd = NULL ;
@@ -69,6 +72,9 @@ int main (int argc, char **argv)
   double dTolerance = -1.0 ;
   EXP_ARRAY *icSuccesses = NULL ;
   int icOutputBuses = 0 ;
+
+  //intial time for simulation.
+  time(&t_start);
 
   parse_cmdline (argc, argv, &sim_engine, &pszSimOptsFName, &pszFName, &number_of_sims, &dTolerance) ;
 
@@ -158,6 +164,9 @@ int main (int argc, char **argv)
 
       if (NULL != (sim_data = run_simulation (sim_engine, EXHAUSTIVE_VERIFICATION, working_design, NULL)))
         {
+        //final time for simulation.
+        time(&t_end);
+	printf("\nSimulation Time: %d seconds\n", (int) (t_end-t_start));
 //looking in sim_data 
 	FILE *file;
 	file = fopen("file_output","w");

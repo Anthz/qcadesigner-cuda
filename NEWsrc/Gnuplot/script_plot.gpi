@@ -6,13 +6,7 @@
       set ytic auto                          # set ytics automatically
       
       set xlabel "Sample"
-      set multiplot;
-      set size 1,0.5;  
-      set title "Windows Simulation Result";
-      set origin 0.0,0.5;   plot "file.dat" with linespoints; 
-      set title "Linux Simulation Result";
-      set origin 0.0,0.0;   plot "linux_sim.dat" with linespoints; 
+      plot "file.dat" with linespoints; 
       #set key 0.01,100
       #set xr [0.0:0.022]
       #set yr [-1:1]
-      unset multiplot;
