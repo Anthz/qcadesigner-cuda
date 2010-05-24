@@ -20,15 +20,28 @@ int position_in_CUDA_array(int cell_id, int lenght){
 
 
 
-void sorted_cells_to_CUDA_Structures_array(QCADCell ***sorted_cells, float **h_polarization, int **h_cell_clock, float **h_clock_data, float **h_Ek, 
-						int **h_neighbours, int number_of_cell_layers, int *number_of_cells_in_layer, int* neighbours_number, int** input_indexes, 
-						int* input_number/*, struct TRACEDATA *clock_source, int number_of_samples*/){
+void sorted_cells_to_CUDA_Structures_array(
+	QCADCell ***sorted_cells,
+	float **h_polarization, 
+	int **h_cell_clock,
+	float **h_Ek, 
+	int **h_neighbours,
+	int number_of_cell_layers,
+	int *number_of_cells_in_layer,
+	int* neighbours_number,
+	int** input_indexes,
+	int* input_number,
+	int** output_indexes,
+	int* output_number
+	)
+{
   
  // Allocate memory for all needed structures
  int i,iLayer, iCell, iNeighbour;
  *neighbours_number = 0;
  int counter = 0;
  int input_counter = 0;
+ int output_counter = 0;
  int cells_number = 0;
  int j, ambros;
 
@@ -46,6 +59,7 @@ for(j = 0; j < number_of_samples; j++)
 for(i = 0; i < number_of_cell_layers; i++)
     cells_number+= number_of_cells_in_layer[i];
 
+
 tmp = (int*)malloc(cells_number*sizeof(int));
  
  //init neighbours_number
@@ -56,7 +70,6 @@ tmp = (int*)malloc(cells_number*sizeof(int));
       } 
     }
  }
-
 
 
  *h_polarization = (float*) malloc(cells_number*sizeof(float));
@@ -72,22 +85,34 @@ tmp = (int*)malloc(cells_number*sizeof(int));
 	if (sorted_cells[iLayer][iCell]->cell_function == QCAD_CELL_INPUT){
 	   input_counter++;
 	}
+	else if (sorted_cells[iLayer][iCell]->cell_function == QCAD_CELL_OUTPUT){
+	   output_counter++;
+	}
 	counter++;
     }
  }
 
+
 *input_number = input_counter;
+*output_number = output_counter;
  
 *input_indexes = (int *)malloc(*input_number * sizeof(int));
+*output_indexes = (int *)malloc(*output_number * sizeof(int));
+
 
 counter =0;
 input_counter = 0;
+output_counter = 0;
 //init neighbours values to -1 and fill input_indexes
   for( iLayer = 0; iLayer < number_of_cell_layers; iLayer++){
     for (iCell = 0; iCell < number_of_cells_in_layer[iLayer];iCell++){
       if(sorted_cells[iLayer][iCell]->cell_function == QCAD_CELL_INPUT){
-	*input_indexes[input_counter] = counter;
+	(*input_indexes)[input_counter] = counter;
 	input_counter++;
+	}
+      else if(sorted_cells[iLayer][iCell]->cell_function == QCAD_CELL_OUTPUT){
+	(*output_indexes)[output_counter] = counter;
+	output_counter++;
 	}
       for(i=0;i<*neighbours_number;i++){
        (*h_neighbours)[counter*(*neighbours_number) + i] = -1;
@@ -95,16 +120,17 @@ input_counter = 0;
     counter++;
     }
  }
-counter =0;
 
+
+counter =0;
 
  //fill structures 
   for( iLayer = 0; iLayer < number_of_cell_layers; iLayer++){
     for (iCell = 0; iCell < number_of_cells_in_layer[iLayer];iCell++){
-      (*h_polarization)[counter] = ((bistable_model*)(sorted_cells[iLayer][iCell]->cell_model))->polarization;
+      (*h_polarization)[counter] = (float)((bistable_model*)(sorted_cells[iLayer][iCell]->cell_model))->polarization;
       (*h_cell_clock)[counter] = sorted_cells[iLayer][iCell]->cell_options.clock;
       for ( iNeighbour = 0; iNeighbour < ((bistable_model *)(sorted_cells[iLayer][iCell]->cell_model))->number_of_neighbours;iNeighbour++){
-	(*h_Ek)[(counter*(*neighbours_number)) + iNeighbour]=((bistable_model *)(sorted_cells[iLayer][iCell]->cell_model))->Ek[iNeighbour];
+	(*h_Ek)[(counter*(*neighbours_number)) + iNeighbour]=(float)((bistable_model *)(sorted_cells[iLayer][iCell]->cell_model))->Ek[iNeighbour];
 	if(sorted_cells[iLayer][iCell]->cell_function != QCAD_CELL_INPUT && sorted_cells[iLayer][iCell]->cell_function != QCAD_CELL_FIXED)
 	  (*h_neighbours)[(counter*(*neighbours_number)) + iNeighbour]= position_in_CUDA_array(((QCADCell*)((bistable_model *)(sorted_cells[iLayer][iCell]->cell_model))->neighbours[iNeighbour])->id,cells_number);
 
@@ -113,6 +139,7 @@ counter =0;
       }
     }
  free(tmp);
+
 }
 
 
