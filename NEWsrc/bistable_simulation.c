@@ -31,7 +31,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 #include "cuda/conversion.h"
 
 
@@ -313,17 +312,17 @@ printf("tolerance = %f", tolerance);
 		options->clock_high,
 		input_values_number,
 		input_values,
-		tolerance		
+		tolerance,
+		&(sim_data->trace[design_bus_layout_inputs_icUsed])
 		);
-printf("\nLaunch conclusa\n");
+	printf("\nLaunch conclusa\n");
+	
 #else //if not CUDA
   printf("inizio simulazione\n");
-  time_t t1;
   for (j = 0; j < sim_data_number_samples ; j++)
   {
    if(j%1000 ==0){
-    time(&t1);
-    printf("sample: %d time elapsed from begin: %d\n",j,(int) (t1));
+    printf("Simulating: %d\%\n",(float)j/sim_data_number_samples*100);
     }
     // if (j % 10 == 0)
       // {
