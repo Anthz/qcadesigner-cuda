@@ -14,6 +14,7 @@
 
 #include <cutil_inline.h>
 #include <cuda.h>
+#include "../simulation_data.h"
 //#include "cuPrintf.cu"
 #include <time.h>
 
@@ -30,6 +31,7 @@ __constant__ float d_clock_shift;
 __constant__ int d_cells_number;
 __constant__ int d_neighbours_number;
 __constant__ int d_input_number;
+__constant__ int d_output_number;
 __constant__ int d_number_of_samples;
 __constant__ float d_clock_low;
 __constant__ float d_clock_high;
@@ -56,9 +58,11 @@ __constant__ float d_clock_high;
 		int *d_neighbours,
 		int sample,
 		int *d_input_indexes,
+		int *d_output_indexes,
 		int iteration,
 		int *d_stability,
-		float tolerance
+		float tolerance,
+		float *d_output_data
 		)
   {
    int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
@@ -69,6 +73,7 @@ __constant__ float d_clock_high;
    float polarization_math;
    float clock_value;
    int input_idx;
+   int output_idx;
    int stable;
 
    
@@ -87,6 +92,9 @@ __constant__ float d_clock_high;
 		//	cuPrintf("\t %f\n", d_polarization[thr_idx]);
 		  }
 	  }
+	  
+	  
+	  
 	//cuPrintf("%f ", d_polarization[thr_idx]);	
   
       if (!(d_neighbours[thr_idx * d_neighbours_number] == -1)) // if thr_idx corresponding cell type is FIXED or INPUT
@@ -122,11 +130,17 @@ __constant__ float d_clock_high;
             stable = (fabs (new_polarization - d_polarization[thr_idx]) <= tolerance) ;                
             d_stability[thr_idx] = stable;
 	    //cuPrintf("\n new:%f, old:%f \n", new_polarization, d_polarization[thr_idx]);
+			
+			output_idx = find(thr_idx, d_output_indexes, d_output_number);
+			if (output_idx >= 0)
+			{
+				d_output_data[output_idx] = new_polarization;
+			}
         } 
-	else
-	{
-		d_next_polarization[thr_idx] = d_polarization[thr_idx];
-	}
+		else
+		{
+			d_next_polarization[thr_idx] = d_polarization[thr_idx];
+		}
 
   }
 }
@@ -151,7 +165,8 @@ void launch_bistable_simulation(
 	double clock_high_d, 
 	int input_values_number,
 	char *input_values,
-	double tolerance_d
+	double tolerance_d,
+	TRACEDATA output_traces
 	) //if input_values_number == -1 then EXHAUSTIVE
 {
 
@@ -163,6 +178,8 @@ void launch_bistable_simulation(
    int *d_stability, *h_stability;
    int count;
    int k;
+   float d_output_data[output_number];
+   float h_output_data[output_number];
    float clock_prefactor = (float)clock_prefactor_d;
    float clock_shift = (float)clock_shift_d;
    float clock_low = (float)clock_low_d;
@@ -192,29 +209,35 @@ printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %
 	timespec startTime, endTime;
         clock_gettime(CLOCK_REALTIME, &startTime);
 
+		
    // Initialize Memory
-   cutilSafeCall (cudaMalloc ((void**)&d_next_polarization, cells_number * sizeof(float))); 
+   cutilSafeCall (cudaMalloc ((void**)&d_output_data, output_number * sizeof(float)));
+   cutilSafeCall (cudaMalloc ((void**)&d_next_polarization, cells_number * sizeof(float)));
    cutilSafeCall (cudaMalloc ((void**)&d_polarization, cells_number * sizeof(float))); 
    cutilSafeCall (cudaMalloc ((void**)&d_Ek, sizeof(float)*neighbours_number*cells_number));
    cutilSafeCall (cudaMalloc ((void**)&d_cell_clock, cells_number * sizeof(int)));
    cutilSafeCall (cudaMalloc ((void**)&d_neighbours, sizeof(int)*neighbours_number*cells_number));
    cutilSafeCall (cudaMalloc ((void**)&d_input_indexes, sizeof(int)*input_number));
+   cutilSafeCall (cudaMalloc ((void**)&d_output_indexes, sizeof(int)*output_number));
    cutilSafeCall (cudaMalloc ((void**)&d_stability, sizeof(int)*cells_number));
 
    // Set Memory
+   cutilSafeCall (cudaMemcpy (d_output_data, h_output_data, output_number * sizeof(float), cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_next_polarization, h_polarization, cells_number * sizeof(float), cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_polarization, h_polarization, cells_number * sizeof(float), cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_Ek, (float *)h_Ek, sizeof(float) * neighbours_number * cells_number, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_cell_clock, h_cell_clock, cells_number * sizeof(int), cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_neighbours, h_neighbours, sizeof(int) * neighbours_number * cells_number, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_input_indexes, input_indexes, sizeof(int)*input_number, cudaMemcpyHostToDevice));
+   cutilSafeCall (cudaMemcpy (d_input_indexes, output_indexes, sizeof(int)*output_number, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_stability, h_stability, sizeof(int)*cells_number, cudaMemcpyHostToDevice));
    
    cutilSafeCall (cudaMemcpyToSymbol("d_clock_prefactor", &(clock_prefactor), sizeof(float), 0, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpyToSymbol("d_clock_shift", &(clock_shift), sizeof(float), 0, cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpyToSymbol("d_cells_number", &(cells_number), sizeof(float), 0, cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpyToSymbol("d_neighbours_number", &(neighbours_number), sizeof(float), 0, cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpyToSymbol("d_input_number", &(input_number), sizeof(float), 0, cudaMemcpyHostToDevice));
+   cutilSafeCall (cudaMemcpyToSymbol("d_cells_number", &(cells_number), sizeof(int), 0, cudaMemcpyHostToDevice));
+   cutilSafeCall (cudaMemcpyToSymbol("d_neighbours_number", &(neighbours_number), sizeof(int), 0, cudaMemcpyHostToDevice));
+   cutilSafeCall (cudaMemcpyToSymbol("d_input_number", &(input_number), sizeof(int), 0, cudaMemcpyHostToDevice));
+   cutilSafeCall (cudaMemcpyToSymbol("d_output_number", &(output_number), sizeof(int), 0, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpyToSymbol("d_number_of_samples", &(number_of_samples), sizeof(float), 0, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpyToSymbol("d_clock_low", &(clock_low), sizeof(float), 0, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpyToSymbol("d_clock_high", &(clock_high), sizeof(float), 0, cudaMemcpyHostToDevice));
@@ -229,7 +252,7 @@ printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %
    for (i = 0; i < max_iterations && !stable; i++)
    {
       // Launch Kernel
-      bistable_kernel<<< grid, threads >>> (d_polarization, d_next_polarization, d_cell_clock, d_Ek, d_neighbours, j, d_input_indexes, i, d_stability, tolerance);
+      bistable_kernel<<< grid, threads >>> (d_polarization, d_next_polarization, d_cell_clock, d_Ek, d_neighbours, j, d_input_indexes, d_output_indexes, i, d_stability, tolerance, d_output_data);
 
       // Wait Device
       cudaThreadSynchronize ();
@@ -249,12 +272,13 @@ printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %
       
     }
 	// Get desidered iteration results from GPU
-   cutilSafeCall (cudaMemcpy (h_polarization, d_polarization, cells_number * sizeof(float), cudaMemcpyDeviceToHost));
- /*  for (k=0;k<output_number;k++)
-	printf("%f ", h_polarization[output_indexes[k]]);
-   printf("\n"); */
+   cutilSafeCall (cudaMemcpy (h_output_data, d_output_data, output_number * sizeof(float), cudaMemcpyDeviceToHost));
+   
+   for (k=0;k<output_number;k++)
+		output_traces[k].data[j] = h_output_data[k];
+		
 	if(j%1000 == 0)
-		printf("\nsample%d-->iter%d\n", j, i);
+		printf("Simulating: %d\%\n",(float)j/number_of_samples*100);
 
   }
 	//	cudaPrintfDisplay(stdout, true);
@@ -277,7 +301,7 @@ printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %
 
 //get time result	
 	clock_gettime(CLOCK_REALTIME, &endTime);
-        timespec temp;
+		timespec temp;
 	if ((endTime.tv_nsec-startTime.tv_nsec)<0) {
 		temp.tv_sec = endTime.tv_sec-startTime.tv_sec-1;
 		temp.tv_nsec = 1000000000+endTime.tv_nsec-startTime.tv_nsec;
