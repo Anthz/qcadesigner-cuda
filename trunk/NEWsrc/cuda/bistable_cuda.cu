@@ -37,8 +37,8 @@ __constant__ float d_clock_low;
 __constant__ float d_clock_high;
 
 
-  __device__ inline int find(int x, int *array, int length)
-  {
+__device__ inline int find(int x, int *array, int length)
+{
 	int l = 0, r = length - 1, mid;
 	while (l <= r)
 	{
@@ -48,9 +48,9 @@ __constant__ float d_clock_high;
 		else l = mid + 1;
 	}
 	return -1;
-  }
+}
 
-  __global__ void bistable_kernel (
+__global__ void bistable_kernel (
 		float *d_polarization,
 		float *d_next_polarization,
 		int *d_cell_clock,
@@ -64,23 +64,23 @@ __constant__ float d_clock_high;
 		float tolerance,
 		float *d_output_data
 		)
-  {
-   int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
-   int nb_idx;   // Neighbour index
-   int q;
-   int current_cell_clock;   //could be 0, 1, 2 or 3
-   float new_polarization;
-   float polarization_math;
-   float clock_value;
-   int input_idx;
-   int output_idx;
-   int stable;
-
+{
+	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
+	int nb_idx;   // Neighbour index
+	int q;
+	int current_cell_clock;   //could be 0, 1, 2 or 3
+	float new_polarization;
+	float polarization_math;
+	float clock_value;
+	int input_idx;
+	int output_idx;
+	int stable;
    
    // Only useful threads must work
    if (thr_idx < d_cells_number)
    {
-	
+//cuPrintf("PRUGNE!!");
+	//cuPrintf("\nd_output_number = %d,\t d_output_indexes[0]=%d\n",d_output_number, d_output_indexes[0] );	
 	  // input polarization refreshing
 	  if (iteration == 0) //if first iteration
 	  {
@@ -97,7 +97,7 @@ __constant__ float d_clock_high;
 	  
 	//cuPrintf("%f ", d_polarization[thr_idx]);	
   
-      if (!(d_neighbours[thr_idx * d_neighbours_number] == -1)) // if thr_idx corresponding cell type is FIXED or INPUT
+      if (!(d_neighbours[thr_idx * d_neighbours_number] == -1)) // if thr_idx corresponding cell type is not FIXED or INPUT
       {
         polarization_math = 0;
         for(q = 0; q < d_neighbours_number; q++)
@@ -131,16 +131,17 @@ __constant__ float d_clock_high;
             d_stability[thr_idx] = stable;
 	    //cuPrintf("\n new:%f, old:%f \n", new_polarization, d_polarization[thr_idx]);
 			
-			output_idx = find(thr_idx, d_output_indexes, d_output_number);
-			if (output_idx >= 0)
-			{
-				d_output_data[output_idx] = new_polarization;
-			}
-        } 
-		else
+		output_idx = find(thr_idx, d_output_indexes, d_output_number);
+
+		if (output_idx >= 0)
 		{
-			d_next_polarization[thr_idx] = d_polarization[thr_idx];
+			d_output_data[output_idx] = new_polarization;
 		}
+        } 
+	else
+	{
+		d_next_polarization[thr_idx] = d_polarization[thr_idx];
+	}
 
   }
 }
@@ -166,20 +167,20 @@ void launch_bistable_simulation(
 	int input_values_number,
 	char *input_values,
 	double tolerance_d,
-	TRACEDATA output_traces
+	TRACEDATA *output_traces
 	) //if input_values_number == -1 then EXHAUSTIVE
 {
 
 
  // Variables
    float *d_next_polarization, *d_polarization, *d_Ek;
-   int *d_neighbours, *d_cell_clock, *d_input_indexes;
+   int *d_neighbours, *d_cell_clock, *d_input_indexes, *d_output_indexes;
    int i,j,stable;
    int *d_stability, *h_stability;
    int count;
    int k;
-   float d_output_data[output_number];
-   float h_output_data[output_number];
+   float *d_output_data;
+   float *h_output_data;
    float clock_prefactor = (float)clock_prefactor_d;
    float clock_shift = (float)clock_shift_d;
    float clock_low = (float)clock_low_d;
@@ -188,8 +189,10 @@ void launch_bistable_simulation(
 
 /**printf("\nentrato nella launch gay!\n");
 printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %d \n number_of_samples = %d\n max_iterations = %d\n, tolerance = %f\ninput_values_number = %d\npref: %g, shift: %f, low: %f, high: %f\n",cells_number, neighbours_number, number_of_samples, max_iterations, (float)tolerance, input_values_number,clock_prefactor,clock_prefactor_d,clock_shift,clock_low,clock_high);**/
+//printf("output_number = %d, output_indexes[0]= %d", output_number , output_indexes[0]);
 
 
+   h_output_data = (float *) malloc(sizeof(float) * output_number);
    h_stability = (int *)malloc(sizeof(int)*cells_number);
    for (i=0;i<cells_number;i++) h_stability[i] = 1;
 
@@ -203,7 +206,7 @@ printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %
 
    // Set Devices
    cudaSetDevice (cutGetMaxGflopsDeviceId());
-//   cudaPrintfInit ();
+   //cudaPrintfInit ();
 
 //starting timer
 	timespec startTime, endTime;
@@ -222,14 +225,14 @@ printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %
    cutilSafeCall (cudaMalloc ((void**)&d_stability, sizeof(int)*cells_number));
 
    // Set Memory
-   cutilSafeCall (cudaMemcpy (d_output_data, h_output_data, output_number * sizeof(float), cudaMemcpyHostToDevice));
+
    cutilSafeCall (cudaMemcpy (d_next_polarization, h_polarization, cells_number * sizeof(float), cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_polarization, h_polarization, cells_number * sizeof(float), cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_Ek, (float *)h_Ek, sizeof(float) * neighbours_number * cells_number, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_cell_clock, h_cell_clock, cells_number * sizeof(int), cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_neighbours, h_neighbours, sizeof(int) * neighbours_number * cells_number, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_input_indexes, input_indexes, sizeof(int)*input_number, cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpy (d_input_indexes, output_indexes, sizeof(int)*output_number, cudaMemcpyHostToDevice));
+   cutilSafeCall (cudaMemcpy (d_output_indexes, output_indexes, sizeof(int)*output_number, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpy (d_stability, h_stability, sizeof(int)*cells_number, cudaMemcpyHostToDevice));
    
    cutilSafeCall (cudaMemcpyToSymbol("d_clock_prefactor", &(clock_prefactor), sizeof(float), 0, cudaMemcpyHostToDevice));
@@ -241,7 +244,7 @@ printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %
    cutilSafeCall (cudaMemcpyToSymbol("d_number_of_samples", &(number_of_samples), sizeof(float), 0, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpyToSymbol("d_clock_low", &(clock_low), sizeof(float), 0, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpyToSymbol("d_clock_high", &(clock_high), sizeof(float), 0, cudaMemcpyHostToDevice));
-//		cudaPrintfInit();
+
 
  for (j = 0; j < number_of_samples ; j++)
   {
@@ -257,7 +260,8 @@ printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %
       // Wait Device
       cudaThreadSynchronize ();
       
-	  cutilSafeCall (cudaMemcpy (h_stability, d_stability, sizeof(int), cudaMemcpyDeviceToHost));
+	  
+	cutilSafeCall (cudaMemcpy (h_stability, d_stability, sizeof(int), cudaMemcpyDeviceToHost));
 
 
 	 
@@ -275,14 +279,17 @@ printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %
    cutilSafeCall (cudaMemcpy (h_output_data, d_output_data, output_number * sizeof(float), cudaMemcpyDeviceToHost));
    
    for (k=0;k<output_number;k++)
+	{
+		printf("%f\n", h_output_data[k]);
 		output_traces[k].data[j] = h_output_data[k];
+	}
 		
-	if(j%1000 == 0)
-		printf("Simulating: %d\%\n",(float)j/number_of_samples*100);
+	if(j%100 == 0)
+		fprintf(stderr,"Simulating: %d % \titerations: %d\n", (j*100/number_of_samples), i);
 
   }
-	//	cudaPrintfDisplay(stdout, true);
-	//	cudaPrintfEnd();
+		//cudaPrintfDisplay(stdout, true);
+		//cudaPrintfEnd();
 
       
       
@@ -290,7 +297,7 @@ printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %
 // Free-up resources
 
 
-//   cudaPrintfEnd();
+
    cudaFree(d_next_polarization);
    cudaFree(d_polarization);
    cudaFree(d_cell_clock);
@@ -310,7 +317,7 @@ printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %
 		temp.tv_nsec = endTime.tv_nsec-startTime.tv_nsec;
 	}
 
-	fprintf(stdout, "\tProcessing time1: %f (ms)\n", (double)temp.tv_sec);
+	fprintf(stdout, "\tProcessing time1: %f (s)\n", (double)temp.tv_sec);
 
 	fprintf(stdout, "\tProcessing time2: %f (ns)\n", (double)temp.tv_nsec);
 

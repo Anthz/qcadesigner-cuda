@@ -25,7 +25,7 @@
 //                                                      //
 //////////////////////////////////////////////////////////
 
-//#define CUDA //uncomment this to use CUDA technology
+#define CUDA //uncomment this to use CUDA technology
 
 #include <stdlib.h>
 #include <math.h>
@@ -112,7 +112,9 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   float *h_polarization, *h_Ek, *h_clock_data;
   int *h_neighbours, max_neighbours, *h_cell_clock;
   int *input_indexes, input_number, *output_indexes, output_number;
-  int ambros;
+  char * input_values;
+  int ambros, input_values_number;
+  input_values_number = -1;
   counter = 0;
   //initialize pointer to matrix structures
   //float *h_polarization, *h_cell_clock, **h_Ek;
@@ -285,13 +287,14 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 //Fill matrix structures
   //sorted_cells_to_CUDA_Structures_matrix(sorted_cells,&h_polarization,&h_cell_clock,&h_Ek,&h_neighbours, number_of_cell_layers, number_of_cells_in_layer);
   //Fill array structures
+printf("design_bus_layout_inputs_icUsed = %d", design_bus_layout_inputs_icUsed);
 
-printf("\nconversione...\n");
+fprintf(stderr,"\nconversione...\n");
 	sorted_cells_to_CUDA_Structures_array(sorted_cells, &h_polarization,&h_cell_clock, &h_Ek, 
 		&h_neighbours, number_of_cell_layers, number_of_cells_in_layer, &max_neighbours, &input_indexes, 
 		&input_number,&output_indexes, &output_number);
-printf("\n...eseguita!\n");
-printf("tolerance = %f", tolerance);
+fprintf(stderr,"\n...eseguita!\n");
+
 
     launch_bistable_simulation(
 		h_polarization,
@@ -322,7 +325,7 @@ printf("tolerance = %f", tolerance);
   for (j = 0; j < sim_data_number_samples ; j++)
   {
    if(j%1000 ==0){
-    printf("Simulating: %d\%\n",(float)j/sim_data_number_samples*100);
+    printf("Simulating:CULO %d\%\n",(float)j/sim_data_number_samples*100);
     }
     // if (j % 10 == 0)
       // {
