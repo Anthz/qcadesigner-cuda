@@ -40,8 +40,10 @@ OBJECTS= \
 
 NVCFLAGS= \
 	-I $(CUDASDKROOT)/C/common/inc \
-	-I $(CUDAROOT)/include
-	
+	-I $(CUDAROOT)/include \
+	-I /usr/include/glib-2.0 \
+	-I /usr/lib/glib-2.0/include
+
 all: QCADesigner
 
 QCADesigner: $(OBJECTS)

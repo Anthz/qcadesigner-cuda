@@ -4,9 +4,10 @@
       unset label                            # remove any previous labels
       set xtic auto                          # set xtics automatically
       set ytic auto                          # set ytics automatically
-      
+      set terminal png size 1920,1080;
+      set output "prova.png" 
       set xlabel "Sample"
-      plot "file.dat" with linespoints; 
+      plot "file_output" with histeps 
       #set key 0.01,100
       #set xr [0.0:0.022]
       #set yr [-1:1]
