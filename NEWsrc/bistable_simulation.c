@@ -109,7 +109,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   
   
 #ifdef CUDA
-  float *h_polarization, *h_Ek, *h_clock_data;
+  float *h_polarization, *h_Ek, *h_clock_data, **output_traces;
   int *h_neighbours, max_neighbours, *h_cell_clock;
   int *input_indexes, input_number, *output_indexes, output_number;
   char * input_values;
@@ -287,7 +287,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 //Fill matrix structures
   //sorted_cells_to_CUDA_Structures_matrix(sorted_cells,&h_polarization,&h_cell_clock,&h_Ek,&h_neighbours, number_of_cell_layers, number_of_cells_in_layer);
   //Fill array structures
-printf("design_bus_layout_inputs_icUsed = %d", design_bus_layout_inputs_icUsed);
+printf("design_bus_layout_inputs_icUsed = %d\n", design_bus_layout_inputs_icUsed);
 
 fprintf(stderr,"\nconversione...\n");
 	sorted_cells_to_CUDA_Structures_array(sorted_cells, &h_polarization,&h_cell_clock, &h_Ek, 
@@ -295,6 +295,12 @@ fprintf(stderr,"\nconversione...\n");
 		&input_number,&output_indexes, &output_number);
 fprintf(stderr,"\n...eseguita!\n");
 
+    output_traces = (float **)malloc(output_number * sizeof(float *));
+
+     for(i = 0; i < output_number; i++)
+	{
+		output_traces[i] = (float *)malloc( sim_data_number_samples * sizeof(float));
+	}
 
     launch_bistable_simulation(
 		h_polarization,
@@ -316,16 +322,20 @@ fprintf(stderr,"\n...eseguita!\n");
 		input_values_number,
 		input_values,
 		tolerance,
-		&(sim_data->trace[design_bus_layout_inputs_icUsed])
+		&output_traces
 		);
 	printf("\nLaunch conclusa\n");
+  
+  	for(k=0; k < output_number; k++)
+	   for(j=0; j < sim_data_number_samples; j++)	
+		sim_data->trace[design_bus_layout_inputs_icUsed + k].data[j] = output_traces[k][j];
 	
 #else //if not CUDA
   printf("inizio simulazione\n");
   for (j = 0; j < sim_data_number_samples ; j++)
   {
-   if(j%1000 ==0){
-    printf("Simulating:CULO %d\%\n",(float)j/sim_data_number_samples*100);
+   if(j%100 ==0){
+    printf("Simulating: %d%\n",j*100/sim_data_number_samples);
     }
     // if (j % 10 == 0)
       // {
