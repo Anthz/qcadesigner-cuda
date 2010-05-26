@@ -5,10 +5,10 @@ GLIB=`pkg-config gtk+-2.0 --cflags --libs glib-2.0`
 CFLAGS= \
 	 -L$(CUDAROOT)/lib64  \
 	 -L$(CUDASDKROOT)/C/lib \
-	 -g \
 	 -lcuda \
 	 -lcudart \
-	 -lcutil_x86_64
+	 -lcutil_x86_64 \
+	 -O2
 	 
 CUDAROOT=$(CUDA_HOME)
 CUDASDKROOT=$(CUDA_SDK_HOME)
@@ -41,8 +41,7 @@ OBJECTS= \
 NVCFLAGS= \
 	-I $(CUDASDKROOT)/C/common/inc \
 	-I $(CUDAROOT)/include \
-	-I /usr/include/glib-2.0 \
-	-I /usr/lib/glib-2.0/include
+	-arch=sm_11
 
 all: QCADesigner
 
