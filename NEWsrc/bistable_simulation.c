@@ -109,7 +109,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   
   
 #ifdef CUDA
-  float *h_polarization, *h_Ek, *h_clock_data, **output_traces;
+  double *h_polarization, *h_Ek, *h_clock_data, **output_traces;
   int *h_neighbours, max_neighbours, *h_cell_clock;
   int *input_indexes, input_number, *output_indexes, output_number;
   char * input_values;
@@ -295,11 +295,11 @@ fprintf(stderr,"\nconversione...\n");
 		&input_number,&output_indexes, &output_number);
 fprintf(stderr,"\n...eseguita!\n");
 
-    output_traces = (float **)malloc(output_number * sizeof(float *));
+    output_traces = (double **)malloc(output_number * sizeof(double *));
 
      for(i = 0; i < output_number; i++)
 	{
-		output_traces[i] = (float *)malloc( sim_data_number_samples * sizeof(float));
+		output_traces[i] = (double *)malloc( sim_data_number_samples * sizeof(double));
 	}
 
     launch_bistable_simulation(
@@ -326,9 +326,11 @@ fprintf(stderr,"\n...eseguita!\n");
 		);
 	printf("\nLaunch conclusa\n");
   
-  	for(k=0; k < output_number; k++)
+  	for(k=0; k < output_number; k++){
+		printf("Gibbo debug: samples: %d, output_number: %d, trace->function %d\n",sim_data_number_samples,output_number,sim_data->trace[design_bus_layout_inputs_icUsed + k].trace_function);
 	   for(j=0; j < sim_data_number_samples; j++)	
 		sim_data->trace[design_bus_layout_inputs_icUsed + k].data[j] = output_traces[k][j];
+	}
 	
 #else //if not CUDA
   printf("inizio simulazione\n");

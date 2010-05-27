@@ -9,9 +9,9 @@
 
 void sorted_cells_to_CUDA_Structures_array(
 	QCADCell ***sorted_cells,
-	float **h_polarization, 
+	double **h_polarization, 
 	int **h_cell_clock,
-	float **h_Ek, 
+	double **h_Ek, 
 	int **h_neighbours,
 	int number_of_cell_layers,
 	int *number_of_cells_in_layer,
