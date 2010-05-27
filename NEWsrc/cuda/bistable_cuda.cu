@@ -227,6 +227,7 @@ void launch_bistable_simulation(
  	  for(j=0;j<neighbours_number;j++)
 	    printf("cella: %d e_k:%e\n",i,h_Ek[i+j]);
 	
+	
 
 	// Set GPU Parameters
 
@@ -278,7 +279,7 @@ void launch_bistable_simulation(
 	//srand(time(0));
 
 
-	for (j = 0; j < number_of_samples ; j++)
+	for (j = 0; j < number_of_samples && j = 0 ; j++)
 	{
 
 		stable = 0;
