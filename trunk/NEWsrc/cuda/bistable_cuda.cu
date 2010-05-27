@@ -24,6 +24,8 @@
 #define CLAMP(value,low,high) ((value > high) ? high : ((value < low) ? low : value))
 #undef PI
 #define PI  3.14159265358979323846
+#undef FOUR_PI
+#define FOUR_PI 12.56637061
 
 __constant__ double d_clock_prefactor;
 __constant__ double d_clock_shift;
@@ -67,7 +69,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 
 	if (input_idx >= 0)
 	{
-		d_polarization[thr_idx] = (-1 * sin(( 1 << input_idx) * sample * 4.0 * PI / d_number_of_samples) > 0 ) ? 1.0 : -1.0;
+		d_polarization[thr_idx] = (-1 * sin(((double)( 1 << input_idx)) * (double)sample * FOUR_PI / (double) d_number_of_samples) > 0 ) ? 1 : -1;
 	}
 }
 
@@ -97,6 +99,7 @@ __global__ void bistable_kernel (
 	int stable;
 	int *shm_output_indexes = shm_array;
 	double nb_pol;
+	double kink;
   
 	if (threadIdx.x < d_output_number)
 	{
@@ -116,15 +119,20 @@ __global__ void bistable_kernel (
 		if (!(d_neighbours[thr_idx] == -1)) // if thr_idx corresponding cell type is not FIXED or INPUT
 		{
 			polarization_math = 0;
-			for(q = 0; q < d_neighbours_number; q++)
+			nb_idx = 0;
+			for(q = 0; q < d_neighbours_number & nb_idx != -1; q++)
 			{
 				nb_idx = d_neighbours[thr_idx + q * d_cells_number];
-				if (nb_idx != -1) polarization_math += d_Ek[thr_idx + q * d_cells_number] * d_polarization[nb_idx];
+				if (nb_idx != -1)
+				{
+					kink = d_Ek[thr_idx + q * d_cells_number];
+					polarization_math += kink * d_polarization[nb_idx];
+				}
 			}
 
 			//math = math / 2 * gamma
 			current_cell_clock  = d_cell_clock[thr_idx];
-			clock_value = d_clock_prefactor * cos ((1 << d_input_number) * sample * 4.0 * PI / d_number_of_samples - PI * current_cell_clock / 2.0) + d_clock_shift;
+			clock_value = d_clock_prefactor * cos (((double)(1 << d_input_number)) * (double)sample * 4.0 * PI / (double)d_number_of_samples - PI * current_cell_clock / 2) + d_clock_shift;
 			clock_value = CLAMP(clock_value,d_clock_low,d_clock_high);
 			polarization_math /= (2.0 * clock_value);
 			 
@@ -132,8 +140,8 @@ __global__ void bistable_kernel (
 			// if math < 0.05 then math/sqrt(1+math^2) ~= math with error <= 4e-5
 			// if math > 100 then math/sqrt(1+math^2) ~= +-1 with error <= 5e-5
 			new_polarization =
-			(polarization_math        >  1000.0)   ?  1.0                 :
-			(polarization_math        < -1000.0)   ? -1.0                 :
+			(polarization_math        >  1000.0)   ?  1                 :
+			(polarization_math        < -1000.0)   ? -1                 :
 			(fabs (polarization_math) <     0.001) ?  polarization_math :
 			polarization_math / sqrt (1 + polarization_math * polarization_math) ;
 
@@ -290,9 +298,9 @@ void launch_bistable_simulation(
 			cutilSafeCall (cudaMemcpy (h_stability, d_stability, cells_number*sizeof(int), cudaMemcpyDeviceToHost));
 
 			count = 0;
+			stable = 1;
 			while (count<cells_number && h_stability[count] != 0) count++;
 			if (count < cells_number) stable = 0;
-			else stable = 1;
 		  
 	
 			// Set Memory for the next iteration
@@ -304,7 +312,7 @@ void launch_bistable_simulation(
 
 		for (k=0;k<output_number;k++)
 		{
-			 printf("%e\n", h_output_data[k]); //maybe %lf now that we use double?
+			 //printf("%e\n", h_output_data[k]); //maybe %lf now that we use double?
 			(*output_traces)[k][j] = h_output_data[k];
 		}
 	
