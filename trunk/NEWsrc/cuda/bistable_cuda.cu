@@ -215,20 +215,6 @@ void launch_bistable_simulation(
 	h_stability = (int *)malloc(sizeof(int)*cells_number);
 	for (i=0;i<cells_number;i++) h_stability[i] = 1;
 
-	printf("\n\n polarizzazioni:\n");
-	for(i=0;i<cells_number;i++)
- 	  printf("i: %d, polariz: %e\n",i,h_polarization[i]);
-	printf("\n\n vicini:\n");
-	for(i=0;i<cells_number;i++)
- 	  printf("i: %d, neigh: %d\n",i,h_neighbours[i]);
-	
-	printf("\n\n ek:\n");
-	for(i=0;i<cells_number;i=i+neighbours_number)
- 	  for(j=0;j<neighbours_number;j++)
-	    printf("cella: %d e_k:%e\n",i,h_Ek[i+j]);
-	
-	
-
 	// Set GPU Parameters
 
 
