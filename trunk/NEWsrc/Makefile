@@ -1,4 +1,4 @@
-CC = gcc-4.3
+CC = gcc
 NVCC = $(CUDA_HOME)/bin/nvcc
 GLIB=`pkg-config gtk+-2.0 --cflags --libs glib-2.0`
 
@@ -7,7 +7,7 @@ CFLAGS= \
 	 -L$(CUDASDKROOT)/C/lib \
 	 -lcuda \
 	 -lcudart \
-	 -lcutil_x86_64 \
+	 -lcutil \
 	 -O2
 	 
 CUDAROOT=$(CUDA_HOME)
