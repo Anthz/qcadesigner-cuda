@@ -306,7 +306,7 @@ void launch_bistable_simulation(
 
 		for (k=0;k<output_number;k++)
 		{
-			 printf("%f\n", h_output_data[k]); //maybe %lf now that we use double?
+			 printf("%e\n", h_output_data[k]); //maybe %lf now that we use double?
 			(*output_traces)[k][j] = h_output_data[k];
 		}
 	
