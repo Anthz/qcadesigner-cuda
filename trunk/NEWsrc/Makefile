@@ -41,7 +41,7 @@ OBJECTS= \
 NVCFLAGS= \
 	-I $(CUDASDKROOT)/C/common/inc \
 	-I $(CUDAROOT)/include \
-	-arch=sm_11
+	-arch=sm_13
 
 all: QCADesigner
 
