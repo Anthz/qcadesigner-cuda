@@ -279,7 +279,7 @@ void launch_bistable_simulation(
 	//srand(time(0));
 
 
-	for (j = 0; j < number_of_samples && j = 0 ; j++)
+	for (j = 0; j < number_of_samples ; j++)
 	{
 
 		stable = 0;
