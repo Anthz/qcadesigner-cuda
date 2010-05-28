@@ -146,7 +146,8 @@ __global__ void bistable_kernel (
 			polarization_math / sqrt (1 + polarization_math * polarization_math) ;
 
 			//set the new polarization in next_polarization array  
-			d_next_polarization[thr_idx] = new_polarization;
+//			d_next_polarization[thr_idx] = new_polarization;
+     	    d_polarization[thr_idx] = new_polarization;
 
 				  
 
@@ -302,7 +303,7 @@ void launch_bistable_simulation(
 
 
 			// Set Memory for the next iteration
-			cutilSafeCall (cudaMemcpy (d_polarization, d_next_polarization, cells_number * sizeof(double), cudaMemcpyDeviceToDevice));
+//			cutilSafeCall (cudaMemcpy (d_polarization, d_next_polarization, cells_number * sizeof(double), cudaMemcpyDeviceToDevice));
 		}
 
 		// Get desidered iteration results from GPU
