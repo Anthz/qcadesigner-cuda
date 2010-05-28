@@ -453,7 +453,8 @@ fprintf(stderr,"\n...eseguita!\n");
                 polarization_math / sqrt (1 + polarization_math * polarization_math) ;
 
             // -- set the polarization of this cell -- //
-            current_cell_model->polarization = new_polarization;
+            
+	    current_cell_model->polarization = new_polarization;
 
             // If any cells polarization has changed beyond this threshold
             // then the entire circuit is assumed to have not converged.
@@ -463,7 +464,9 @@ fprintf(stderr,"\n...eseguita!\n");
             stable = (fabs (new_polarization - old_polarization) <= tolerance) && stable ;
             }
           }
-        }
+	}
+
+
       }//WHILE !STABLE
 
 
