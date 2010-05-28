@@ -186,13 +186,13 @@ void launch_bistable_simulation(
 	int input_number,
 	int *output_indexes,
 	int output_number,
-	double clock_prefactor_d,
-	double clock_shift_d,
-	double clock_low_d,
-	double clock_high_d, 
+	double clock_prefactor,
+	double clock_shift,
+	double clock_low,
+	double clock_high, 
 	int input_values_number,
 	char *input_values,
-	double tolerance_d,
+	double tolerance,
 	double ***output_traces
 	) //if input_values_number == -1 then EXHAUSTIVE
 {
@@ -207,12 +207,6 @@ void launch_bistable_simulation(
 	int k;
 	double *d_output_data;
 	double *h_output_data;
-	double clock_prefactor = (double)clock_prefactor_d;
-	double clock_shift = (double)clock_shift_d;
-	double clock_low = (double)clock_low_d;
-	double clock_high = (double)clock_high_d;
-	double tolerance = (double)tolerance_d;
-	//int random_cell;
 
 	/**printf("\nentrato nella launch gay!\n");
 	printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %d \n number_of_samples = %d\n max_iterations = %d\n, tolerance = %f\ninput_values_number = %d\npref: %g, shift: %f, low: %f, high: %f\n",cells_number, neighbours_number, number_of_samples, max_iterations, (double)tolerance, input_values_number,clock_prefactor,clock_prefactor_d,clock_shift,clock_low,clock_high);**/
@@ -273,7 +267,7 @@ void launch_bistable_simulation(
 	//srand(time(0));
 
 
-	for (j = 0; j < number_of_samples ; j++)
+	for (j = 0; j < number_of_samples; j++)
 	{
 
 		stable = 0;
