@@ -84,7 +84,6 @@ int main (int argc, char **argv)
   g_type_init () ;
 //#endif /* def GTK_GUI */
 
-
   if (pszSimEngine != NULL)
     sim_engine =
       !strncmp (pszSimEngine, "BISTABLE", sizeof ("BISTABLE") - 1)
