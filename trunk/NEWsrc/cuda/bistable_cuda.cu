@@ -111,7 +111,6 @@ __global__ void bistable_kernel (
 	// Only useful threads must work
 	if (thr_idx < d_cells_number)
 	{		
-		//cuPrintf("PRUGNE!!");
 		//cuPrintf("\nd_output_number = %d,\t d_output_indexes[0]=%d\n",d_output_number, d_output_indexes[0] );	
 		  
 		//cuPrintf("%f ", d_polarization[thr_idx]);	
@@ -126,6 +125,7 @@ __global__ void bistable_kernel (
 				if (nb_idx != -1)
 				{
 					kink = d_Ek[thr_idx + q * d_cells_number];
+					//if(thr_idx==77) cuPrintf("q:%d, qpol:%e, nb_idx:%d, kink:%e\n",q,d_polarization[nb_idx], nb_idx,kink);
 					polarization_math += kink * d_polarization[nb_idx];
 				}
 			}
@@ -144,10 +144,12 @@ __global__ void bistable_kernel (
 			(polarization_math        < -1000.0)   ? -1                 :
 			(fabs (polarization_math) <     0.001) ?  polarization_math :
 			polarization_math / sqrt (1 + polarization_math * polarization_math) ;
-
+			
+//			if(thr_idx==77) cuPrintf("current_cell_clock: %d, clock_value: %e, polarization_math: %e, old_polarization: %e, new_polarization: %e\n\n",current_cell_clock,clock_value,polarization_math,d_polarization[thr_idx], new_polarization);
+			
 			//set the new polarization in next_polarization array  
 //			d_next_polarization[thr_idx] = new_polarization;
-     	    d_polarization[thr_idx] = new_polarization;
+			d_polarization[thr_idx]=new_polarization;
 
 				  
 
@@ -225,7 +227,7 @@ void launch_bistable_simulation(
 	dim3 grid (ceil ((double)cells_number/BLOCK_DIM));
 
 	// Set Devices
-	cudaSetDevice (cutGetMaxGflopsDeviceId());
+	//cudaSetDevice (cutGetMaxGflopsDeviceId());
 	//cudaPrintfInit ();
 
 	//starting timer
@@ -268,7 +270,7 @@ void launch_bistable_simulation(
 	//srand(time(0));
 
 
-	for (j = 0; j < 1/*number_of_samples*/; j++)
+	for (j = 0; j <number_of_samples; j++)
 	{
 
 		stable = 0;
@@ -297,9 +299,9 @@ void launch_bistable_simulation(
 			while (count<cells_number && h_stability[count] != 0) count++;
 			if (count < cells_number) stable = 0;
 		  	
-			cutilSafeCall (cudaMemcpy (h_polarization, d_polarization, cells_number*sizeof(double), cudaMemcpyDeviceToHost));
+			/*cutilSafeCall (cudaMemcpy (h_polarization, d_polarization, cells_number*sizeof(double), cudaMemcpyDeviceToHost));
 			for (count=0; count<20; count++) printf("%e\t",h_polarization[count]);
-			printf("\n");
+			printf("\n");*/
 
 
 			// Set Memory for the next iteration
@@ -311,11 +313,11 @@ void launch_bistable_simulation(
 
 		for (k=0;k<output_number;k++)
 		{
-			 //printf("%e\n", h_output_data[k]); //maybe %lf now that we use double?
+			 printf("%e\n", h_output_data[k]); //maybe %lf now that we use double?
 			(*output_traces)[k][j] = h_output_data[k];
 		}
 	
-		if(j%100 == 0) fprintf(stderr,"Simulating: %d % \titerations: %d\n", (j*100/number_of_samples), i);
+		if(j%100 == 0) printf("Simulating: %d % \titerations: %d\n", (j*100/number_of_samples), i);
 
 		
 
