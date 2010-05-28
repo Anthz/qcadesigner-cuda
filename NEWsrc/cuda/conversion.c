@@ -110,8 +110,9 @@ output_counter = 0;
 	output_counter++;
 	}
       for(i=0;i<*neighbours_number;i++){
-       (*h_neighbours)[counter*(*neighbours_number) + i] = -1;
-	(*h_Ek)[counter*(*neighbours_number) + i] = 0.0;
+       (*h_neighbours)[counter + i*cells_number] = -1;
+	if(counter+i*cells_number == 77) printf("------------%d,%d------------\n",iLayer,iCell);
+	(*h_Ek)[counter + i*cells_number] = 0.0;
       }
     counter++;
     }

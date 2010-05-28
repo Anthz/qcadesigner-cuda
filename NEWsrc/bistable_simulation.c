@@ -25,7 +25,7 @@
 //                                                      //
 //////////////////////////////////////////////////////////
 
-//#define CUDA //uncomment this to use CUDA technology
+#define CUDA //uncomment this to use CUDA technology
 
 #include <stdlib.h>
 #include <math.h>
@@ -225,7 +225,8 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   bistable_refresh_all_Ek (number_of_cell_layers, number_of_cells_in_layer, sorted_cells, options);
   
   
-#ifndef CUDA
+
+//#ifndef CUDA
  
   // randomize the cells in the design so as to minimize any numerical problems associated //
   // with having cells simulated in some predefined order. //
@@ -246,7 +247,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   // -- get and print the total initialization time -- //
   if((end_time = time (NULL)) < 0)
      fprintf(stderr, "Could not get end time\n");
-#endif //CUDA
+//#endif //CUDA
 
 	 
 /*  command_history_message("Total initialization time: %g s\n", (double)(end_time - start_time));*/
@@ -326,11 +327,9 @@ fprintf(stderr,"\n...eseguita!\n");
 		);
 	printf("\nLaunch conclusa\n");
   
-  	for(k=0; k < output_number; k++){
-		printf("Gibbo debug: samples: %d, output_number: %d, trace->function %d\n",sim_data_number_samples,output_number,sim_data->trace[design_bus_layout_inputs_icUsed + k].trace_function);
+  	for(k=0; k < output_number; k++)
 	   for(j=0; j < sim_data_number_samples; j++)	
 		sim_data->trace[design_bus_layout_inputs_icUsed + k].data[j] = output_traces[k][j];
-	}
 	
 #else //if not CUDA
   printf("inizio simulazione\n");
@@ -465,8 +464,6 @@ fprintf(stderr,"\n...eseguita!\n");
             }
           }
 	}
-
-
       }//WHILE !STABLE
 
 
