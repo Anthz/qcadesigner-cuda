@@ -51,6 +51,7 @@ typedef struct
 	int max_iterations_per_sample;
 	double layer_separation;
 	gboolean randomize_cells;
+    float delay;
   } bistable_OP;
 
 simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, bistable_OP *options, VectorTable *pvt);
