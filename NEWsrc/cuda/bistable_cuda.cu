@@ -273,7 +273,7 @@ void launch_bistable_simulation(
 	//srand(time(0));
 
 
-	for (j = 0; j < number_of_samples ; j++)
+	for (j = 0; j < 1 /*number_of_samples*/ ; j++)
 	{
 
 		stable = 0;
@@ -301,8 +301,13 @@ void launch_bistable_simulation(
 			stable = 1;
 			while (count<cells_number && h_stability[count] != 0) count++;
 			if (count < cells_number) stable = 0;
-		  
-	
+		  	
+			cutilSafeCall (cudaMemcpy (h_polarization, d_polarization, cells_number*sizeof(double), cudaMemcpyDeviceToHost));
+
+			for (count=0; count<5; count++) printf("%e\t",h_polarization[count]);
+			printf("\n");
+
+
 			// Set Memory for the next iteration
 			cutilSafeCall (cudaMemcpy (d_polarization, d_next_polarization, cells_number * sizeof(double), cudaMemcpyDeviceToDevice));
 		}
