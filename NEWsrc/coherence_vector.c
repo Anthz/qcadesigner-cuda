@@ -50,37 +50,16 @@
 #define FOUR_PI 12.56637061
 
 //uncomment this to compile using nVidia's CUDA Technology - see http://www.nvidia.com/cuda and http://code.google.com/p/qcadesigner-cuda/ for more infos
-//#define CUDA
+#define CUDA
 
 //!Options for the coherence simulation engine
 coherence_OP coherence_options = {1, 1e-15, 1e-16, 7e-11, 9.8e-22, 3.8e-23, 0.0, 2.0, 80, 12.9, 11.5, EULER_METHOD, TRUE, FALSE} ;
-
-typedef struct
-  {
-  int number_of_neighbours;
-  QCADCell **neighbours;
-  int *neighbour_layer;
-  double *Ek;
-  double lambda_x;
-  double lambda_y;
-  double lambda_z;
-  } coherence_model;
 
 /*#ifdef GTK_GUI*/
 /*extern int STOP_SIMULATION;*/
 /*#else*/
 static int STOP_SIMULATION = 0 ;
 //#endif /* def GTK_GUI */
-
-// some often used variables that can be precalculated
-typedef struct
-  {
-  double clock_prefactor;
-  double clock_shift;
-  double four_pi_over_number_samples;
-  double two_pi_over_number_samples;
-  double hbar_over_kBT;
-  } coherence_optimizations;
 
 // instance of the optimization options;
 static coherence_optimizations optimization_options;
@@ -122,11 +101,8 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
   double old_lambda_z;
   time_t start_time, end_time;
   simulation_data *sim_data = NULL ;
-  #ifndef CUDA
-  // Randomization. NOT necessary with CUDA
   int Nix, Nix1, idxCell1, idxCell2 ;
   QCADCell *swap = NULL ;
-  #endif
   BUS_LAYOUT_ITER bli ;
   double dPolarization = 2.0 ;
   int idxMasterBitOrder = -1.0 ;
@@ -240,7 +216,6 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
       sim_data->clock_data[i].data[j] = calculate_clock_value(i, j * record_interval, number_samples, total_number_of_inputs, options, SIMULATION_TYPE, pvt);
     }
 
-  //TODO: CUDA_coherence_refresh_all_Ek ???
   // -- refresh all the kink energies and neighbours-- //
   coherence_refresh_all_Ek (number_of_cell_layers, number_of_cells_in_layer, sorted_cells, options);
 
@@ -432,107 +407,9 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
   //6th: repeat 4-5 until total number of samples are computed
   //7th: copy everything from device memory to host memory, mapping correctly
    
-   // Generate CUDA-Compatible structures
-   float *polarization, *clock, *lambda_x, *lambda_y, *lambda_z, *Ek;
-   int *neighbours
-   int cells_number;
-   int max_neighbours_number;
-   CUDA_coherence_OP *CUDA_options;
-   CUDA_coherence_optimizations *CUDA_optimization;
-   int index;
-
-   // Compute the number of cells, the max neighbours count and set the cuda_id field of each cell
-   cells_number = 0;
-   max_neighbours_number = 0;
-   index = 0;
-   for (i = 0; i < number_of_cell_layers; i++)
-   {
-      for (j = 0; j < number_of_cells_in_layer[i]; j++)
-      {
-	 if (((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours > max_neighbours_number)
-	    max_neighbours_number = ((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours;
    
-         sorted_cells[i][j]->cuda_id = index;
-
-         index++;
-      }
-      cells_number += number_of_cells_in_layer[i];
-   }
-
-   // Allocate CUDA-Compatible structures
-   polarization =						(float*) malloc (sizeof(float)*cells_number);
-   clock =								(float*) malloc (sizeof(float)*cells_number);
-   lambda_x =							(float*) malloc (sizeof(float)*cells_number);
-   lambda_y =							(float*) malloc (sizeof(float)*cells_number);
-   lambda_z =							(float*) malloc (sizeof(float)*cells_number);
-   Ek =									(float*) malloc (sizeof(float)*cells_number*max_neighbours_number);
-   neighbours =						(int*) malloc (sizeof(int)*cells_number*max_neighbours_number);
-   CUDA_options =						(CUDA_coherence_OP*) malloc (sizeof(CUDA_coherence_OP));
-   CUDA_optimizations_options =	(CUDA_coherence_optimizations*) malloc (sizeof(CUDA_coherence_optimizations));
-
-   // Fill CUDA-Compatible structures
-   index = 0;
-   for (i = 0; i < number_of_cell_layers; i++)
-   {
-      for (j = 0; j < number_of_cells_in_layer[i]; j++)
-      {
-         polarization[index] = qcad_cell_calculate_polarization(*sorted_cells[i][j]);
-         //clock[index] = ???;
-         lambda_x[index] = (sorted_cells[i][j]->cell_model)->lambda_x;
-         lambda_y[index] = (sorted_cells[i][j]->cell_model)->lambda_y;
-         lambda_z[index] = (sorted_cells[i][j]->cell_model)->lambda_z;
-         for (k = 0; k < max_neighbours_number; k++)
-         {
-            if (k < (sorted_cells[i][j]->cell_model)->number_of_neighbours)
-            {
-               Ek[index*max_neighbours_number+k] = (sorted_cells[i][j]->cell_model)->Ek[k];
-               neighbours[index*max_neighbours_number+k] = ((sorted_cells[i][j]->cell_model)->neighbours[k])->cuda_id;
-            }
-            else
-            {
-               Ek[index*max_neighbours_number+k] = -1;
-               neighbours[index*max_neighbours_number+k] = -1;
-            }
-         }
-         index++;
-      }
-   }
-
-   CUDA_options->T                      = options->T;
-   CUDA_options->relaxation             = options->relaxation;
-   CUDA_options->time_step              = options->time_step;
-   CUDA_options->duration               = options->duration;
-   CUDA_options->clock_high             = options->clock_high;
-   CUDA_options->clock_low              = options->clock_low;
-   CUDA_options->clock_shift            = options->clock_shift;
-   CUDA_options->clock_amplitude_factor = options->clock_amplitude_factor;
-   CUDA_options->radius_of_effect       = options->radius_of_effect;
-   CUDA_options->epsilonR               = options->epsilonR;
-   CUDA_options->layer_separation       = options->layer_separation;
-   CUDA_options->algorithm              = options->algorithm;
-
-   CUDA_optimization_options->clock_prefactor             = optimization_options.clock_prefactor;
-   CUDA_optimization_options->clock_shift                 = optimization_options.clock_shift;
-   CUDA_optimization_options->four_pi_over_number_samples = optimization_options.four_pi_over_number_samples;
-   CUDA_optimization_options->two_pi_over_number_samples  = optimization_options.two_pi_over_number_samples;
-   CUDA_optimization_options->hbar_over_kBT               = optimization_options.hbar_over_kBT;
-
    // Launch GPU Simulation
-   launch_coherence_vector_simulation 
-   (
-   	polarization, 
-   	clock, 
-   	lambda_x, 
-   	lambda_y, 
-   	lambda_z, 
-   	Ek, 
-   	neighbours, 
-   	cells_number,
-   	max_neighbours_number, 
-   	number_samples,
-   	CUDA_options, 
-   	CUDA_optimization_options
-   );
+   launch_coherence_vector_simulation (design, sim_data, sorted_cells, &optimization_options, options, number_of_cell_layers, number_of_cells_in_layer, number_samples, record_interval, &STOP_SIMULATION);
  	
   #endif
 
