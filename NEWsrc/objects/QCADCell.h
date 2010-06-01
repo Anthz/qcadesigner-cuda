@@ -101,9 +101,8 @@ typedef struct
   QCADLabel *label ;
   gboolean bLabelRemoved ;
   char *host_name ;
-  #ifdef CUDA
+  //CUDA
   int cuda_id;
-  #endif
   } QCADCell ;
 
 typedef struct
