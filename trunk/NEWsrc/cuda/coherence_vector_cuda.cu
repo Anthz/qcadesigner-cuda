@@ -11,7 +11,7 @@ TODO:
 
 #include <cutil_inline.h>
 #include <cuda.h>
-#include "cuPrintf.cu"
+//#include "cuPrintf.cu"
 
 extern "C"{
 #include "design.h"
@@ -238,7 +238,7 @@ __global__ void kernelIterationParallel
 			{
 	 			nb_index = d_neighbours[th_index*neighbours_number+i];
 	 			PEk += d_polarization[nb_index] * d_Ek[th_index*neighbours_number+i];
-				cuPrintf("nb_index: %d\td_polarization[nb_index]: %g\td_Ek[th_index*neighbours_number+i]: %g\n", nb_index, d_polarization[nb_index], d_Ek[th_index*neighbours_number+i]);
+			//	cuPrintf("nb_index: %d\td_polarization[nb_index]: %g\td_Ek[th_index*neighbours_number+i]: %g\n", nb_index, d_polarization[nb_index], d_Ek[th_index*neighbours_number+i]);
 	 			// TODO Hyp: d_EK of i > actual_numof_neighbours == 1?
 			}
       }
@@ -336,7 +336,7 @@ void launch_coherence_vector_simulation (DESIGN *design, simulation_data *sim_da
 
    // Set Devices
    cudaSetDevice (cutGetMaxGflopsDeviceId());
-   cudaPrintfInit ();
+  // cudaPrintfInit ();
 
    // Allocate CUDA-Compatible structures
    h_polarization =	(double*) malloc (sizeof(double)*cells_number);
@@ -376,7 +376,7 @@ void launch_coherence_vector_simulation (DESIGN *design, simulation_data *sim_da
 
 	//
 	index = 0;
-	fp = fopen ("cuda/coherence_log/circuit_structure", "w");
+	fp = fopen ("cuda/log_coherence/circuit_structure", "w");
 	for (i = 0; i < number_of_cell_layers; i++)
    {
       for (j = 0; j < number_of_cells_in_layer[i]; j++)
@@ -461,7 +461,7 @@ void launch_coherence_vector_simulation (DESIGN *design, simulation_data *sim_da
       // Wait Device
       cudaThreadSynchronize ();
 
-      cudaPrintfDisplay(stdout, true);
+    //  cudaPrintfDisplay(stdout, true);
 
       // Return to Host lambdas values
       cutilSafeCall (cudaMemcpy (h_lambda_x, d_lambda_x, cells_number*sizeof(double), cudaMemcpyDeviceToHost));
@@ -479,9 +479,10 @@ void launch_coherence_vector_simulation (DESIGN *design, simulation_data *sim_da
 					(QCAD_CELL_FIXED == sorted_cells[k][h]->cell_function)
 					
 				)
+				{
 					index++;
 					continue;
-					
+				}		
 				// if polarization went mad, abort
 				if 
 				(
@@ -508,7 +509,7 @@ void launch_coherence_vector_simulation (DESIGN *design, simulation_data *sim_da
 
 			printf("Complete!\n");
 
-			char str[256] = "cuda/coherence_log/";
+			char str[256] = "cuda/log_coherence/";
 			char num[10];
 		
 			sprintf (num, "%i", j);
@@ -540,7 +541,7 @@ void launch_coherence_vector_simulation (DESIGN *design, simulation_data *sim_da
 		if (TRUE == *STOP) 
 		{
 			// Free-up resources
-			cudaPrintfEnd();
+//			cudaPrintfEnd();
 			cudaFree(d_polarization);
 			cudaFree(d_clock);
 			cudaFree(d_lambda_x);
@@ -554,7 +555,7 @@ void launch_coherence_vector_simulation (DESIGN *design, simulation_data *sim_da
    }
 
    // Free-up resources
-   cudaPrintfEnd();
+  // cudaPrintfEnd();
    cudaFree(d_polarization);
    cudaFree(d_clock);
    cudaFree(d_lambda_x);
