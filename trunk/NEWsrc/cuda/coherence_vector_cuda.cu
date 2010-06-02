@@ -356,6 +356,36 @@ void launch_coherence_vector_simulation (DESIGN *design, simulation_data *sim_da
    cutilSafeCall (cudaMalloc (&d_Ek, sizeof(double)*max_neighbours_number*cells_number));
    cutilSafeCall (cudaMalloc (&d_neighbours, sizeof(int)*max_neighbours_number*cells_number));
 
+	// Fill Fixed Structures 
+	index = 0;
+	fp = fopen ("cuda/log_coherence/circuit_structure", "w");
+	for (i = 0; i < number_of_cell_layers; i++)
+  	{
+     		for (j = 0; j < number_of_cells_in_layer[i]; j++)
+      		{
+			h_clock[index] = (sorted_cells[i][j]->cell_options).clock;
+			fprintf (fp, "Cell: %d\n\tNeighbours (Ek):\n", index);
+			for (k = 0; k < max_neighbours_number; k++)
+		   	{
+		   		if (k < ((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours)
+		      		{
+		         		h_Ek[index*max_neighbours_number+k] = ((coherence_model *)sorted_cells[i][j]->cell_model)->Ek[k];
+		         		h_neighbours[index*max_neighbours_number+k] = (((coherence_model *)sorted_cells[i][j]->cell_model)->neighbours[k])->cuda_id;
+		      		}
+		      		else
+		      		{
+		         		h_Ek[index*max_neighbours_number+k] = -1;
+		         		h_neighbours[index*max_neighbours_number+k] = -1;
+		      		}
+					fprintf (fp, "\t\t%d(%g)\n", h_neighbours[index*max_neighbours_number+k], h_Ek[index*max_neighbours_number+k]);
+		   	}	
+			index++;
+			fprintf (fp, "\n");
+		}	
+	}
+	fclose (fp);
+
+
    // Set Constants
    cutilSafeCall (cudaMemcpy (d_clock, h_clock, cells_number*sizeof(unsigned int), cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpy (d_neighbours, h_neighbours, sizeof(int)*max_neighbours_number*cells_number, cudaMemcpyHostToDevice));
@@ -373,35 +403,6 @@ void launch_coherence_vector_simulation (DESIGN *design, simulation_data *sim_da
    cutilSafeCall (cudaMemcpyToSymbol("options_time_step", &(options->time_step), sizeof(double), 0, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpyToSymbol("options_algorithm", &(options->algorithm), sizeof(int), 0, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpyToSymbol("clock_total_shift", &(total_clock_shift), sizeof(double), 0, cudaMemcpyHostToDevice));
-
-	//
-	index = 0;
-	fp = fopen ("cuda/log_coherence/circuit_structure", "w");
-	for (i = 0; i < number_of_cell_layers; i++)
-   {
-      for (j = 0; j < number_of_cells_in_layer[i]; j++)
-      {
-			h_clock[index] = (sorted_cells[i][j]->cell_options).clock;
-			fprintf (fp, "Cell: %d\n\tNeighbours (Ek):\n", index);
-			for (k = 0; k < max_neighbours_number; k++)
-		   {
-		   	if (k < ((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours)
-		      {
-		         h_Ek[index*max_neighbours_number+k] = ((coherence_model *)sorted_cells[i][j]->cell_model)->Ek[k];
-		         h_neighbours[index*max_neighbours_number+k] = (((coherence_model *)sorted_cells[i][j]->cell_model)->neighbours[k])->cuda_id;
-		      }
-		      else
-		      {
-		         h_Ek[index*max_neighbours_number+k] = -1;
-		         h_neighbours[index*max_neighbours_number+k] = -1;
-		      }
-				fprintf (fp, "\t\t%d(%g)\n", h_neighbours[index*max_neighbours_number+k], h_Ek[index*max_neighbours_number+k]);
-		   }
-			index++;
-			fprintf (fp, "\n");
-		}	
-	}
-	fclose (fp);
 
    // For each sample...
    for (j = 0; j < num_samples; j++)
