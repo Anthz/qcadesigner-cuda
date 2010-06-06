@@ -63,6 +63,28 @@ typedef struct
 	gboolean animate_simulation;
   } coherence_OP;
 
+// some often used variables that can be precalculated
+typedef struct
+  {
+  double clock_prefactor;
+  double clock_shift;
+  double four_pi_over_number_samples;
+  double two_pi_over_number_samples;
+  double hbar_over_kBT;
+  } coherence_optimizations;
+
+typedef struct
+  {
+  int number_of_neighbours;
+  QCADCell **neighbours;
+  int *neighbour_layer;
+  double *Ek;
+  double lambda_x;
+  double lambda_y;
+  double lambda_z;
+  } coherence_model;
+
+
 void coherence_options_dump (coherence_OP *coherence_options, FILE *pfile) ;
 simulation_data *run_coherence_simulation(int SIMULATION_TYPE, DESIGN *design, coherence_OP *options, VectorTable *pvt);
 

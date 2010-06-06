@@ -34,11 +34,11 @@
 #include "objects/QCADCell.h"
 #include "simulation.h"
 #include "coherence_vector.h"
-/*#include "custom_widgets.h"*/
+// -- #include "custom_widgets.h"
 #include "global_consts.h"
-/*#ifdef GTK_GUI*/
-/*  #include "callback_helpers.h"*/
-//#endif /* def GTK_GUI */
+// -- #ifdef GTK_GUI
+  // -- #include "callback_helpers.h"
+// -- #endif /* def GTK_GUI */
 
 // Calculates the magnitude of the 3D energy vector
 #define magnitude_energy_vector(P,G) (hypot(2*(G), (P)) * over_hbar)
@@ -49,17 +49,19 @@
 #define TWO_PI 6.283185
 #define FOUR_PI 12.56637061
 
-//uncomment this to compile using nVidia's CUDA Technology - see http://www.nvidia.com/cuda and http://code.google.com/p/qcadesigner-cuda/ for more infos
 #define CUDA
 
 //!Options for the coherence simulation engine
 coherence_OP coherence_options = {1, 1e-15, 1e-16, 7e-11, 9.8e-22, 3.8e-23, 0.0, 2.0, 80, 12.9, 11.5, EULER_METHOD, TRUE, FALSE} ;
 
-/*#ifdef GTK_GUI*/
-/*extern int STOP_SIMULATION;*/
-/*#else*/
+
+
+// -- #ifdef GTK_GUI
+// -- extern int STOP_SIMULATION;
+// -- #else
 static int STOP_SIMULATION = 0 ;
-//#endif /* def GTK_GUI */
+// -- #endif /* def GTK_GUI */
+
 
 // instance of the optimization options;
 static coherence_optimizations optimization_options;
@@ -101,6 +103,7 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
   double old_lambda_z;
   time_t start_time, end_time;
   simulation_data *sim_data = NULL ;
+  // for randomization
   int Nix, Nix1, idxCell1, idxCell2 ;
   QCADCell *swap = NULL ;
   BUS_LAYOUT_ITER bli ;
@@ -133,12 +136,17 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
   optimization_options.two_pi_over_number_samples = TWO_PI / (double)number_samples;
   optimization_options.hbar_over_kBT = hbar / (kB * options->T);
 
-  // -- spit out some messages for possible debugging -- //
-/*  command_history_message ("About to start the coherence vector simulation with %d samples\n", number_samples);*/
-/*  command_history_message ("%d samples will be recorded for graphing.\n", number_recorded_samples);*/
-/*  set_progress_bar_visible (TRUE) ;*/
-/*  set_progress_bar_label ("Coherence vector simulation:") ;*/
-/*  set_progress_bar_fraction (0.0) ;*/
+  // spit out some messages for possible debugging
+  // -- command_history_message ("About to start the coherence vector simulation with %d samples\n", number_samples);
+  // -- command_history_message ("%d samples will be recorded for graphing.\n", number_recorded_samples);
+  // -- set_progress_bar_visible (TRUE) ;
+  // -- set_progress_bar_label ("Coherence vector simulation:") ;
+  // -- set_progress_bar_fraction (0.0) ;
+
+  printf ("About to start the coherence vector simulation with %d samples\n", (int) number_samples);
+  printf ("%d samples will be recorded for graphing.\n", (int) number_recorded_samples);
+  printf ("Coherence vector simulation: ");
+  printf ("0.0");
 
   // Fill in the cell arrays necessary for conducting the simulation
   simulation_inproc_data_new (design, &number_of_cell_layers, &number_of_cells_in_layer, &sorted_cells) ;
@@ -167,7 +175,8 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
       }
 
   // write message to the command history window //
-/*  command_history_message ("Simulation found %d inputs %d outputs\n", total_number_of_inputs, design->bus_layout->outputs->icUsed) ;*/
+  // -- command_history_message ("Simulation found %d inputs %d outputs\n", total_number_of_inputs, design->bus_layout->outputs->icUsed) ;
+  printf ("Simulation found %d inputs %d outputs\n", total_number_of_inputs, design->bus_layout->outputs->icUsed);
 
   // -- Allocate memory to hold the simulation data -- //
   sim_data = g_malloc0 (sizeof(simulation_data)) ;
@@ -227,7 +236,6 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
   // The following line causes a segfault when the design consists of a single cell
 //  printf("The Ek to the first cells neighbour is %e [eV]\n",((coherence_model *)sorted_cells[0][0]->cell_model)->Ek[0]/1.602e-19);
 
-#ifndef CUDA
   // randomize the cells in the design as to minimize any numerical problems associated //
   // with having cells simulated in some predefined order: //
   // for each layer ...
@@ -242,7 +250,13 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
       sorted_cells[Nix][idxCell1] = sorted_cells[Nix][idxCell2] ;
       sorted_cells[Nix][idxCell2] = swap ;
       }
-#endif
+
+		FILE *lillo;
+		lillo = fopen("LILLO_BASTARDO", "w");
+		for (k = 0; k < number_of_cell_layers; k++)
+		   for (l = 0; l < number_of_cells_in_layer[k]; l++)
+				fprintf(lillo, "Polarization = %g\n", qcad_cell_calculate_polarization (sorted_cells[k][l]));
+		fclose(lillo);	
 
   if (EXHAUSTIVE_VERIFICATION == SIMULATION_TYPE)
     for (design_bus_layout_iter_first (design->bus_layout, &bli, QCAD_CELL_INPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i))
@@ -254,6 +268,9 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
       if (exp_array_index_1d (pvt->inputs, VT_INPUT, i).active_flag)
         qcad_cell_set_polarization (exp_array_index_1d (pvt->inputs, VT_INPUT, i).input,
           sim_data->trace[i].data[0] = exp_array_index_2d (pvt->vectors, gboolean, 0, i) ? 1 : -1) ;
+
+
+		
 
   // Converge the steady state coherence vector for each cell so that the simulation starts without any transients //
   stable = FALSE;
@@ -296,24 +313,20 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
     k++;
     }
 
-/*  command_history_message ("It took %d iterations to converge the initial steady state polarization\n", k);*/
+  printf ("It took %d iterations to converge the initial steady state polarization\n", k);
 
-  #ifndef CUDA 
+	#ifdef CUDA
+	// Launch GPU Simulation
+   launch_coherence_vector_simulation (design, sim_data, sorted_cells, &optimization_options, options, number_of_cell_layers, number_of_cells_in_layer, number_samples, record_interval, total_number_of_inputs);
+	#else
   // perform the iterations over all samples //
   for (j = 0; j < number_samples; j++)
     {
     if (0 == j % 10000)
       {
       // Update the progress bar
-      printf("Progress: %g\n", ((float) j / (float) number_samples)) ;
-      // redraw the design if the user wants it to appear animated //
-/*#ifdef DESIGNER*/
-/*      if(options->animate_simulation)*/
-/*        {*/
-/*        redraw_async(NULL);*/
-/*        gdk_flush () ;*/
-/*        }*/
-//#endif /* def DESIGNER */
+      // -- set_progress_bar_fraction ((float) j / (float) number_samples) ;
+		printf ("Percentage: %g\n", (float) j / (float) number_samples);
       }
       // -- for each of the inputs -- //
 
@@ -371,8 +384,10 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
           continue;
         if (fabs (((coherence_model *)sorted_cells[k][l]->cell_model)->lambda_z) > 1.0)
           {
-/*          command_history_message ("I had to abort the simulation at iteration %d because the polarization = %e was diverging.\nPossible cause is the time step is too large.\nAlternatively, you can decrease the relaxation time to reduce oscillations.\n",j, ((coherence_model *)sorted_cells[k][l]->cell_model)->lambda_z);*/
-/*          command_history_message ("time step was set to %e\n", options->time_step);*/
+          // --command_history_message ("I had to abort the simulation at iteration %d because the polarization = %e was diverging.\nPossible cause is the time step is too large.\nAlternatively, you can decrease the relaxation time to reduce oscillations.\n",j, ((coherence_model *)sorted_cells[k][l]->cell_model)->lambda_z);
+          // -- command_history_message ("time step was set to %e\n", options->time_step);
+			 printf ("I had to abort the simulation at iteration %d because the polarization = %e was diverging.\nPossible cause is the time step is too large.\nAlternatively, you can decrease the relaxation time to reduce oscillations.\n",j, ((coherence_model *)sorted_cells[k][l]->cell_model)->lambda_z);
+          printf ("time step was set to %e\n", options->time_step);
           return sim_data;
           }
         qcad_cell_set_polarization (sorted_cells[k][l], ((coherence_model *)sorted_cells[k][l]->cell_model)->lambda_z);
@@ -385,33 +400,10 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
           qcad_cell_calculate_polarization (exp_array_index_1d (design->bus_layout->outputs, BUS_LAYOUT_CELL, i).cell) ;
 
   if (TRUE == STOP_SIMULATION) return sim_data;
+
   }//for number of samples
-  #else
-  //CUDA code for coherence simulation goes here
-  //tentative pseudo algorithm
-  //1st: get a suitable representation of the design which can be copied easily
-  //     into global memory
-  //     HINT:
-  //	 typedef struct cuda_cell_t{
-  //			 	long int id;	   //unique id
-  //				(void*) data_cell; //replace void* either w/ pointer to
-  //								   //suitable struct or w/ data itself
-  //				int* neighbors;	   //long int vector <-> id of cell /0
-  //     } cuda_cell  
-  //2nd: have the representation take into account neighborhood as a list of 
-  //     pointers to the ids of the neghbours
-  //3rd: copy everything into global memory
-  //4th: kernel copies into its local memory _A COPY OF THE DATA OF ITS NEIGH._
-  //5th: kernel can process the evolution from s to s+1 using local data and 
-  //     updates the state of the cell it is working on
-  //6th: repeat 4-5 until total number of samples are computed
-  //7th: copy everything from device memory to host memory, mapping correctly
-   
-   
-   // Launch GPU Simulation
-   launch_coherence_vector_simulation (design, sim_data, sorted_cells, &optimization_options, options, number_of_cell_layers, number_of_cells_in_layer, number_samples, record_interval, &STOP_SIMULATION);
- 	
-  #endif
+	
+	#endif
 
   // Free the neigbours and Ek array introduced by this simulation//
   for (k = 0; k < number_of_cell_layers; k++)
@@ -433,8 +425,8 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
   if ((end_time = time (NULL)) < 0)
     fprintf (stderr, "Could not get end time\n");
 
-/*  command_history_message ("Total simulation time: %g s\n", (double)(end_time - start_time));*/
-/*  set_progress_bar_visible (FALSE) ;*/
+  // --command_history_message ("Total simulation time: %g s\n", (double)(end_time - start_time));
+  printf ("Total simulation time: %g s\n", (double)(end_time - start_time));
   return sim_data;
   }//run_coherence
 
@@ -470,7 +462,7 @@ static void run_coherence_iteration (int sample_number, int number_of_cell_layer
       // Calculate the sum of neighboring polarizations //
       num_neighbours = ((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours;
       for (q = 0 ; q < num_neighbours ; q++)
-			PEk += (qcad_cell_calculate_polarization (((coherence_model *)sorted_cells[i][j]->cell_model)->neighbours[q]))*((coherence_model *)sorted_cells[i][j]->cell_model)->Ek[q];
+        PEk += (qcad_cell_calculate_polarization (((coherence_model *)sorted_cells[i][j]->cell_model)->neighbours[q]))*((coherence_model *)sorted_cells[i][j]->cell_model)->Ek[q];
 
       lambda_x = ((coherence_model *)sorted_cells[i][j]->cell_model)->lambda_x;
       lambda_y = ((coherence_model *)sorted_cells[i][j]->cell_model)->lambda_y;
@@ -487,7 +479,7 @@ static void run_coherence_iteration (int sample_number, int number_of_cell_layer
   }//run_iteration
 
 //-------------------------------------------------------------------//
-// refreshes the array of Ek values for each cell in the design this is done to speed up the simulation
+// -- refreshes the array of Ek values for each cell in the design this is done to speed up the simulation
 // since we can assume no design changes durring the simulation we can precompute all the Ek values then
 // use them as necessary throughout the simulation -- //
 static void coherence_refresh_all_Ek (int number_of_cell_layers, int *number_of_cells_in_layer, QCADCell ***sorted_cells, coherence_OP *options)
@@ -572,84 +564,34 @@ static double coherence_determine_Ek (QCADCell * cell1, QCADCell * cell2, int la
   return EnergyDiff - EnergySame;
   }// coherence_determine_Ek
 
-
+//-------------------------------------------------------------------//
 // Calculates the clock data at a particular sample
-static inline double calculate_clock_value 
-(
-	unsigned int clock_num, 
-	unsigned long int sample, 
-	unsigned long int number_samples, 
-	int total_number_of_inputs, 
-	const coherence_OP *options, 
-	int SIMULATION_TYPE, 
-	VectorTable *pvt
-)
-{
-	/*  
-		This function is called in coherence_vector.c like this:
-		clock_value = calculate_clock_value
-		(
-			sorted_cells[i][j]->cell_options.clock, 
-			sample_number, 
-			number_samples, 
-			total_number_of_inputs, 
-			options, 
-			SIMULATION_TYPE, 
-			pvt
-		);
-		Q1) does sorted_cells[i][j]->cell_options.clock change over time?
-		Q2) modify pointers to structure so as to hold the actual value and not the 
-			 pointer to it
-		A1) probably not - verified in coherence_vector.c
-		A2) done
-	*/ 
-   double clock = 0;
-	
-	if (SIMULATION_TYPE == EXHAUSTIVE_VERIFICATION)
-	{
-		clock = 
-				// this is a double, the struct is a global variable of this file
-				optimization_options.clock_prefactor *	
-				// passed as argument
-				cos 
-				(
-					((double) (1 << total_number_of_inputs)) *
-					// passed as argument - the current value of iteration j
-					(double) sample * 
-					// this is a double, the struct is a global variable of this file
-					optimization_options.four_pi_over_number_samples -
-					// constant defined in math.h (?) 
-					PI * 
-					// passed as argument - ???
-					(double)clock_num * 0.5
-				) + 
-				// this is a double, the struct is a global variable of this file
-				optimization_options.clock_shift + 
-				// this is a double, the struct is passed as argument
-				(double)options->clock_shift;
-		
-		// Saturate the clock at the clock high and low values
-		clock = CLAMP (clock, options->clock_low, options->clock_high) ;
-	}
-	else
-		if (SIMULATION_TYPE == VECTOR_TABLE)
-		{
-			clock = 
-				optimization_options.clock_prefactor *
-				cos (((double)pvt->vectors->icUsed) * 
-				(double) sample * 
-				optimization_options.two_pi_over_number_samples - 
-				PI * 
-				(double)clock_num * 0.5) + 
-				optimization_options.clock_shift + 
-				options->clock_shift;
+static inline double calculate_clock_value (unsigned int clock_num, unsigned long int sample, unsigned long int number_samples, int total_number_of_inputs, const coherence_OP *options, int SIMULATION_TYPE, VectorTable *pvt)
+  {
+  double clock = 0;
 
-			// Saturate the clock at the clock high and low values
-			clock = CLAMP (clock, options->clock_low, options->clock_high) ;
-		}
+  if (SIMULATION_TYPE == EXHAUSTIVE_VERIFICATION)
+    {
+    clock = optimization_options.clock_prefactor *
+      cos (((double) (1 << total_number_of_inputs)) * (double) sample * optimization_options.four_pi_over_number_samples - PI * (double)clock_num * 0.5) + optimization_options.clock_shift + options->clock_shift;
 
-	return clock;
-}// calculate_clock_value
+    // Saturate the clock at the clock high and low values
+    clock = CLAMP (clock, options->clock_low, options->clock_high) ;
+    }
+  else
+  if (SIMULATION_TYPE == VECTOR_TABLE)
+    {
+    clock = optimization_options.clock_prefactor *
+      cos (((double)pvt->vectors->icUsed) * (double) sample * optimization_options.two_pi_over_number_samples - PI * (double)clock_num * 0.5) + optimization_options.clock_shift + options->clock_shift;
+
+    // Saturate the clock at the clock high and low values
+    clock = CLAMP (clock, options->clock_low, options->clock_high) ;
+    }
+
+  return clock;
+  }// calculate_clock_value
+
+//-------------------------------------------------------------------//
 
 // Next value of lambda x with choice of algorithm
 static inline double lambda_x_next (double t, double PEk, double Gamma, double lambda_x, double lambda_y, double lambda_z, const coherence_OP *options)
@@ -668,7 +610,7 @@ static inline double lambda_x_next (double t, double PEk, double Gamma, double l
   if (EULER_METHOD == options->algorithm)
     return lambda_x + k1;
   else
-/*    command_history_message ("coherence vector undefined algorithm\n");*/
+    printf ("coherence vector undefined algorithm\n");
 
   return 0;
   }
@@ -690,7 +632,7 @@ static inline double lambda_y_next (double t, double PEk, double Gamma, double l
   if (EULER_METHOD == options->algorithm)
     return lambda_y + k1;
   else
-/*    command_history_message("coherence vector undefined algorithm\n");*/
+    printf ("coherence vector undefined algorithm\n");
 
   return 0;
   }
@@ -712,7 +654,7 @@ static inline double lambda_z_next (double t, double PEk, double Gamma, double l
   if (EULER_METHOD == options->algorithm)
     return lambda_z + k1;
   else
-/*    command_history_message("coherence vector undefined algorithm\n");*/
+    printf("coherence vector undefined algorithm\n");
 
   return 0;
   }
@@ -757,8 +699,7 @@ static int compareCoherenceQCells (const void *p1, const void *p2)
 
 void coherence_options_dump (coherence_OP *coherence_options, FILE *pfile)
   {
-	// pfile??
-	fprintf (stderr, "coherence_options_dump:\n") ;
+  fprintf (stderr, "coherence_options_dump:\n") ;
 	fprintf (stderr, "coherence_options->T                         = %e [K]\n",  coherence_options->T) ;
 	fprintf (stderr, "coherence_options->relaxation                = %e [s]\n",  coherence_options->relaxation) ;
 	fprintf (stderr, "coherence_options->time_step                 = %e [s]\n",  coherence_options->time_step) ;

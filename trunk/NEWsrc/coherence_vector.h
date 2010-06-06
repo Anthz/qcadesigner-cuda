@@ -63,16 +63,6 @@ typedef struct
 	gboolean animate_simulation;
   } coherence_OP;
 
-// some often used variables that can be precalculated
-typedef struct
-  {
-  double clock_prefactor;
-  double clock_shift;
-  double four_pi_over_number_samples;
-  double two_pi_over_number_samples;
-  double hbar_over_kBT;
-  } coherence_optimizations;
-
 typedef struct
   {
   int number_of_neighbours;
@@ -83,6 +73,16 @@ typedef struct
   double lambda_y;
   double lambda_z;
   } coherence_model;
+
+// some often used variables that can be precalculated
+typedef struct
+  {
+  double clock_prefactor;
+  double clock_shift;
+  double four_pi_over_number_samples;
+  double two_pi_over_number_samples;
+  double hbar_over_kBT;
+  } coherence_optimizations;
 
 
 void coherence_options_dump (coherence_OP *coherence_options, FILE *pfile) ;
