@@ -252,7 +252,7 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
       }
 
 		FILE *lillo;
-		lillo = fopen("LILLO_BASTARDO", "w");
+		lillo = fopen("LILLO", "w");
 		for (k = 0; k < number_of_cell_layers; k++)
 		   for (l = 0; l < number_of_cells_in_layer[k]; l++)
 				fprintf(lillo, "Polarization = %g\n", qcad_cell_calculate_polarization (sorted_cells[k][l]));
