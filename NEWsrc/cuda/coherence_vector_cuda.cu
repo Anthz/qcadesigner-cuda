@@ -291,28 +291,42 @@ __global__ void kernelIterationParallel
 */
 
 extern "C"
-void launch_coherence_vector_simulation (DESIGN *design, simulation_data *sim_data, QCADCell ***sorted_cells, coherence_optimizations *optimization_options, const coherence_OP *options, int number_of_cell_layers, int *number_of_cells_in_layer, int num_samples, int record_interval, int *STOP)
+void launch_coherence_vector_simulation 
+(
+	DESIGN *design, 
+	simulation_data *sim_data, 
+	QCADCell ***sorted_cells, 
+	coherence_optimizations *optimization_options, 
+	const coherence_OP *options, 
+	int number_of_cell_layers, 
+	int *number_of_cells_in_layer, 
+	int num_samples, 
+	int record_interval,
+	int total_number_of_inputs
+)
 {
-   // Variables
-   double *h_polarization, *h_Ek, *h_lambda_x, *h_lambda_y, *h_lambda_z;
-   unsigned int *h_clock;
-   int *h_neighbours;
+	// Host-Side Variables
+	double *h_polarization, *h_Ek, *h_lambda_x, *h_lambda_y, *h_lambda_z;
+	unsigned int *h_clock;
+	int *h_neighbours;
 
-   double *d_polarization, *d_Ek, *d_lambda_x, *d_lambda_y, *d_lambda_z;
-   unsigned int *d_clock;
-   int *d_neighbours;
+	// Device-Side Variables
+	double *d_polarization, *d_Ek, *d_lambda_x, *d_lambda_y, *d_lambda_z;
+	unsigned int *d_clock;
+	int *d_neighbours;
 
+	// Others
 	FILE *fp;
-   int i, j, k, h;
-   int cells_number;
-   int max_neighbours_number;
-   int index;
+   int i, j, k;
+   unsigned int cells_number;
+   unsigned int max_neighbours_number;
+   unsigned int index;
 	BUS_LAYOUT_ITER bli ;
   	double dPolarization = 2.0 ;
   	int idxMasterBitOrder = -1.0 ;
    double total_clock_shift = (optimization_options->clock_shift) + options->clock_shift;
 
-    // Compute the number of cells, the max neighbours count and set the cuda_id field of each cell
+	// Compute the number of cells, the max neighbours count and set the cuda_id field of each cell
    cells_number = 0;
    max_neighbours_number = 0;
    index = 0;
@@ -330,67 +344,75 @@ void launch_coherence_vector_simulation (DESIGN *design, simulation_data *sim_da
       cells_number += number_of_cells_in_layer[i];
    }
 
-  // Set GPU Parameters
+  	// Set GPU Parameters
    dim3 threads (BLOCK_DIM);
    dim3 grid (ceil ((double)cells_number/BLOCK_DIM));
 
    // Set Devices
    cudaSetDevice (cutGetMaxGflopsDeviceId());
-  // cudaPrintfInit ();
 
-   // Allocate CUDA-Compatible structures
+   // Allocate CUDA-Compatible Structures
    h_polarization =	(double*) malloc (sizeof(double)*cells_number);
    h_clock =			(unsigned int*) malloc (sizeof(unsigned int)*cells_number);
    h_lambda_x =		(double*) malloc (sizeof(double)*cells_number);
    h_lambda_y =		(double*) malloc (sizeof(double)*cells_number);
    h_lambda_z =		(double*) malloc (sizeof(double)*cells_number);
    h_Ek =				(double*) malloc (sizeof(double)*cells_number*max_neighbours_number);
-   h_neighbours =	(int*) malloc (sizeof(int)*cells_number*max_neighbours_number);
+   h_neighbours =		(int*) malloc (sizeof(int)*cells_number*max_neighbours_number);
 
-   // Initialize Memory
-   cutilSafeCall (cudaMalloc (&d_polarization, cells_number*sizeof(double)));
-   cutilSafeCall (cudaMalloc (&d_clock, cells_number*sizeof(unsigned int)));
-   cutilSafeCall (cudaMalloc (&d_lambda_x, cells_number*sizeof(double)));
-   cutilSafeCall (cudaMalloc (&d_lambda_y, cells_number*sizeof(double)));
-   cutilSafeCall (cudaMalloc (&d_lambda_z, cells_number*sizeof(double)));
-   cutilSafeCall (cudaMalloc (&d_Ek, sizeof(double)*max_neighbours_number*cells_number));
-   cutilSafeCall (cudaMalloc (&d_neighbours, sizeof(int)*max_neighbours_number*cells_number));
-
-	// Fill Fixed Structures 
+	// Fill CUDA-Compatible Structures 
 	index = 0;
 	fp = fopen ("cuda/log_coherence/circuit_structure", "w");
 	for (i = 0; i < number_of_cell_layers; i++)
   	{
-     		for (j = 0; j < number_of_cells_in_layer[i]; j++)
-      		{
+		for (j = 0; j < number_of_cells_in_layer[i]; j++)
+  		{
+			h_polarization[index] = qcad_cell_calculate_polarization(sorted_cells[i][j]);
+		   h_lambda_x[index] = ((coherence_model *)sorted_cells[i][j]->cell_model)->lambda_x;
+		   h_lambda_y[index] = ((coherence_model *)sorted_cells[i][j]->cell_model)->lambda_y;
+		   h_lambda_z[index] = ((coherence_model *)sorted_cells[i][j]->cell_model)->lambda_z;
 			h_clock[index] = (sorted_cells[i][j]->cell_options).clock;
-			fprintf (fp, "Cell: %d\n\tNeighbours (Ek):\n", index);
+
+			fprintf (fp, "Cell: %d, Initial Polarization: %g\n\tNeighbours (Ek):\n", index, h_polarization[index]);
 			for (k = 0; k < max_neighbours_number; k++)
-		   	{
-		   		if (k < ((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours)
-		      		{
-		         		h_Ek[index*max_neighbours_number+k] = ((coherence_model *)sorted_cells[i][j]->cell_model)->Ek[k];
-		         		h_neighbours[index*max_neighbours_number+k] = (((coherence_model *)sorted_cells[i][j]->cell_model)->neighbours[k])->cuda_id;
-		      		}
-		      		else
-		      		{
-		         		h_Ek[index*max_neighbours_number+k] = -1;
-		         		h_neighbours[index*max_neighbours_number+k] = -1;
-		      		}
-					fprintf (fp, "\t\t%d(%g)\n", h_neighbours[index*max_neighbours_number+k], h_Ek[index*max_neighbours_number+k]);
-		   	}	
+	   	{
+	   		if (k < ((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours)
+      		{
+         		h_Ek[index*max_neighbours_number+k] = ((coherence_model *)sorted_cells[i][j]->cell_model)->Ek[k];
+         		h_neighbours[index*max_neighbours_number+k] = (((coherence_model *)sorted_cells[i][j]->cell_model)->neighbours[k])->cuda_id;
+      		}
+      		else
+      		{
+         		h_Ek[index*max_neighbours_number+k] = -1;
+         		h_neighbours[index*max_neighbours_number+k] = -1;
+      		}
+				fprintf (fp, "\t\t%d(%g)\n", h_neighbours[index*max_neighbours_number+k], h_Ek[index*max_neighbours_number+k]);
+	   	}	
 			index++;
 			fprintf (fp, "\n");
 		}	
 	}
 	fclose (fp);
 
+   // Initialize Device Memory
+   cutilSafeCall (cudaMalloc (&d_polarization, cells_number*sizeof(double)));
+   cutilSafeCall (cudaMalloc (&d_clock, cells_number*sizeof(unsigned int)));
+   cutilSafeCall (cudaMalloc (&d_lambda_x, cells_number*sizeof(double)));
+   cutilSafeCall (cudaMalloc (&d_lambda_y, cells_number*sizeof(double)));
+   cutilSafeCall (cudaMalloc (&d_lambda_z, cells_number*sizeof(double)));
+   cutilSafeCall (cudaMalloc (&d_Ek, sizeof(double)*max_neighbours_number*cells_number));
+   cutilSafeCall (cudaMalloc (&d_neighbours, sizeof(unsigned int)*max_neighbours_number*cells_number));
 
-   // Set Constants
-   cutilSafeCall (cudaMemcpy (d_clock, h_clock, cells_number*sizeof(unsigned int), cudaMemcpyHostToDevice));
-	cutilSafeCall (cudaMemcpy (d_neighbours, h_neighbours, sizeof(int)*max_neighbours_number*cells_number, cudaMemcpyHostToDevice));
+	// Set Device Memory
+	cutilSafeCall (cudaMemcpy (d_polarization, h_polarization, cells_number*sizeof(double), cudaMemcpyHostToDevice));
+	cutilSafeCall (cudaMemcpy (d_clock, h_clock, cells_number*sizeof(unsigned int), cudaMemcpyHostToDevice));
+	cutilSafeCall (cudaMemcpy (d_lambda_x, h_lambda_x, cells_number*sizeof(double), cudaMemcpyHostToDevice));
+	cutilSafeCall (cudaMemcpy (d_lambda_y, h_lambda_y, cells_number*sizeof(double), cudaMemcpyHostToDevice));
+	cutilSafeCall (cudaMemcpy (d_lambda_z, h_lambda_z, cells_number*sizeof(double), cudaMemcpyHostToDevice));			
 	cutilSafeCall (cudaMemcpy (d_Ek, h_Ek, sizeof(double)*max_neighbours_number*cells_number, cudaMemcpyHostToDevice));
+	cutilSafeCall (cudaMemcpy (d_neighbours, h_neighbours, sizeof(int)*max_neighbours_number*cells_number, cudaMemcpyHostToDevice));
 
+	// Set Constants
    cutilSafeCall (cudaMemcpyToSymbol("optimization_options_clock_prefactor", &(optimization_options->clock_prefactor), sizeof(double), 0, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpyToSymbol("optimization_options_clock_shift", &(optimization_options->clock_shift), sizeof(double), 0, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpyToSymbol("optimization_options_four_pi_over_number_samples", &(optimization_options->four_pi_over_number_samples), sizeof(double), 0, cudaMemcpyHostToDevice));
@@ -404,160 +426,85 @@ void launch_coherence_vector_simulation (DESIGN *design, simulation_data *sim_da
    cutilSafeCall (cudaMemcpyToSymbol("options_algorithm", &(options->algorithm), sizeof(int), 0, cudaMemcpyHostToDevice));
    cutilSafeCall (cudaMemcpyToSymbol("clock_total_shift", &(total_clock_shift), sizeof(double), 0, cudaMemcpyHostToDevice));
 
-   // For each sample...
-   for (j = 0; j < num_samples; j++)
+	// perform the iterations over all samples //
+  	for (j = 0; j < num_samples; j++)
    {
-		for
-		(
-			idxMasterBitOrder = 0, design_bus_layout_iter_first (design->bus_layout, &bli, QCAD_CELL_INPUT, &i);
-			i > -1 ;
-			design_bus_layout_iter_next (&bli, &i), idxMasterBitOrder++
-		)
-		{
-			qcad_cell_set_polarization (exp_array_index_1d (design->bus_layout->inputs, BUS_LAYOUT_CELL, i).cell,
-          dPolarization = (-sin (((double) (1 << idxMasterBitOrder)) * (double) j * optimization_options->four_pi_over_number_samples)) > 0 ? 1 : -1) ;
-			if (0 == j % record_interval)
-				sim_data->trace[i].data[j/record_interval] = dPolarization ;
-		}
+   	if (0 == j % 10000)
+      {
+   	   // Update the progress bar
+			printf ("Percentage: %g\n", (float) j / (float) num_samples);
+      }
 
-		if (0 == j % record_interval)
-		{
-			for 
-			(			
-				design_bus_layout_iter_first ( design->bus_layout, &bli, QCAD_CELL_INPUT, &i ) ; 
-				i > -1 ;
-				design_bus_layout_iter_next ( &bli, &i)
-			)
+    	//if (EXHAUSTIVE_VERIFICATION == SIMULATION_TYPE)
+      	for (idxMasterBitOrder = 0, design_bus_layout_iter_first (design->bus_layout, &bli, QCAD_CELL_INPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i), idxMasterBitOrder++)
+        	{
+				dPolarization = -sin (((double) (1 << idxMasterBitOrder)) * (double) j * optimization_options->four_pi_over_number_samples) > 0 ? 1 : -1;
+				index = exp_array_index_1d (design->bus_layout->inputs, BUS_LAYOUT_CELL, i).cell->cuda_id;
+				h_polarization[index] = dPolarization;
+        		if (0 == j % record_interval)
+          		sim_data->trace[i].data[j/record_interval] = dPolarization;
+        }
+    	/*else
+			// DA SISTEMARE...
+      	for (design_bus_layout_iter_first (design->bus_layout, &bli, QCAD_CELL_INPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i))
+        		if (exp_array_index_1d (pvt->inputs, VT_INPUT, i).active_flag)
+          	{
+					dPolarization = exp_array_index_2d (pvt->vectors, gboolean, (j*pvt->vectors->icUsed) / number_samples, i) ? 1 : -1;
+					index = exp_array_index_1d (pvt->inputs, VT_INPUT, i).input.cuda_id;
+					h_polarization[index] = dPolarization;
+          		if (0 == j % record_interval)
+            		sim_data->trace[i].data[j/record_interval] = dPolarization ;
+          } */
+
+    	if (0 == j % record_interval)
+      {
+      	for (design_bus_layout_iter_first (design->bus_layout, &bli, QCAD_CELL_INPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i))
 			{
-				sim_data->trace[i].data[j/record_interval] = 
-				qcad_cell_calculate_polarization (exp_array_index_1d (design->bus_layout->inputs, BUS_LAYOUT_CELL, i).cell);
-			}
+				index = exp_array_index_1d (design->bus_layout->inputs, BUS_LAYOUT_CELL, i).cell->cuda_id;
+         	sim_data->trace[i].data[j/record_interval] = h_polarization[index];
+			}		
 		}
 
-		// Fill CUDA-Compatible structures
-		index = 0;
-		for (k = 0; k < number_of_cell_layers; k++)
-		{
-		   for (h = 0; h < number_of_cells_in_layer[k]; h++)
-		   {
-		      h_polarization[index] = qcad_cell_calculate_polarization(sorted_cells[k][h]);
-		      h_lambda_x[index] = ((coherence_model *)sorted_cells[k][h]->cell_model)->lambda_x;
-		      h_lambda_y[index] = ((coherence_model *)sorted_cells[k][h]->cell_model)->lambda_y;
-		      h_lambda_z[index] = ((coherence_model *)sorted_cells[k][h]->cell_model)->lambda_z;
-		     
-		      index++;
-		   }
-		}
-
-		// Set Memory
 		cutilSafeCall (cudaMemcpy (d_polarization, h_polarization, cells_number*sizeof(double), cudaMemcpyHostToDevice));
-		cutilSafeCall (cudaMemcpy (d_lambda_x, h_lambda_x, cells_number*sizeof(double), cudaMemcpyHostToDevice));
-		cutilSafeCall (cudaMemcpy (d_lambda_y, h_lambda_y, cells_number*sizeof(double), cudaMemcpyHostToDevice));
-		cutilSafeCall (cudaMemcpy (d_lambda_z, h_lambda_z, cells_number*sizeof(double), cudaMemcpyHostToDevice));
-				
-      // Launch Kernel
-      printf ("Iteration# %d...", j); 
+
+		// Launch Kernel
+      //printf ("Iteration# %d...", j); 
       kernelIterationParallel<<< grid, threads >>> (d_polarization, d_lambda_x, d_lambda_y, d_lambda_z, d_Ek, d_clock, d_neighbours, cells_number, max_neighbours_number, j, design->bus_layout->inputs->icUsed);
 
       // Wait Device
       cudaThreadSynchronize ();
-
-    //  cudaPrintfDisplay(stdout, true);
-
-      // Return to Host lambdas values
-      cutilSafeCall (cudaMemcpy (h_lambda_x, d_lambda_x, cells_number*sizeof(double), cudaMemcpyDeviceToHost));
-      cutilSafeCall (cudaMemcpy (h_lambda_y, d_lambda_y, cells_number*sizeof(double), cudaMemcpyDeviceToHost));
-      cutilSafeCall (cudaMemcpy (h_lambda_z, d_lambda_z, cells_number*sizeof(double), cudaMemcpyDeviceToHost));
 		
-		index = 0;
-		for (k = 0; k < number_of_cell_layers; k++)
-			for (h = 0; h < number_of_cells_in_layer[k]; h++)
-			{
-				// don't simulate the input and fixed cells //
-				if 
-				(
-					(QCAD_CELL_INPUT == sorted_cells[k][h]->cell_function) ||
-					(QCAD_CELL_FIXED == sorted_cells[k][h]->cell_function)
-					
-				)
-				{
-					index++;
-					continue;
-				}		
-				// if polarization went mad, abort
-				if 
-				(
-					fabs (((coherence_model *)sorted_cells[k][h]->cell_model)->lambda_z) > 1.0
-				)
-				{
-					//abort
-					return ;
-				}
-				
-				// if everything goes well, update polarizations for next cycle
-				qcad_cell_set_polarization
-				(
-					//sorted_cells[k][h], ((coherence_model *)sorted_cells[k][h]->cell_model)->lambda_z
-					sorted_cells[k][h], h_lambda_z[index]
-				);
-				
-				((coherence_model *)sorted_cells[k][h]->cell_model)->lambda_x = h_lambda_x[index];
-				((coherence_model *)sorted_cells[k][h]->cell_model)->lambda_y = h_lambda_y[index];
-				((coherence_model *)sorted_cells[k][h]->cell_model)->lambda_z = h_lambda_z[index];
+		//printf("Complete!\n");
 
-				index++;
-			}
+		/*char str[256] = "cuda/log_coherence/";
+		char num[10];
+	
+		sprintf (num, "%i", j);
+		strcat (str, num);
 
-			printf("Complete!\n");
-
-			char str[256] = "cuda/log_coherence/";
-			char num[10];
-		
-			sprintf (num, "%i", j);
-			strcat (str, num);
-
-			fp = fopen(str, "w");
-			for( k = 0; k < cells_number; k++)
-			{
-				fprintf(fp,"cell %d: %f\n", k, h_lambda_z[k]);
-			}
-
-			fclose (fp);
-			
-		   // collect all the output data from the simulation
-			if (0 == j % record_interval)
-			{
-				for 
-				(			
-					design_bus_layout_iter_first (design->bus_layout, &bli, QCAD_CELL_OUTPUT, &i); 
-					i > -1 ;
-					design_bus_layout_iter_next (&bli, &i)
-				)
-				{
-					sim_data->trace[(design->bus_layout->inputs->icUsed)+i].data[j/record_interval] =
-					qcad_cell_calculate_polarization (exp_array_index_1d (design->bus_layout->outputs, BUS_LAYOUT_CELL, i).cell);
-				}
-			}
-
-		if (TRUE == *STOP) 
+		fp = fopen(str, "w");
+		for( k = 0; k < cells_number; k++)
 		{
-			// Free-up resources
-//			cudaPrintfEnd();
-			cudaFree(d_polarization);
-			cudaFree(d_clock);
-			cudaFree(d_lambda_x);
-			cudaFree(d_lambda_y);
-			cudaFree(d_lambda_z);
-			cudaFree(d_Ek);
-			cudaFree(d_neighbours);    
-
-			return;
+			fprintf(fp,"cell %d: %f\n", k, h_lambda_z[k]);
 		}
-   }
 
-   // Free-up resources
-  // cudaPrintfEnd();
-   cudaFree(d_polarization);
+		fclose (fp);
+		*/
+
+		// Lambda Z is the new polarization
+		cutilSafeCall (cudaMemcpy (h_polarization, d_lambda_z, cells_number*sizeof(double), cudaMemcpyDeviceToHost));
+
+		// Collect all the output data from the simulation
+    	if (0 == j % record_interval)
+      	for (design_bus_layout_iter_first (design->bus_layout, &bli, QCAD_CELL_OUTPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i))
+        	{
+				index = exp_array_index_1d (design->bus_layout->outputs, BUS_LAYOUT_CELL, i).cell->cuda_id;
+				sim_data->trace[total_number_of_inputs + i].data[j/record_interval] = h_polarization[index];
+			}
+
+	}
+
+	cudaFree(d_polarization);
    cudaFree(d_clock);
    cudaFree(d_lambda_x);
 	cudaFree(d_lambda_y);
@@ -566,6 +513,7 @@ void launch_coherence_vector_simulation (DESIGN *design, simulation_data *sim_da
    cudaFree(d_neighbours);  
 
 	return;
+
 }
 
 

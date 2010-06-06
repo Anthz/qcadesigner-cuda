@@ -1,0 +1,7 @@
+Inizia a funzionare qualcosa in coherence
+--Questa linea, e quelle sotto di essa, saranno ignorate--
+
+M    NEWsrc/QCADesigner_COHERENCE
+M    NEWsrc/coherence_options.txt
+M    NEWsrc/coherence_vector.c
+M    NEWsrc/cuda/log_coherence/circuit_structure
