@@ -104,7 +104,9 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 	double polarization_math;
 	bistable_model *current_cell_model = NULL ;
 	QCADCell *cell;
+	double *old_polarizations;
 	double *new_polarizations;
+	double *old_old_polarizations;
 	int cells_number=0;
 
 	STOP_SIMULATION = FALSE;
@@ -228,13 +230,13 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 
 
 	#ifndef CUDA
-
+/*
 	// randomize the cells in the design so as to minimize any numerical problems associated //
 	// with having cells simulated in some predefined order. //
 	// randomize the order in which the cells are simulated //
 	//if (options->randomize_cells)
 	// for each layer ...
-	/*  for (Nix = 0 ; Nix < number_of_cell_layers ; Nix++)
+	  for (Nix = 0 ; Nix < number_of_cell_layers ; Nix++)
 	// ...perform as many swaps as there are cells therein
 	for (Nix1 = 0 ; Nix1 < number_of_cells_in_layer[Nix] ; Nix1++)
 	{
@@ -247,7 +249,9 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 	}
 	// -- get and print the total initialization time -- //
 	if((end_time = time (NULL)) < 0)
-	fprintf(stderr, "Could not get end time\n");*/
+	fprintf(stderr, "Could not get end time\n");
+*/
+
 	#endif //CUDA
 
 	 
@@ -329,10 +333,11 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 	printf("\nLaunch conclusa\n");
 
 	for(k=0; k < output_number; k++){
-		printf("Gibbo debug: samples: %d, output_number: %d, trace->function %d\n",sim_data_number_samples,output_number,sim_data->trace[design_bus_layout_inputs_icUsed + k].trace_function);
+		//printf("Gibbo debug: samples: %d, output_number: %d, trace->function %d\n",sim_data_number_samples,output_number,sim_data->trace[design_bus_layout_inputs_icUsed + k].trace_function);
 	   	for(j=0; j < sim_data_number_samples; j++)	
 		sim_data->trace[design_bus_layout_inputs_icUsed + k].data[j] = output_traces[k][j];
 	}
+
 
 	#else //if not CUDA
 	for (icLayers = 0; icLayers < number_of_cell_layers; icLayers++)
@@ -340,10 +345,22 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 			cells_number++;
 	  
 	new_polarizations = malloc(cells_number*sizeof(double));
+	old_polarizations = malloc(cells_number*sizeof(double));
+	old_old_polarizations = malloc(cells_number*sizeof(double));
+	
+
+	
+	/*for (icLayers = 0, counter = 0; icLayers < number_of_cell_layers; icLayers++)
+	{
+		for (icCellsInLayer = 0 ; icCellsInLayer < number_of_cells_in_layer[icLayers] ; icCellsInLayer++, counter++)
+		{
+			printf("%d = (%f,%f)\n",counter,QCAD_DESIGN_OBJECT(sorted_cells[icLayers][icCellsInLayer])->x, QCAD_DESIGN_OBJECT(sorted_cells[icLayers][icCellsInLayer])->y);
+		}
+	}*/
 
 
 	printf("inizio simulazione\n");
-	for (j = 0; j < sim_data_number_samples ; j++)
+	for (j = 0; j < sim_data_number_samples; j++)
 	{
 
 		// if (j % 10 == 0)
@@ -386,46 +403,60 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 		
 
 
-
+/*
 		// randomize the order in which the cells are simulated to try and minimize numerical errors
 		// associated with the imposed simulation order.
-		/*    if(options->randomize_cells)
+		  //  if(options->randomize_cells)
 		// for each layer ...
-		/*      for (Nix = 0 ; Nix < number_of_cell_layers ; Nix++)
+		      for (Nix = 0 ; Nix < number_of_cell_layers ; Nix++)
 		{
 		// ...perform as many swaps as there are cells therein
-		/*#ifdef REDUCE_DEREF*/
-		/*        number_of_cells_in_current_layer = number_of_cells_in_layer[Nix] ;*/
-		/*        for (Nix1 = 0 ; Nix1 < number_of_cells_in_current_layer ; Nix1++)*/
-		/*#else*/
-		/*        for (Nix1 = 0 ; Nix1 < number_of_cells_in_layer[Nix] ; Nix1++)
-		/*#endif*/
-		/*          {
-		/*#ifdef REDUCE_DEREF*/
-		/*          idxCell1 = rand () % number_of_cells_in_current_layer ;*/
-		/*          idxCell2 = rand () % number_of_cells_in_current_layer ;*/
-		/*#else*/
-		/*          idxCell1 = rand () % number_of_cells_in_layer[Nix] ;
-		/*          idxCell2 = rand () % number_of_cells_in_layer[Nix] ;
-		/*#endif*/
-		/*
+		//#ifdef REDUCE_DEREF
+		//        number_of_cells_in_current_layer = number_of_cells_in_layer[Nix] ;
+		//        for (Nix1 = 0 ; Nix1 < number_of_cells_in_current_layer ; Nix1++)
+		//#else
+		        for (Nix1 = 0 ; Nix1 < number_of_cells_in_layer[Nix] ; Nix1++)
+		//#endif
+		          {
+		//#ifdef REDUCE_DEREF
+		//          idxCell1 = rand () % number_of_cells_in_current_layer ;
+		//          idxCell2 = rand () % number_of_cells_in_current_layer ;
+		//#else
+		          idxCell1 = rand () % number_of_cells_in_layer[Nix] ;
+		          idxCell2 = rand () % number_of_cells_in_layer[Nix] ;
+		//#endif
+		
 		  swap = sorted_cells[Nix][idxCell1] ;
 		  sorted_cells[Nix][idxCell1] = sorted_cells[Nix][idxCell2] ;
 		  sorted_cells[Nix][idxCell2] = swap ;
 		  }
 		}
-		*/
+*/		
 		// -- run the iteration with the given clock value -- //
 		// -- iterate until the entire design has stabalized -- //
 
+
 		iteration = 0;
 		stable = FALSE;
-		   
+		printf("\nsample: %d\tclock0/clock_high: %f\n", j, sim_data->clock_data[0].data[j]/options->clock_high);  
 		while (!stable && iteration < max_iterations_per_sample)
 		{
 			iteration++;
 			// -- assume that the circuit is stable -- //
 			stable = TRUE;
+			
+
+			/*for (icLayers = 0, counter=0; icLayers < number_of_cell_layers; icLayers++)
+				for (icCellsInLayer = 0 ; icCellsInLayer < number_of_cells_in_layer[icLayers] ; icCellsInLayer++, counter++)
+				{
+					old_old_polarizations[counter] = old_polarizations[counter];
+					old_polarizations[counter] = ((bistable_model *)sorted_cells[icLayers][icCellsInLayer]->cell_model)->polarization;
+				}*/
+
+
+
+
+			printf("I:%d \t", iteration-1);
 			counter = 0;
 			for (icLayers = 0; icLayers < number_of_cell_layers; icLayers++)
 			{
@@ -445,6 +476,8 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 					}*/
 					current_cell_model = ((bistable_model *)cell->cell_model) ;
 					old_polarization = current_cell_model->polarization;
+
+					
 					if (!((QCAD_CELL_INPUT == cell->cell_function)||(QCAD_CELL_FIXED == cell->cell_function)))
 					{
 						polarization_math = 0;
@@ -463,17 +496,19 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 						(polarization_math        < -1000.0)   ? -1                 :
 						(fabs (polarization_math) <     0.001) ?  polarization_math :
 						polarization_math / sqrt (1 + polarization_math * polarization_math) ;
-
+						
+						
 						// -- set the polarization of this cell -- //
 						//current_cell_model->polarization = new_polarization;
 						new_polarizations[counter]=new_polarization;
+
 
 						// If any cells polarization has changed beyond this threshold
 						// then the entire circuit is assumed to have not converged.
 							//
 							// 			====> "&& stable" added by Miglie
 							//
-						stable = (fabs (new_polarization - old_polarization) <= tolerance) && stable;
+						stable = (fabs (new_polarization-old_polarization) <= tolerance) && stable;
 						//            if((fabs (new_polarization - old_polarization) > tolerance))
 						//printf("stabile: %d,counter:%d, diff:%e, tolerance: %e \n",stable,counter,fabs(new_polarization - old_polarization),tolerance);
 					
@@ -484,18 +519,30 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 					{
 						new_polarizations[counter]=old_polarization;
 					}
+					printf("%f\t", fabs(old_polarization-new_polarizations[counter]));
 					counter++;
 				}
 			}
+
 
 			/*restoring new polarizations*/
 
 			for (icLayers = 0, counter=0; icLayers < number_of_cell_layers; icLayers++)
 				for (icCellsInLayer = 0 ; icCellsInLayer < number_of_cells_in_layer[icLayers] ; icCellsInLayer++, counter++)
-					((bistable_model *)sorted_cells[icLayers][icCellsInLayer]->cell_model)->polarization = new_polarizations[counter]; 
+				{
+					((bistable_model *)sorted_cells[icLayers][icCellsInLayer]->cell_model)->polarization = new_polarizations[counter];
+				}
+			printf("\n");
 
 		}//WHILE !STABLE
-
+		
+		/*printf("I:%d \t", iteration);
+		for (icLayers = 0, counter=0; icLayers < number_of_cell_layers; icLayers++)
+				for (icCellsInLayer = 0 ; icCellsInLayer < number_of_cells_in_layer[icLayers] ; icCellsInLayer++, counter++)
+				{
+					printf("%f\t", ((bistable_model *)sorted_cells[icLayers][icCellsInLayer]->cell_model)->polarization);
+				}
+		printf("\n");*/
 
 		if (VECTOR_TABLE == SIMULATION_TYPE)
 		for (design_bus_layout_iter_first (design_bus_layout, &bli, QCAD_CELL_INPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i))
@@ -504,9 +551,9 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 
 		// -- collect all the output data from the simulation -- //
 		for (design_bus_layout_iter_first (design_bus_layout, &bli, QCAD_CELL_OUTPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i))
-		sim_data->trace[design_bus_layout_inputs_icUsed + i].data[j] = ((bistable_model *)exp_array_index_1d (design_bus_layout_outputs, BUS_LAYOUT_CELL, i).cell->cell_model)->polarization;
+			sim_data->trace[design_bus_layout_inputs_icUsed + i].data[j] = ((bistable_model *)exp_array_index_1d (design_bus_layout_outputs, BUS_LAYOUT_CELL, i).cell->cell_model)->polarization;
 	
-		if(j%100 ==0) printf("Simulating: %dpercent, iterations: %d\n",j*100/sim_data_number_samples,iteration);
+		if(j%1 ==0) fprintf(stderr,"Simulating: %d%%, iterations: %d\n",j*100/sim_data_number_samples,iteration);
 		// -- if the user wants to stop the simulation then exit. -- //
 		/*if(TRUE == STOP_SIMULATION)
 			j = sim_data_number_samples ;*/

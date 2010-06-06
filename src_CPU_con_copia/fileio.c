@@ -917,9 +917,10 @@ static bistable_OP *open_bistable_options_file_fp (FILE *pfile)
     else
     if (!strncmp (pszLine, "randomize_cells", sizeof ("randomize_cells") - 1))
       bistable_options->randomize_cells = !strncmp (pszValue, "TRUE", sizeof ("TRUE") - 1) ? TRUE : FALSE ;
-    else
-    if (!strncmp (pszLine, "delay", sizeof ("delay") - 1))
-      bistable_options->delay = atof (pszValue)  ;
+	else    
+	if (!strncmp (pszLine, "delay", sizeof ("delay") - 1))
+      bistable_options->delay = atof (pszValue) ;
+
 
     g_free (pszLine) ;
     g_free (ReadLine (pfile, '\0', FALSE)) ;
