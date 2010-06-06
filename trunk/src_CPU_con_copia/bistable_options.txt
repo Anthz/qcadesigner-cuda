@@ -1,5 +1,5 @@
 [BISTABLE_OPTIONS]
-number_of_samples= 8000
+number_of_samples= 4000
 animate_simulation= 0
 convergence_tolerance= 0.001000
 radius_of_effect= 65.0000
@@ -11,5 +11,5 @@ clock_amplitude_factor= 2.000000
 max_iterations_per_sample= 100
 layer_separation= 11.500000
 randomize_cells= 1
-delay=10.5
+delay=0
 [#BISTABLE_OPTIONS]

@@ -1,4 +1,4 @@
-CC = gcc-4.3
+CC = gcc
 GLIB=`pkg-config gtk+-2.0 --cflags --libs glib-2.0`
 FLAGS=-g
 
