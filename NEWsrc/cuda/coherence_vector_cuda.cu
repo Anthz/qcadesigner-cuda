@@ -26,7 +26,7 @@ extern "C"{
 
 #undef	CLAMP
 #define	CLAMP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
-#define	BLOCK_DIM 256
+#define	BLOCK_DIM 64
 #define	magnitude_energy_vector(P,G) (hypot(2*(G), (P)) * over_hbar) /* (sqrt((4.0*(G)*(G) + (P)*(P))*over_hbar_sqr)) */
 
 // Physical Constants (from coherence_vector.h)
@@ -228,7 +228,6 @@ __global__ void kernelIterationParallel
 	th_index =  blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
 	//cuPrintf("th_index=%d", th_index);
 
-
    // Only useful threads must work
    if (th_index < cells_number)
    {
@@ -239,11 +238,13 @@ __global__ void kernelIterationParallel
 			{
 	 			nb_index = d_neighbours[th_index*neighbours_number+i];
 	 			PEk += d_polarization[nb_index] * d_Ek[th_index*neighbours_number+i];
-				// TODO Hyp: d_EK of i > actual_numof_neighbours == 1?
+			//	cuPrintf("nb_index: %d\td_polarization[nb_index]: %g\td_Ek[th_index*neighbours_number+i]: %g\n", nb_index, d_polarization[nb_index], d_Ek[th_index*neighbours_number+i]);
+	 			// TODO Hyp: d_EK of i > actual_numof_neighbours == 1?
 			}
       }
-	
-	
+
+		//cuPrintf("%g\t", PEk);
+
 		// Generate clock
       clock_value = 
 		   generate_clock_at_sample_s 
@@ -316,7 +317,7 @@ void launch_coherence_vector_simulation
 
 	// Others
 	FILE *fp;
-   int i, j, k;
+   int i, j, k, l;
    unsigned int cells_number;
    unsigned int max_neighbours_number;
    unsigned int index;
@@ -491,7 +492,24 @@ void launch_coherence_vector_simulation
 		*/
 
 		// Lambda Z is the new polarization
-		cutilSafeCall (cudaMemcpy (h_polarization, d_lambda_z, cells_number*sizeof(double), cudaMemcpyDeviceToHost));
+		cutilSafeCall (cudaMemcpy (h_lambda_z, d_lambda_z, cells_number*sizeof(double), cudaMemcpyDeviceToHost));
+
+		// -- Set the cell polarizations to the lambda_z value -- //
+    	for (k = 0; k < number_of_cell_layers; k++)
+      	for (l = 0; l < number_of_cells_in_layer[k]; l++)
+        	{
+        		// don't simulate the input and fixed cells //
+        		if (((QCAD_CELL_INPUT == sorted_cells[k][l]->cell_function) || (QCAD_CELL_FIXED == sorted_cells[k][l]->cell_function)))
+          		continue;
+        		//if (fabs (((coherence_model *)sorted_cells[k][l]->cell_model)->lambda_z) > 1.0)
+				if (fabs (h_lambda_z[sorted_cells[k][l]->cuda_id]) > 1.0)
+         	{
+					printf ("I had to abort the simulation at iteration %d because the polarization = %e was diverging.\nPossible cause is the time step is too large.\nAlternatively, you can decrease the relaxation time to reduce oscillations.\n",j, h_lambda_z[sorted_cells[k][l]->cuda_id]);
+         		printf ("time step was set to %e\n", options->time_step);
+          		return sim_data;
+         	}
+        		h_polarization[sorted_cells[k][l]->cuda_id] = h_lambda_z[sorted_cells[k][l]->cuda_id];
+        	}
 
 		// Collect all the output data from the simulation
     	if (0 == j % record_interval)
