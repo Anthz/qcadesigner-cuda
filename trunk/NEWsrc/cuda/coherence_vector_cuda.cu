@@ -159,17 +159,7 @@ __global__ void kernelIterationParallel
 		// Generate clock
       clock_value = 
 		(
-		optimization_options_clock_prefactor * 
-		cos 
-		(
-			((double) (1 << total_number_of_inputs)) * 
-			(double)sample_number * 
-			optimization_options_four_pi_over_number_samples - 
-			(double)PI * 
-			(double)d_clock[th_index] * 0.5
-		) + 
-		clock_total_shift
-		);
+		optimization_options_clock_prefactor * cos(((double) (1 << total_number_of_inputs)) * (double)sample_number *  optimization_options_four_pi_over_number_samples - PI * (double)d_clock[th_index] * 0.5) + clock_total_shift);
 		if ( clock_value > options_clock_high )
 		{
 			clock_value = options_clock_high;
