@@ -162,7 +162,7 @@ __global__ void bistable_kernel (
 		}
 		else
 		{
-			
+			d_next_polarization[thr_idx] = d_polarization[thr_idx];
 		}
 	}
 }
@@ -290,7 +290,7 @@ void launch_bistable_simulation(
 			// Wait Device
 			cudaThreadSynchronize ();
 			  
-			//cutilSafeCall (cudaMemcpy (h_stability, d_stability, cells_number*sizeof(int), cudaMemcpyDeviceToHost));
+			cutilSafeCall (cudaMemcpy (h_stability, d_stability, cells_number*sizeof(int), cudaMemcpyDeviceToHost));
 
 			count = 0;
 			stable = 1;
