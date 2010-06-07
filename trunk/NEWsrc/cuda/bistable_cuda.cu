@@ -167,12 +167,11 @@ __global__ void bistable_kernel (
 	}
 }
 
-extern "C"
-void swap_arrays(double *array_1, double *array_2)
+__host__ void swap_arrays(double **array_1, double **array_2)
 {
-	double *temp = array_1;
-	array_1 = array_2;
-	array_2 = temp;
+	double *temp = *array_1;
+	*array_1 = *array_2;
+	*array_2 = temp;
 }
    
 extern "C"
@@ -306,7 +305,7 @@ void launch_bistable_simulation(
 
 			// Set Memory for the next iteration
 //			cutilSafeCall (cudaMemcpy (d_polarization, d_next_polarization, cells_number * sizeof(double), cudaMemcpyDeviceToDevice));
-			swap_arrays(d_polarization,d_next_polarization);
+			swap_arrays(&d_polarization,&d_next_polarization);
 		}
 
 		// Get desidered iteration results from GPU
@@ -314,7 +313,7 @@ void launch_bistable_simulation(
 
 		for (k=0;k<output_number;k++)
 		{
-			 //printf("%e\n", h_output_data[k]); //maybe %lf now that we use double?
+			// printf("%e\n", h_output_data[k]); //maybe %lf now that we use double?
 			(*output_traces)[k][j] = h_output_data[k];
 		}
 	

@@ -49,7 +49,7 @@
 #define TWO_PI 6.283185
 #define FOUR_PI 12.56637061
 
-#define CUDA
+//#define CUDA
 
 //!Options for the coherence simulation engine
 coherence_OP coherence_options = {1, 1e-15, 1e-16, 7e-11, 9.8e-22, 3.8e-23, 0.0, 2.0, 80, 12.9, 11.5, EULER_METHOD, TRUE, FALSE} ;
