@@ -138,7 +138,6 @@ __global__ void kernelIterationParallel
    double lambda_x, next_lambda_x;
    double lambda_y, next_lambda_y;
    double lambda_z, next_lambda_z;
-   double t;
 	double k1, k2, k3, k4;
 	double mag;
 
@@ -159,24 +158,27 @@ __global__ void kernelIterationParallel
 
 		// Generate clock
       clock_value = 
-		   generate_clock_at_sample_s 
+      	CLAMP 
 			(
-				optimization_options_clock_prefactor, 
-				total_number_of_inputs,
-				sample_number,
-				optimization_options_four_pi_over_number_samples,
-				d_clock[th_index],
+				optimization_options_clock_prefactor * 
+				cos 
+				(
+					((double) (1 << total_number_of_inputs)) * 
+					(double)sample_number * 
+					optimization_options_four_pi_over_number_samples - 
+					(double)PI * 
+					(double)d_clock[th_index] * 0.5
+				) + 
 				clock_total_shift,
 				options_clock_low,
 				options_clock_high
 			);
 
+
 		// subsequent calls
       lambda_x = d_lambda_x[th_index];
       lambda_y = d_lambda_y[th_index];
       lambda_z = d_lambda_z[th_index];
-
-      t = options_time_step * sample_number;
 
 		
 		// LAMBDA_X-----------------------------------------------------------------------
