@@ -27,15 +27,15 @@
 #undef FOUR_PI
 #define FOUR_PI 12.56637061
 
-__constant__ double d_clock_prefactor;
-__constant__ double d_clock_shift;
-__constant__ int d_cells_number;
-__constant__ int d_neighbours_number;
-__constant__ int d_input_number;
-__constant__ int d_output_number;
-__constant__ int d_number_of_samples;
-__constant__ double d_clock_low;
-__constant__ double d_clock_high;
+__device__ __constant__ double d_clock_prefactor;
+__device__ __constant__ double d_clock_shift;
+__device__ __constant__ int d_cells_number;
+__device__ __constant__ int d_neighbours_number;
+__device__ __constant__ int d_input_number;
+__device__ __constant__ int d_output_number;
+__device__ __constant__ int d_number_of_samples;
+__device__ __constant__ double d_clock_low;
+__device__ __constant__ double d_clock_high;
 
 extern	__shared__ int shm_array[];
 
@@ -145,11 +145,9 @@ __global__ void bistable_kernel (
 			(fabs (polarization_math) <     0.001) ?  polarization_math :
 			polarization_math / sqrt (1 + polarization_math * polarization_math) ;
 			
-//			if(thr_idx==77) cuPrintf("current_cell_clock: %d, clock_value: %e, polarization_math: %e, old_polarization: %e, new_polarization: %e\n\n",current_cell_clock,clock_value,polarization_math,d_polarization[thr_idx], new_polarization);
-			
 			//set the new polarization in next_polarization array  
-//			d_next_polarization[thr_idx] = new_polarization;
-			d_polarization[thr_idx]=new_polarization;
+			d_next_polarization[thr_idx] = new_polarization;
+			//d_polarization[thr_idx]=new_polarization;
 
 				  
 
@@ -173,6 +171,14 @@ __global__ void bistable_kernel (
 		}
 
 	}
+}
+
+extern "C"
+void swap_arrays(double *array_1, double *array_2)
+{
+	double *temp = array_1;
+	array_1 = array_2;
+	array_2 = temp;
 }
    
 extern "C"
@@ -277,8 +283,6 @@ void launch_bistable_simulation(
 
 		update_inputs<<< grid, threads >>> (d_polarization, d_input_indexes, j);
 		cudaThreadSynchronize ();
-
-		//random_cell = (int)((double)rand()/(double)RAND_MAX*cells_number);
 		
 		// In each sample...
 		for (i = 0; i < max_iterations && !stable; i++)
@@ -306,6 +310,7 @@ void launch_bistable_simulation(
 
 			// Set Memory for the next iteration
 //			cutilSafeCall (cudaMemcpy (d_polarization, d_next_polarization, cells_number * sizeof(double), cudaMemcpyDeviceToDevice));
+			swap_arrays(d_polarization,d_next_polarization);
 		}
 
 		// Get desidered iteration results from GPU
@@ -313,7 +318,7 @@ void launch_bistable_simulation(
 
 		for (k=0;k<output_number;k++)
 		{
-			 printf("%e\n", h_output_data[k]); //maybe %lf now that we use double?
+			 //printf("%e\n", h_output_data[k]); //maybe %lf now that we use double?
 			(*output_traces)[k][j] = h_output_data[k];
 		}
 	
