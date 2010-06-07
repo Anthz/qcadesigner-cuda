@@ -7,7 +7,7 @@ CFLAGS= \
 	 -L$(CUDASDKROOT)/C/lib \
 	 -lcuda \
 	 -lcudart \
-	 -lcutil 
+	 -lcutil_x86_64 
 	 
 CUDAROOT=$(CUDA_HOME)
 CUDASDKROOT=$(CUDA_SDK_HOME)
