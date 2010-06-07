@@ -147,16 +147,11 @@ __global__ void bistable_kernel (
 			
 			//set the new polarization in next_polarization array  
 			d_next_polarization[thr_idx] = new_polarization;
-			//d_polarization[thr_idx]=new_polarization;
-
-				  
 
 			// If any cells polarization has changed beyond this threshold
 			// then the entire circuit is assumed to have not converged.      
 			stable = (fabs (new_polarization - d_polarization[thr_idx]) <= tolerance);
-			//d_stability[thr_idx] = 1;
 			d_stability[thr_idx] = stable;
-			//cuPrintf("\n new:%f, old:%f \n", new_polarization, d_polarization[thr_idx]);
 
 			output_idx = find(thr_idx, shm_output_indexes, d_output_number);
 
@@ -164,12 +159,11 @@ __global__ void bistable_kernel (
 			{
 				d_output_data[output_idx] = new_polarization;
 			}
-		} 
+		}
 		else
 		{
-			d_next_polarization[thr_idx] = d_polarization[thr_idx];
+			
 		}
-
 	}
 }
 
@@ -296,13 +290,15 @@ void launch_bistable_simulation(
 			// Wait Device
 			cudaThreadSynchronize ();
 			  
-			cutilSafeCall (cudaMemcpy (h_stability, d_stability, cells_number*sizeof(int), cudaMemcpyDeviceToHost));
+			//cutilSafeCall (cudaMemcpy (h_stability, d_stability, cells_number*sizeof(int), cudaMemcpyDeviceToHost));
 
 			count = 0;
 			stable = 1;
 			while (count<cells_number && h_stability[count] != 0) count++;
 			if (count < cells_number) stable = 0;
-		  	
+
+	//	  	printf("stabilità: %d,max_iter: %d",stable,max_iterations);
+
 			/*cutilSafeCall (cudaMemcpy (h_polarization, d_polarization, cells_number*sizeof(double), cudaMemcpyDeviceToHost));
 			for (count=0; count<20; count++) printf("%e\t",h_polarization[count]);
 			printf("\n");*/
@@ -322,7 +318,7 @@ void launch_bistable_simulation(
 			(*output_traces)[k][j] = h_output_data[k];
 		}
 	
-		if(j%100 == 0) printf("Simulating: %d % \titerations: %d\n", (j*100/number_of_samples), i);
+		if(j%100 == 0) printf("#Simulating: %d % \titerations: %d\n", (j*100/number_of_samples), i);
 
 		
 
