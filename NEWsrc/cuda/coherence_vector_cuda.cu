@@ -53,7 +53,7 @@ extern "C"{
 #define OVER_QCHARGE 6.241509745e18
 #define ONE_OVER_FOUR_HALF_QCHARGE 3.12109e18
 #define EPSILON 8.8541878e-12
-#define PI 3.1415926535897932384626433832795
+//#define PI 3.1415926535897932384626433832795
 #define FOUR_PI 12.56637061
 #define FOUR_PI_EPSILON 1.112650056e-10
 #define HBAR 1.0545887e-34
@@ -79,39 +79,6 @@ __constant__ int options_algorithm;
 
 // Other constants
 __constant__ double clock_total_shift;
-
-
-
-
-// OK!
-__device__ inline double generate_clock_at_sample_s 
-(
-	double clock_prefactor,
-	int total_number_of_inputs,
-	unsigned long int sample, 
-	double four_pi_over_number_samples,
-	unsigned int clock_num,				
-	double total_clock_shift, //sum of last two terms in original clock's formula
-	double options_clock_low,
-	double	options_clock_high
-)
-{
-	return CLAMP 
-	(
-		clock_prefactor * 
-		cos 
-		(
-			((double) (1 << total_number_of_inputs)) * 
-			(double)sample * 
-			four_pi_over_number_samples - 
-			(double)PI * 
-			(double)clock_num * 0.5
-		) + 
-		total_clock_shift,
-		options_clock_low,
-		options_clock_high
-	);
-}
 
 
 __global__ void kernelIterationParallel 
@@ -159,7 +126,7 @@ __global__ void kernelIterationParallel
 		// Generate clock
       clock_value = 
 		(
-		optimization_options_clock_prefactor * cos(((double) (1 << total_number_of_inputs)) * (double)sample_number *  optimization_options_four_pi_over_number_samples - PI * (double)d_clock[th_index] * 0.5) + clock_total_shift);
+		optimization_options_clock_prefactor * cos(((double) (1 << total_number_of_inputs)) * (double)sample_number *  optimization_options_four_pi_over_number_samples - 3.1415926535897932384626433832795 * (double)d_clock[th_index] * 0.5) + clock_total_shift);
 		if ( clock_value > options_clock_high )
 		{
 			clock_value = options_clock_high;
