@@ -69,7 +69,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 
 	if (input_idx >= 0)
 	{
-		d_polarization[thr_idx] = (-1 * sin(((double)( 1 << input_idx)) * (double)sample * FOUR_PI / (double) d_number_of_samples) > 0 ) ? 1 : -1;
+		d_polarization[thr_idx] = (-1 * sin(((double)( 1 << input_idx)) * (double)sample * 4.0 * PI /(double) d_number_of_samples) > 0 ) ? 1 : -1;
 	}
 }
 
@@ -117,16 +117,16 @@ __global__ void bistable_kernel (
 
 		if (!(d_neighbours[thr_idx] == -1)) // if thr_idx corresponding cell type is not FIXED or INPUT
 		{
-			polarization_math = 0;
 			nb_idx = 0;
+			polarization_math = 0;
 			for(q = 0; q < d_neighbours_number & nb_idx != -1; q++)
 			{
 				nb_idx = d_neighbours[thr_idx + q * d_cells_number];
-				if (nb_idx != -1)
+				if (nb_idx != -1) 
 				{
-					kink = d_Ek[thr_idx + q * d_cells_number];
-					//if(thr_idx==77) cuPrintf("q:%d, qpol:%e, nb_idx:%d, kink:%e\n",q,d_polarization[nb_idx], nb_idx,kink);
+					kink = d_Ek[thr_idx + q*d_cells_number];
 					polarization_math += kink * d_polarization[nb_idx];
+					
 				}
 			}
 
@@ -192,11 +192,9 @@ void launch_bistable_simulation(
 	double clock_shift,
 	double clock_low,
 	double clock_high, 
-	int input_values_number,
-	char *input_values,
 	double tolerance,
 	double ***output_traces
-	) //if input_values_number == -1 then EXHAUSTIVE
+	)
 {
 
 
@@ -210,9 +208,10 @@ void launch_bistable_simulation(
 	double *d_output_data;
 	double *h_output_data;
 
-	/**printf("\nentrato nella launch gay!\n");
-	printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %d \n number_of_samples = %d\n max_iterations = %d\n, tolerance = %f\ninput_values_number = %d\npref: %g, shift: %f, low: %f, high: %f\n",cells_number, neighbours_number, number_of_samples, max_iterations, (double)tolerance, input_values_number,clock_prefactor,clock_prefactor_d,clock_shift,clock_low,clock_high);**/
-	//printf("output_number = %d, output_indexes[0]= %d", output_number , output_indexes[0]);
+
+	printf("\nentrato nella launch gay!\n");
+	printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %d \n number_of_samples = %d\n max_iterations = %d\n, tolerance = %e\npref: %e, shift: %e, low: %e, high: %e\n",cells_number, neighbours_number, number_of_samples, max_iterations, tolerance,clock_prefactor,clock_shift,clock_low,clock_high);
+	printf("output_number = %d, output_indexes[0]= %d\n", output_number , output_indexes[0]);
 
 
 	h_output_data = (double *) malloc(sizeof(double) * output_number);
@@ -276,7 +275,14 @@ void launch_bistable_simulation(
 
 		update_inputs<<< grid, threads >>> (d_polarization, d_input_indexes, j);
 		cudaThreadSynchronize ();
-		
+	
+		cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
+		if (j==0) 
+		{
+			for (i=0;i<cells_number;i++) printf("%e\n",h_polarization[i]);
+			j=number_of_samples;
+		}
+	
 		// In each sample...
 		for (i = 0; i < max_iterations && !stable; i++)
 		{
@@ -288,7 +294,7 @@ void launch_bistable_simulation(
 
 			// Wait Device
 			cudaThreadSynchronize ();
-			  
+			
 			cutilSafeCall (cudaMemcpy (h_stability, d_stability, cells_number*sizeof(int), cudaMemcpyDeviceToHost));
 
 			count = 0;
@@ -313,9 +319,10 @@ void launch_bistable_simulation(
 
 		for (k=0;k<output_number;k++)
 		{
-			// printf("%e\n", h_output_data[k]); //maybe %lf now that we use double?
+			//printf("%e\n", h_output_data[k]); //maybe %lf now that we use double
 			(*output_traces)[k][j] = h_output_data[k];
 		}
+
 	
 		if(j%100 == 0) printf("#Simulating: %d % \titerations: %d\n", (j*100/number_of_samples), i);
 

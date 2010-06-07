@@ -303,6 +303,7 @@ fprintf(stderr,"\n...eseguita!\n");
 		output_traces[i] = (double *)malloc( sim_data_number_samples * sizeof(double));
 	}
 
+
     launch_bistable_simulation(
 		h_polarization,
 		h_Ek,
@@ -320,8 +321,6 @@ fprintf(stderr,"\n...eseguita!\n");
 		clock_shift,
 		options->clock_low,
 		options->clock_high,
-		input_values_number,
-		input_values,
 		tolerance,
 		&output_traces
 		);
