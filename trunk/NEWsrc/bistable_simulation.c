@@ -25,7 +25,7 @@
 //                                                      //
 //////////////////////////////////////////////////////////
 
-//#define CUDA //uncomment this to use CUDA technology
+#define CUDA //uncomment this to use CUDA technology
 
 #include <stdlib.h>
 #include <math.h>
