@@ -26,7 +26,7 @@ extern "C"{
 
 #undef	CLAMP
 #define	CLAMP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
-#define	BLOCK_DIM 64
+#define	BLOCK_DIM 256
 #define	magnitude_energy_vector(P,G) (hypot(2*(G), (P)) * over_hbar) /* (sqrt((4.0*(G)*(G) + (P)*(P))*over_hbar_sqr)) */
 
 // Physical Constants (from coherence_vector.h)
@@ -228,6 +228,7 @@ __global__ void kernelIterationParallel
 	th_index =  blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
 	//cuPrintf("th_index=%d", th_index);
 
+
    // Only useful threads must work
    if (th_index < cells_number)
    {
@@ -238,13 +239,11 @@ __global__ void kernelIterationParallel
 			{
 	 			nb_index = d_neighbours[th_index*neighbours_number+i];
 	 			PEk += d_polarization[nb_index] * d_Ek[th_index*neighbours_number+i];
-			//	cuPrintf("nb_index: %d\td_polarization[nb_index]: %g\td_Ek[th_index*neighbours_number+i]: %g\n", nb_index, d_polarization[nb_index], d_Ek[th_index*neighbours_number+i]);
-	 			// TODO Hyp: d_EK of i > actual_numof_neighbours == 1?
+				// TODO Hyp: d_EK of i > actual_numof_neighbours == 1?
 			}
       }
-
-		//cuPrintf("%g\t", PEk);
-
+	
+	
 		// Generate clock
       clock_value = 
 		   generate_clock_at_sample_s 
