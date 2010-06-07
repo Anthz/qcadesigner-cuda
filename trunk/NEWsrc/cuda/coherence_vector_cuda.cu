@@ -176,7 +176,7 @@ __global__ void kernelIterationParallel
 		}
 		if ( clock_value < options_clock_low )
 		{
-			clock_value = options_clock_low
+			clock_value = options_clock_low;
 		}
 
 
