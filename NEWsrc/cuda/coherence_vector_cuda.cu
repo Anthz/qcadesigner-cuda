@@ -53,7 +53,7 @@ extern "C"{
 #define OVER_QCHARGE 6.241509745e18
 #define ONE_OVER_FOUR_HALF_QCHARGE 3.12109e18
 #define EPSILON 8.8541878e-12
-//#define PI 3.1415926535897932384626433832795
+#define PI 3.1415926535897932384626433832795
 #define FOUR_PI 12.56637061
 #define FOUR_PI_EPSILON 1.112650056e-10
 #define HBAR 1.0545887e-34
@@ -107,6 +107,7 @@ __global__ void kernelIterationParallel
    double lambda_z, next_lambda_z;
 	double k1, k2, k3, k4;
 	double mag;
+	double COS;
 
 	th_index =  blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
 
@@ -124,7 +125,8 @@ __global__ void kernelIterationParallel
       }
 
 		// Generate clock
-      clock_value = optimization_options_clock_prefactor * cos(((double) (1 << total_number_of_inputs)) * (double)sample_number *  optimization_options_four_pi_over_number_samples - PI * (double)d_clock[th_index] * 0.5) + clock_total_shift;
+		COS = cos(((double) (1 << total_number_of_inputs)) * (double)sample_number *  optimization_options_four_pi_over_number_samples - PI * (double)d_clock[th_index] * 0.5);
+      clock_value = optimization_options_clock_prefactor * COS + clock_total_shift;
 		
 		if ( clock_value > options_clock_high )
 		{
