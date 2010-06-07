@@ -170,8 +170,14 @@ __global__ void kernelIterationParallel
 		) + 
 		clock_total_shift
 		);
-		clock_value > options_clock_high	? options_clock_high	: clock_value < options_clock_low ? options_clock_low : clock_value;
-			
+		if ( clock_value > options_clock_high )
+		{
+			clock_value = options_clock_high;
+		}
+		if ( clock_value < options_clock_low )
+		{
+			clock_value = options_clock_low
+		}
 
 
 		// subsequent calls
