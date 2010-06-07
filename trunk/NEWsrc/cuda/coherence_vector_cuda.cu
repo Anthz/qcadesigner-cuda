@@ -79,93 +79,8 @@ __constant__ int options_algorithm;
 
 // Other constants
 __constant__ double clock_total_shift;
-// TODO
-// __constant__ double d_clock ???
-
-__device__ inline double slope_x (double t, double PEk, double Gamma, double lambda_x, double lambda_y, double lambda_z)
-{
-   double mag = magnitude_energy_vector (PEk, Gamma);
-   return (-(2.0 * Gamma * over_hbar / mag * tanh (optimization_options_hbar_over_kBT * mag) + lambda_x) / options_relaxation + (PEk * lambda_y * over_hbar));
-}
 
 
-__device__ inline double slope_y (double t, double PEk, double Gamma, double lambda_x, double lambda_y, double lambda_z)
-{
-   return -(options_relaxation * (PEk * lambda_x + 2.0 * Gamma * lambda_z) + hbar * lambda_y) / (options_relaxation * hbar);
-}
-
-
-__device__ inline double slope_z (double t, double PEk, double Gamma, double lambda_x, double lambda_y, double lambda_z)
-{
-   double mag = magnitude_energy_vector (PEk, Gamma);
-   return (PEk * tanh (optimization_options_hbar_over_kBT * mag) + mag * (2.0 * Gamma * options_relaxation * lambda_y - hbar * lambda_z)) / (options_relaxation * hbar * mag);
-}
-
-
-// Next value of lambda x with choice of options_algorithm
-__device__ inline double eval_next_lambda_x (double t, double PEk, double Gamma, double lambda_x, double lambda_y, double lambda_z)
-{
-	// TODO Possible implementation: adopt register to register intermediate
-	// value, removing k1, k2, k3, k4 - if there are enough registers on the 
-	// tesla for all the possible running warps
-   double k1 = options_time_step * slope_x (t, PEk, Gamma, lambda_x, lambda_y, lambda_z);
-   double k2, k3, k4;
-
-   if (RUNGE_KUTTA == options_algorithm)
-   {
-      k2 = options_time_step * slope_x (t, PEk, Gamma, lambda_x + k1/2, lambda_y, lambda_z);
-      k3 = options_time_step * slope_x (t, PEk, Gamma, lambda_x + k2/2, lambda_y, lambda_z);
-      k4 = options_time_step * slope_x (t, PEk, Gamma, lambda_x + k3,   lambda_y, lambda_z);
-      return lambda_x + k1/6 + k2/3 + k3/3 + k4/6;
-   }
-   else
-   if (EULER_METHOD == options_algorithm)
-      return lambda_x + k1;
-   else
-      return 0;
-}
-
-
-// Next value of lambda y with choice of options_algorithm
-__device__ inline double eval_next_lambda_y (double t, double PEk, double Gamma, double lambda_x, double lambda_y, double lambda_z)
-{
-   double k1 = options_time_step * slope_y (t, PEk, Gamma, lambda_x, lambda_y, lambda_z);
-   double k2, k3, k4;
-
-   if (RUNGE_KUTTA == options_algorithm)
-   {
-      k2 = options_time_step * slope_y (t, PEk, Gamma, lambda_x, lambda_y + k1/2, lambda_z);
-      k3 = options_time_step * slope_y (t, PEk, Gamma, lambda_x, lambda_y + k2/2, lambda_z);
-      k4 = options_time_step * slope_y (t, PEk, Gamma, lambda_x, lambda_y + k3,   lambda_z);
-      return lambda_y + k1/6 + k2/3 + k3/3 + k4/6;
-   }
-   else
-   if (EULER_METHOD == options_algorithm)
-      return lambda_y + k1;
-   else
-      return 0;
-}
-
-
-// Next value of lambda z with choice of options_algorithm
-__device__ inline double eval_next_lambda_z (double t, double PEk, double Gamma, double lambda_x, double lambda_y, double lambda_z)
-{
-   double k1 = options_time_step * slope_z (t, PEk, Gamma, lambda_x, lambda_y, lambda_z);
-   double k2, k3, k4;
-
-   if (RUNGE_KUTTA == options_algorithm)
-   {
-      k2 = options_time_step * slope_z(t, PEk, Gamma, lambda_x, lambda_y, lambda_z + k1/2);
-      k3 = options_time_step * slope_z(t, PEk, Gamma, lambda_x, lambda_y, lambda_z + k2/2);
-      k4 = options_time_step * slope_z(t, PEk, Gamma, lambda_x, lambda_y, lambda_z + k3  );
-      return lambda_z + k1/6 + k2/3 + k3/3 + k4/6;
-   }
-   else
-   if (EULER_METHOD == options_algorithm)
-      return lambda_z + k1;
-   else
-      return 0;
-}
 
 
 // OK!
@@ -198,7 +113,7 @@ __device__ inline double generate_clock_at_sample_s
 	);
 }
 
-// TODO check for further corrections and todos inside code
+
 __global__ void kernelIterationParallel 
 (
 	double *d_polarization, 
@@ -224,9 +139,10 @@ __global__ void kernelIterationParallel
    double lambda_y, next_lambda_y;
    double lambda_z, next_lambda_z;
    double t;
+	double k1, k2, k3, k4;
+	double mag;
 
 	th_index =  blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
-	//cuPrintf("th_index=%d", th_index);
 
    // Only useful threads must work
    if (th_index < cells_number)
@@ -238,12 +154,8 @@ __global__ void kernelIterationParallel
 			{
 	 			nb_index = d_neighbours[th_index*neighbours_number+i];
 	 			PEk += d_polarization[nb_index] * d_Ek[th_index*neighbours_number+i];
-			//	cuPrintf("nb_index: %d\td_polarization[nb_index]: %g\td_Ek[th_index*neighbours_number+i]: %g\n", nb_index, d_polarization[nb_index], d_Ek[th_index*neighbours_number+i]);
-	 			// TODO Hyp: d_EK of i > actual_numof_neighbours == 1?
 			}
       }
-
-		//cuPrintf("%g\t", PEk);
 
 		// Generate clock
       clock_value = 
@@ -259,17 +171,70 @@ __global__ void kernelIterationParallel
 				options_clock_high
 			);
 
-
-		// TODO Optimization: remove these three doubles and use them directly into 
 		// subsequent calls
       lambda_x = d_lambda_x[th_index];
       lambda_y = d_lambda_y[th_index];
       lambda_z = d_lambda_z[th_index];
 
       t = options_time_step * sample_number;
-      next_lambda_x = eval_next_lambda_x (t, PEk, clock_value, lambda_x, lambda_y, lambda_z);
-      next_lambda_y = eval_next_lambda_y (t, PEk, clock_value, lambda_x, lambda_y, lambda_z);
-      next_lambda_z = eval_next_lambda_z (t, PEk, clock_value, lambda_x, lambda_y, lambda_z);
+
+		
+		// LAMBDA_X-----------------------------------------------------------------------
+
+   	mag = magnitude_energy_vector (PEk, clock_value);
+   
+		k1 = options_time_step * (-(2.0 * clock_value * over_hbar / mag * tanh (optimization_options_hbar_over_kBT * mag) + lambda_x) / options_relaxation + (PEk * lambda_y * over_hbar));
+
+		if (RUNGE_KUTTA == options_algorithm)
+		{
+		   k2 = options_time_step * (-(2.0 * clock_value * over_hbar / mag * tanh (optimization_options_hbar_over_kBT * mag) + (lambda_x + k1/2)) / options_relaxation + (PEk * lambda_y * over_hbar));
+		   k3 = options_time_step * (-(2.0 * clock_value * over_hbar / mag * tanh (optimization_options_hbar_over_kBT * mag) + (lambda_x + k2/2)) / options_relaxation + (PEk * lambda_y * over_hbar));
+		   k4 = options_time_step * (-(2.0 * clock_value * over_hbar / mag * tanh (optimization_options_hbar_over_kBT * mag) + (lambda_x + k3)) / options_relaxation + (PEk * lambda_y * over_hbar));
+		   next_lambda_x = lambda_x + k1/6 + k2/3 + k3/3 + k4/6;
+		}
+		else if (EULER_METHOD == options_algorithm)
+		   next_lambda_x = lambda_x + k1;
+		else
+		   next_lambda_x = 0;
+
+		//----------------------------------------------------------------------------------
+
+
+		// LAMBDA_Y-----------------------------------------------------------------------
+
+   	k1 = options_time_step * -(options_relaxation * (PEk * lambda_x + 2.0 * clock_value * lambda_z) + hbar * lambda_y) / (options_relaxation * hbar);
+
+		if (RUNGE_KUTTA == options_algorithm)
+		{
+			k2 = options_time_step * -(options_relaxation * (PEk * lambda_x + 2.0 * clock_value * lambda_z) + hbar * (lambda_y + k1/2)) / (options_relaxation * hbar);
+			k3 = options_time_step * -(options_relaxation * (PEk * lambda_x + 2.0 * clock_value * lambda_z) + hbar * (lambda_y + k2/2)) / (options_relaxation * hbar);
+			k4 = options_time_step * -(options_relaxation * (PEk * lambda_x + 2.0 * clock_value * lambda_z) + hbar * (lambda_y + k3)) / (options_relaxation * hbar);
+			next_lambda_y = lambda_y + k1/6 + k2/3 + k3/3 + k4/6;
+		}
+		else if (EULER_METHOD == options_algorithm)
+			next_lambda_y = lambda_y + k1;
+		else
+			next_lambda_y = 0;
+
+		//--------------------------------------------------------------------------------
+
+
+		// LAMBDA_Z------------------------------------------------------------------------
+		k1 = options_time_step * (PEk * tanh (optimization_options_hbar_over_kBT * mag) + mag * (2.0 * clock_value * options_relaxation * lambda_y - hbar * lambda_z)) / (options_relaxation * hbar * mag);
+
+		if (RUNGE_KUTTA == options_algorithm)
+		{
+		   k2 = options_time_step * (PEk * tanh (optimization_options_hbar_over_kBT * mag) + mag * (2.0 * clock_value * options_relaxation * lambda_y - hbar * (lambda_z + k1/2))) / (options_relaxation * hbar * mag);
+		   k3 = options_time_step * (PEk * tanh (optimization_options_hbar_over_kBT * mag) + mag * (2.0 * clock_value * options_relaxation * lambda_y - hbar * (lambda_z + k2/2))) / (options_relaxation * hbar * mag);
+		   k4 = options_time_step * (PEk * tanh (optimization_options_hbar_over_kBT * mag) + mag * (2.0 * clock_value * options_relaxation * lambda_y - hbar * (lambda_z + k3))) / (options_relaxation * hbar * mag);
+		   next_lambda_z = lambda_z + k1/6 + k2/3 + k3/3 + k4/6;
+		}
+		else if (EULER_METHOD == options_algorithm)
+		   next_lambda_z = lambda_z + k1;
+		else
+		   next_lambda_z = 0;
+
+		//-----------------------------------------------------------------------------------------
 
       d_lambda_x[th_index] = next_lambda_x;
       d_lambda_y[th_index] = next_lambda_y;
@@ -506,7 +471,7 @@ void launch_coherence_vector_simulation
          	{
 					printf ("I had to abort the simulation at iteration %d because the polarization = %e was diverging.\nPossible cause is the time step is too large.\nAlternatively, you can decrease the relaxation time to reduce oscillations.\n",j, h_lambda_z[sorted_cells[k][l]->cuda_id]);
          		printf ("time step was set to %e\n", options->time_step);
-          		return sim_data;
+          		return;
          	}
         		h_polarization[sorted_cells[k][l]->cuda_id] = h_lambda_z[sorted_cells[k][l]->cuda_id];
         	}
