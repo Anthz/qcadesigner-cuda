@@ -470,10 +470,10 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 					current_cell_model = ((bistable_model *)cell->cell_model) ;
 					old_polarization = current_cell_model->polarization;
 					
-					if(j%100==0 && iteration==1) 
+					/*if(j%100==0 && iteration==1) 
 					{
 						printf("%e\n",old_polarization);
-					}
+					}*/
 
 					if (!((QCAD_CELL_INPUT == cell->cell_function)||(QCAD_CELL_FIXED == cell->cell_function)))
 					{
@@ -549,7 +549,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 		for (design_bus_layout_iter_first (design_bus_layout, &bli, QCAD_CELL_OUTPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i))
 			sim_data->trace[design_bus_layout_inputs_icUsed + i].data[j] = ((bistable_model *)exp_array_index_1d (design_bus_layout_outputs, BUS_LAYOUT_CELL, i).cell->cell_model)->polarization;
 	
-		if(j%10 ==0) fprintf(stderr,"Simulating: %d%%, iterations: %d\n",j*100/sim_data_number_samples,iteration);
+		if(j%100 ==0) fprintf(stderr,"Simulating: %d%%, iterations: %d\n",j*100/sim_data_number_samples,iteration);
 		// -- if the user wants to stop the simulation then exit. -- //
 		/*if(TRUE == STOP_SIMULATION)
 			j = sim_data_number_samples ;*/
