@@ -277,11 +277,11 @@ void launch_bistable_simulation(
 		cudaThreadSynchronize ();
 		
 		cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
-		if (j%100==0) 
+		/*if (j%100==0) 
 		{
 			for (i=0;i<cells_number;i++) printf("%e\n",h_polarization[i]);
 			//j=number_of_samples;
-		}
+		}*/
 	
 		// In each sample...
 		for (i = 0; i < max_iterations && !stable; i++)
