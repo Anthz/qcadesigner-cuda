@@ -34,15 +34,15 @@
 #include "vector_table.h"
 #include "fileio_helpers.h"
 
-#define DBG_VT(s)
+/*#define DBG_VT(s)*/
 
 static char *pszMagicCookie = "%%VECTOR TABLE%%" ;
 
-#ifdef STDIO_FILEIO
+/*#ifdef STDIO_FILEIO*/
 static void GetVTSizes (FILE *pfile, int *picInputs, int *picVectors) ;
 static gboolean CheckMagic (FILE *pfile) ;
 static void ReadVector (FILE *pfile, EXP_ARRAY *vector) ;
-#endif /* def STDIO_FILEIO */
+//#endif /* def STDIO_FILEIO */
 
 int VectorTable_find_input_idx (VectorTable *pvt, QCADCell *cell)
   {
@@ -96,7 +96,7 @@ void VectorTable_empty (VectorTable *pvt)
 // Replace the inputs in the vector table with those from design, and clean out the vectors
 void VectorTable_fill (VectorTable *pvt, DESIGN *design)
   {
-  DBG_VT (fprintf (stderr, "Entering VectorTable_fill\n")) ;
+/*  DBG_VT (fprintf (stderr, "Entering VectorTable_fill\n")) ;*/
   VectorTable_empty (pvt) ;
   VectorTable_add_inputs (pvt, design) ;
   }
@@ -116,7 +116,7 @@ void VectorTable_add_input (VectorTable *pvt, QCADCell *new_input)
   {
   VT_INPUT vti = {new_input, TRUE} ;
 
-  DBG_VT (fprintf (stderr, "Entering VectorTable_add_input\n")) ;
+/*  DBG_VT (fprintf (stderr, "Entering VectorTable_add_input\n")) ;*/
 
   if (NULL == pvt || NULL == new_input) return ;
 
@@ -125,14 +125,14 @@ void VectorTable_add_input (VectorTable *pvt, QCADCell *new_input)
   // That is, write a function that blankets a range of indices with one value
   exp_array_insert_vals (pvt->vectors, NULL, pvt->vectors->icUsed, 1, 0, -1) ;
 
-  DBG_VT (fprintf (stderr, "Exiting VectorTable_add_input.  pvt now looks like this:\n")) ;
-  DBG_VT (VectorTable_dump (pvt, stderr, 0)) ;
+/*  DBG_VT (fprintf (stderr, "Exiting VectorTable_add_input.  pvt now looks like this:\n")) ;*/
+/*  DBG_VT (VectorTable_dump (pvt, stderr, 0)) ;*/
   }
 
 void VectorTable_del_input (VectorTable *pvt, QCADCell *old_input)
   {
   int idx = -1, Nix ;
-  DBG_VT (fprintf (stderr, "Entering VectorTable_del_input\n")) ;
+/*  DBG_VT (fprintf (stderr, "Entering VectorTable_del_input\n")) ;*/
 
   for (Nix = 0 ; Nix < pvt->inputs->icUsed ; Nix++)
     if (exp_array_index_1d (pvt->inputs, VT_INPUT, idx = Nix).input == old_input)
@@ -142,8 +142,8 @@ void VectorTable_del_input (VectorTable *pvt, QCADCell *old_input)
 
   exp_array_remove_vals (pvt->vectors, 2, 0, pvt->vectors->icUsed, Nix, 1) ;
 
-  DBG_VT (fprintf (stderr, "Exiting VectorTable_del_input.  pvt now looks like this:\n")) ;
-  DBG_VT (VectorTable_dump (pvt, stderr, 0)) ;
+/*  DBG_VT (fprintf (stderr, "Exiting VectorTable_del_input.  pvt now looks like this:\n")) ;*/
+/*  DBG_VT (VectorTable_dump (pvt, stderr, 0)) ;*/
   }
 
 // Add a vector at idxWanted - cause idxWanted to become the new vector - meaning that the vector currently
@@ -162,11 +162,11 @@ int VectorTable_add_vector (VectorTable *pvt, int idxWanted)
 // Delete a vector, and bring the vectors below it up by one
 void VectorTable_del_vector (VectorTable *pvt, int idx)
   {
-  DBG_VT (fprintf (stderr, "Entering VectorTable_del_vector\n")) ;
+/*  DBG_VT (fprintf (stderr, "Entering VectorTable_del_vector\n")) ;*/
 
   exp_array_remove_vals (pvt->vectors, 1, idx, 1) ;
 
-  DBG_VT (fprintf (stderr, "Exiting VectorTable_del_vector\n")) ;
+/*  DBG_VT (fprintf (stderr, "Exiting VectorTable_del_vector\n")) ;*/
   }
 
 // Write the vector table to the file whose name is contained in the VectorTable structure
@@ -179,7 +179,7 @@ gboolean VectorTable_save (VectorTable *pvt)
 
   pfile = fopen (pvt->pszFName, "w") ;
 
-  DBG_VT (fprintf (stderr, "Entering VectorTable_save\n")) ;
+/*  DBG_VT (fprintf (stderr, "Entering VectorTable_save\n")) ;*/
 
   if (NULL == pfile)
     {
@@ -215,12 +215,12 @@ gboolean VectorTable_save (VectorTable *pvt)
 
   fclose (pfile) ;
 
-  DBG_VT (fprintf (stderr, "Exiting VectorTable_save\n")) ;
+/*  DBG_VT (fprintf (stderr, "Exiting VectorTable_save\n")) ;*/
 
   return TRUE ;
   }
 
-#ifdef STDIO_FILEIO
+/*#ifdef STDIO_FILEIO*/
 // Fill in the VectorTable structure passed to me from the file whose name
 // is contained within the structure
 VTL_RESULT VectorTable_load (VectorTable *pvt)
@@ -270,7 +270,7 @@ VTL_RESULT VectorTable_load (VectorTable *pvt)
 
   return ret ;
   }
-#endif /* def STDIO_FILEIO */
+//#endif /* def STDIO_FILEIO */
 
 // Make the vector table structure appear in pfile - mostly for debugging
 void VectorTable_dump (VectorTable *pvt, FILE *pfile, int icIndent)
@@ -319,7 +319,7 @@ void VectorTable_update_inputs (VectorTable *pvt, QCADCell *pqc)
     VectorTable_add_input (pvt, pqc) ;
   }
 
-#ifdef STDIO_FILEIO
+/*#ifdef STDIO_FILEIO*/
 // Check the magic string at the top of the vector file, without moving the file pointer
 static gboolean CheckMagic (FILE *pfile)
   {
@@ -406,4 +406,4 @@ static void ReadVector (FILE *pfile, EXP_ARRAY *vector)
     if (vector->icUsed > 0) break ;
     }
   }
-#endif /* def STDIO_FILEIO */
+//#endif /* def STDIO_FILEIO */

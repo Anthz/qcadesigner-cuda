@@ -113,58 +113,65 @@ enum
 #define ROW_TYPE_OUTPUT (ROW_TYPE_BUS_OUTPUT | ROW_TYPE_CELL_OUTPUT)
 #define ROW_TYPE_ANY         (ROW_TYPE_INPUT | ROW_TYPE_OUTPUT | ROW_TYPE_CLOCK)
 
-void              design_serialize (DESIGN *design, FILE *pfile) ;
-DESIGN *          design_new (QCADSubstrate **psubs) ;
-DESIGN *          design_copy (DESIGN *design) ;
-#ifdef GTK_GUI
-void              design_draw (DESIGN *design, GdkDrawable *dst, GdkFunction rop, WorldRectangle *ext, int flags) ;
-GtkTreeStore *    design_bus_layout_tree_store_new (BUS_LAYOUT *bus_layout, int row_types, int icExtraColumns, ...) ;
-GtkListStore *    design_layer_list_store_new (DESIGN *design, int icExtraColumns, ...) ;
-#endif /* def GTK_GUI */
+//void              design_serialize (DESIGN *design, FILE *pfile) ;
+DESIGN* design_copy (DESIGN *design) ;
+DESIGN* design_new (QCADSubstrate **psubs) ;
+//#ifdef GTK_GUI
+//void              design_draw (DESIGN *design, GdkDrawable *dst, GdkFunction rop, WorldRectangle *ext, int flags) ;
+//GtkTreeStore *    design_bus_layout_tree_store_new (BUS_LAYOUT *bus_layout, int row_types, int icExtraColumns, ...) ;
+//GtkListStore *    design_layer_list_store_new (DESIGN *design, int icExtraColumns, ...) ;
+//#endif /* def GTK_GUI */
 DESIGN *          design_destroy (DESIGN *design) ;
-QCADDesignObject *design_hit_test (DESIGN *design, int x, int y) ;
+//QCADDesignObject *design_hit_test (DESIGN *design, int x, int y) ;
 gboolean          design_get_extents (DESIGN *design, WorldRectangle *extents, gboolean bSelection) ;
+
 gboolean          design_unserialize (DESIGN **pdesign, FILE *pfile) ;
-void              design_dump (DESIGN *design, FILE *pfile) ;
-void              design_set_layer_order (DESIGN *design, GList *llLayerOrder) ;
-void              design_fix_legacy (DESIGN *design) ;
-void              design_set_current_layer (DESIGN *design, QCADLayer *layer) ;
-gboolean          design_scale_cells (DESIGN *design, double scale) ;
 
-QCADLayer * design_layer_remove (DESIGN *design, QCADLayer *layer) ;
+//void              design_dump (DESIGN *design, FILE *pfile) ;
+//void              design_set_layer_order (DESIGN *design, GList *llLayerOrder) ;
+//void              design_fix_legacy (DESIGN *design) ;
+//void              design_set_current_layer (DESIGN *design, QCADLayer *layer) ;
+//gboolean          design_scale_cells (DESIGN *design, double scale) ;
+
+//QCADLayer * design_layer_remove (DESIGN *design, QCADLayer *layer) ;
+
 void        design_layer_add (DESIGN *design, QCADLayer *layer) ;
-GHashTable *design_layer_object_containment_rules () ;
-void        design_layer_dump (QCADLayer *layer, FILE *pfile) ;
 
-#ifdef GTK_GUI
-QCADDesignObject *design_selection_create_from_selection (DESIGN *design, GdkWindow *window, GdkFunction rop) ;
-EXP_ARRAY *       design_selection_release (DESIGN *design, GdkDrawable *dst, GdkFunction rop) ;
-EXP_ARRAY *       design_selection_subtract_window (DESIGN *design, GdkWindow *window, GdkFunction rop, WorldRectangle *rcWorld) ;
-#endif /* def GTK_GUI */
-EXP_ARRAY *       design_selection_create_from_window (DESIGN *design, WorldRectangle *rcWorld) ;
-EXP_ARRAY *       design_selection_add_window (DESIGN *design, WorldRectangle *rcWorld) ;
-EXP_ARRAY *       design_selection_get_object_array (DESIGN *) ;
-void              design_selection_serialize (DESIGN *design, FILE *pfile) ;
-void              design_selection_move (DESIGN *design, double dxWorld, double dyWorld) ;
-gboolean          design_selection_drop (DESIGN *design) ;
-EXP_ARRAY *       design_selection_destroy (DESIGN *design) ;
-void              design_selection_set_cell_host_name (DESIGN *design, char *pszHostName) ;
-QCADDesignObject *design_selection_hit_test (DESIGN *design, int x, int y) ;
-void              design_selection_set_cell_display_mode (DESIGN *design, int display_mode) ;
-void              design_selection_objects_foreach (DESIGN *design, DesignObjectCallback cb, gpointer data) ;
-GList *           design_selection_get_type_list (DESIGN *design) ;
-QCADDesignObject *design_selection_get_anchor (DESIGN *design) ;
-GList *           design_selection_get_input_cells (DESIGN *design, int *picCells) ;
-QCADDesignObject *design_selection_transform (DESIGN *design, double m11, double m12, double m21, double m22) ;
+//GHashTable *design_layer_object_containment_rules () ;
+//void        design_layer_dump (QCADLayer *layer, FILE *pfile) ;
+
+//#ifdef GTK_GUI
+//QCADDesignObject *design_selection_create_from_selection (DESIGN *design, GdkWindow *window, GdkFunction rop) ;
+//EXP_ARRAY *       design_selection_release (DESIGN *design, GdkDrawable *dst, GdkFunction rop) ;
+//EXP_ARRAY *       design_selection_subtract_window (DESIGN *design, GdkWindow *window, GdkFunction rop, WorldRectangle *rcWorld) ;
+//#endif /* def GTK_GUI */
+//EXP_ARRAY *       design_selection_create_from_window (DESIGN *design, WorldRectangle *rcWorld) ;
+//EXP_ARRAY *       design_selection_add_window (DESIGN *design, WorldRectangle *rcWorld) ;
+//EXP_ARRAY *       design_selection_get_object_array (DESIGN *) ;
+//void              design_selection_serialize (DESIGN *design, FILE *pfile) ;
+//void              design_selection_move (DESIGN *design, double dxWorld, double dyWorld) ;
+//gboolean          design_selection_drop (DESIGN *design) ;
+//EXP_ARRAY *       design_selection_destroy (DESIGN *design) ;
+//void              design_selection_set_cell_host_name (DESIGN *design, char *pszHostName) ;
+//QCADDesignObject *design_selection_hit_test (DESIGN *design, int x, int y) ;
+//void              design_selection_set_cell_display_mode (DESIGN *design, int display_mode) ;
+//void              design_selection_objects_foreach (DESIGN *design, DesignObjectCallback cb, gpointer data) ;
+//GList *           design_selection_get_type_list (DESIGN *design) ;
+//QCADDesignObject *design_selection_get_anchor (DESIGN *design) ;
+//GList *           design_selection_get_input_cells (DESIGN *design, int *picCells) ;
+//QCADDesignObject *design_selection_transform (DESIGN *design, double m11, double m12, double m21, double m22) ;
 
 EXP_ARRAY *design_selection_object_array_add_weak_pointers (EXP_ARRAY *obj_array) ;
 void       design_selection_object_array_free (EXP_ARRAY *ar) ;
 
 BUS_LAYOUT *design_bus_layout_new () ;
+
 BUS_LAYOUT *design_bus_layout_unserialize (FILE *pfile) ;
-void        design_bus_layout_serialize (BUS_LAYOUT *bus_layout, FILE *pfile) ;
-void        design_bus_layout_dump (BUS_LAYOUT *bus_layout, FILE *pfile) ;
-void        design_bus_layout_cell_list_dump (EXP_ARRAY *cell_list, char *pszVarName, FILE *pfile) ;
+
+//void        design_bus_layout_serialize (BUS_LAYOUT *bus_layout, FILE *pfile) ;
+//void        design_bus_layout_dump (BUS_LAYOUT *bus_layout, FILE *pfile) ;
+//void        design_bus_layout_cell_list_dump (EXP_ARRAY *cell_list, char *pszVarName, FILE *pfile) ;
+
 BUS_LAYOUT *design_bus_layout_free (BUS_LAYOUT *bus_layout) ;
 
 QCADCell *design_bus_layout_iter_first (BUS_LAYOUT *bus_layout, BUS_LAYOUT_ITER *bus_layout_iter, QCADCellFunction cell_function, int *pidxMaster) ;

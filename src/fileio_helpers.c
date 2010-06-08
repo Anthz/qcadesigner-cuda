@@ -53,9 +53,9 @@
 //#define DBG_FIOH_PATTERNS
 #ifdef DBG_FIOH_PATTERNS
   #define DBG_FIOH_SKIP_LOOP(s)
-#else /* not def DBG_FIOH_PATTERNS */
+#else  //not def DBG_FIOH_PATTERNS 
   #define DBG_FIOH_SKIP_LOOP(s)
-#endif /* def DBG_FIOH_PATTERNS */
+#endif  //def DBG_FIOH_PATTERNS 
 #define DBG_FIOH_READLINE_OUT(s)
 
 typedef struct
@@ -185,8 +185,8 @@ void file_close_and_unbuffer (FILE *pfile)
   if (NULL != (pbi = g_hash_table_lookup (hash_table, pfile)))
     {
     g_hash_table_remove (hash_table, pfile);
-    exp_array_free (pbi->buffer) ;
-    g_free (pbi) ;
+    exp_array_free (pbi->buffer);
+    g_free (pbi);
     }
 
   fclose (pfile) ;
@@ -206,7 +206,7 @@ gboolean SkipPast (FILE *pfile, char cComment, ...)
   while (NULL != (pszPattern = va_arg (va, char *)))
     fprintf (stderr, "  Pattern:|%s|\n", pszPattern) ;
   va_end (va) ;
-#endif /* def DBG_FIOH_PATTERNS */
+#endif  /*def DBG_FIOH_PATTERNS */
 
   while (!feof (pfile))
     {
@@ -226,7 +226,7 @@ gboolean SkipPast (FILE *pfile, char cComment, ...)
     }
 #ifdef DBG_FIOH_PATTERNS
   fprintf (stderr, "SkipPast: Exiting unsuccessfully\n") ;
-#endif /* def DBG_FIOH_PATTERNS */
+#endif  /*def DBG_FIOH_PATTERNS */
   return FALSE ;
   }
 
@@ -299,7 +299,7 @@ char *absolute_path (char *pszFName)
   char *pszFull = NULL ;
   char *pszShort = NULL ;
   char *pszFile = NULL ;
-#else /* ndef WIN32 */
+#else  //ndef WIN32 
   char szRealPath[PATH_MAX] = "" ;
 #endif
 
@@ -331,12 +331,12 @@ char *absolute_path (char *pszFName)
 
   g_free (pszFull) ;
   return pszShort ;
-#else /* ndef WIN32 */
+#else  //ndef WIN32 
   if (NULL != realpath (pszFName, szRealPath))
     return g_strdup (szRealPath) ;
   else
     return g_strdup (pszFName) ;
-#endif /* def WIN32 */
+#endif  //def WIN32 
   }
 
 // (*ppsz) is assumed not to start with any whitespace

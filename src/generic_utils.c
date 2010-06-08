@@ -36,15 +36,15 @@
 #include "generic_utils.h"
 #include "global_consts.h"
 
-#ifdef GTK_GUI
-typedef struct
-  {
-  char *pszCmdLine ;
-  char *pszTmpFName ;
-  } RUN_CMD_LINE_ASYNC_THREAD_PARAMS ;
+/*#ifdef GTK_GUI*/
+/*typedef struct*/
+/*  {*/
+/*  char *pszCmdLine ;*/
+/*  char *pszTmpFName ;*/
+/*  } RUN_CMD_LINE_ASYNC_THREAD_PARAMS ;*/
 
-static gpointer RunCmdLineAsyncThread (gpointer p) ;
-#endif /* def GTK_GUI */
+/*static gpointer RunCmdLineAsyncThread (gpointer p) ;*/
+//#endif /* def GTK_GUI */
 
 // Causes a rectangle of width (*pdRectWidth) and height (*pdRectHeight) to fit inside a rectangle of
 // width dWidth and height dHeight.  Th resulting pair ((*px),(*py)) holds the coordinates of the
@@ -125,55 +125,55 @@ gboolean LineSegmentCanBeSkipped (double dx0, double dy0, double dx1, double dy1
   return (fabs ((dy1 - dy0) / (dx1 - dx0) - (dy2 - dy1) / (dx2 - dx1)) < dMaxSlopeDiff) ;
   }
 
-#ifdef GTK_GUI
-void RunCmdLineAsync (char *pszCmdLine, char *pszTmpFName)
-  {
-  RUN_CMD_LINE_ASYNC_THREAD_PARAMS *prclap = g_malloc0 (sizeof (RUN_CMD_LINE_ASYNC_THREAD_PARAMS)) ;
+/*#ifdef GTK_GUI*/
+/*void RunCmdLineAsync (char *pszCmdLine, char *pszTmpFName)*/
+/*  {*/
+/*  RUN_CMD_LINE_ASYNC_THREAD_PARAMS *prclap = g_malloc0 (sizeof (RUN_CMD_LINE_ASYNC_THREAD_PARAMS)) ;*/
 
-  prclap->pszCmdLine = g_strdup (pszCmdLine) ;
-  prclap->pszTmpFName = (NULL == pszTmpFName ? NULL : g_strdup (pszTmpFName)) ;
+/*  prclap->pszCmdLine = g_strdup (pszCmdLine) ;*/
+/*  prclap->pszTmpFName = (NULL == pszTmpFName ? NULL : g_strdup (pszTmpFName)) ;*/
 
-  if (!g_thread_supported ()) g_thread_init (NULL) ;
+/*  if (!g_thread_supported ()) g_thread_init (NULL) ;*/
 
-  g_thread_create ((GThreadFunc)RunCmdLineAsyncThread, (gpointer)prclap, FALSE, NULL) ;
-  }
+/*  g_thread_create ((GThreadFunc)RunCmdLineAsyncThread, (gpointer)prclap, FALSE, NULL) ;*/
+/*  }*/
 
-static gpointer RunCmdLineAsyncThread (gpointer p)
-  {
-  RUN_CMD_LINE_ASYNC_THREAD_PARAMS *prclap = (RUN_CMD_LINE_ASYNC_THREAD_PARAMS *)p ;
-#ifdef WIN32
-  STARTUPINFO si ;
-  PROCESS_INFORMATION pi ;
+/*static gpointer RunCmdLineAsyncThread (gpointer p)*/
+/*  {*/
+/*  RUN_CMD_LINE_ASYNC_THREAD_PARAMS *prclap = (RUN_CMD_LINE_ASYNC_THREAD_PARAMS *)p ;*/
+/*#ifdef WIN32*/
+/*  STARTUPINFO si ;*/
+/*  PROCESS_INFORMATION pi ;*/
 
-  memset (&si, 0, sizeof (si)) ;
-  memset (&pi, 0, sizeof (pi)) ;
-  si.cb = sizeof (STARTUPINFO) ;
+/*  memset (&si, 0, sizeof (si)) ;*/
+/*  memset (&pi, 0, sizeof (pi)) ;*/
+/*  si.cb = sizeof (STARTUPINFO) ;*/
 
-  if (CreateProcess (NULL, prclap->pszCmdLine, NULL, NULL, FALSE, DETACHED_PROCESS,
-    NULL, NULL, &si, &pi))
-    {
-    WaitForSingleObject (pi.hProcess, INFINITE) ;
-    CloseHandle (pi.hProcess) ;
-    CloseHandle (pi.hThread) ;
-    }
-#else
-  system (prclap->pszCmdLine) ;
-#endif
-  g_free (prclap->pszCmdLine) ;
-  if (NULL != prclap->pszTmpFName)
-    {
-#ifdef WIN32
-    DeleteFile (prclap->pszTmpFName) ;
-#else
-    unlink (prclap->pszTmpFName) ;
-#endif /* def WIN32 */
-    g_free (prclap->pszTmpFName) ;
-    }
-  g_free (prclap) ;
+/*  if (CreateProcess (NULL, prclap->pszCmdLine, NULL, NULL, FALSE, DETACHED_PROCESS,*/
+/*    NULL, NULL, &si, &pi))*/
+/*    {*/
+/*    WaitForSingleObject (pi.hProcess, INFINITE) ;*/
+/*    CloseHandle (pi.hProcess) ;*/
+/*    CloseHandle (pi.hThread) ;*/
+/*    }*/
+/*#else*/
+/*  system (prclap->pszCmdLine) ;*/
+/*#endif*/
+/*  g_free (prclap->pszCmdLine) ;*/
+/*  if (NULL != prclap->pszTmpFName)*/
+/*    {*/
+/*#ifdef WIN32*/
+/*    DeleteFile (prclap->pszTmpFName) ;*/
+/*#else*/
+/*    unlink (prclap->pszTmpFName) ;*/
+//#endif /* def WIN32 */
+/*    g_free (prclap->pszTmpFName) ;*/
+/*    }*/
+/*  g_free (prclap) ;*/
 
-  return NULL ;
-  }
-#endif /* def GTK_GUI */
+/*  return NULL ;*/
+/*  }*/
+//#endif /* def GTK_GUI */
 
 char *get_enum_string_from_value (GType enum_type, int value)
   {

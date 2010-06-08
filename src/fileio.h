@@ -26,7 +26,7 @@
 #ifndef _FILEIO_H_
 #define _FILEIO_H_
 
-#ifdef STDIO_FILEIO
+//#ifdef STDIO_FILEIO
 
 #include "design.h"
 #include "vector_table.h"
@@ -38,19 +38,25 @@
 gboolean open_project_file (gchar *file_name, DESIGN **pdesign) ;
 gboolean open_project_file_fp (FILE *pfile, DESIGN **pdesign) ;
 gboolean check_project_file_magic_fp (FILE *pfile, double *pversion) ;
-SIMULATION_OUTPUT *open_simulation_output_file (char *pszFName) ;
-SIMULATION_OUTPUT *open_simulation_output_file_fp (FILE *fp) ;
+//SIMULATION_OUTPUT *open_simulation_output_file (char *pszFName) ;
+//SIMULATION_OUTPUT *open_simulation_output_file_fp (FILE *fp) ;
 coherence_OP *open_coherence_options_file (char *pszFName) ;
 bistable_OP *open_bistable_options_file (char *pszFName) ;
-simulation_data *simulation_data_unserialize (FILE *fp) ;
-gboolean create_file (gchar *file_name, DESIGN *design) ;
-void create_file_fp (FILE *pfile, DESIGN *design) ;
-void create_simulation_output_file (char *pszFName, SIMULATION_OUTPUT *sim_output) ;
+//simulation_data *simulation_data_unserialize (FILE *fp) ;
+//gboolean create_file (gchar *file_name, DESIGN *design) ;
+//void create_file_fp (FILE *pfile, DESIGN *design) ;
+//void create_simulation_output_file (char *pszFName, SIMULATION_OUTPUT *sim_output) ;
 void create_simulation_output_file_fp (FILE *pfile, SIMULATION_OUTPUT *sim_output) ;
 void simulation_data_serialize (FILE *fp, simulation_data *sim_data) ;
-void export_block (char *pszFName, DESIGN *design) ;
-void export_block_fp (FILE *pfile, DESIGN *design) ;
+
+void create_simulation_output_file_fp_cuda (FILE *pfile, SIMULATION_OUTPUT *sim_output, float delay) ;
+void simulation_data_serialize_cuda (FILE *fp, simulation_data *sim_data,float delay) ;
+
+void create_simulation_output_binary_cuda (FILE *pfile, SIMULATION_OUTPUT *sim_output, float delay) ;
+void simulation_data_serialize_binary_cuda (FILE *fp, simulation_data *sim_data,float delay) ;
+//void export_block (char *pszFName, DESIGN *design) ;
+//void export_block_fp (FILE *pfile, DESIGN *design) ;
 
 /////////////////////////////////////////////////////////////////////////////////////
-#endif /* def STDIO_FILEIO */
+//#endif /* def STDIO_FILEIO */
 #endif /* _FILEIO_H_ */
