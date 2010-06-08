@@ -1,8 +1,8 @@
-CC=gcc
+CC=gcc -g
 
 CUDAROOT=$(CUDA_HOME)
 CUDASDKROOT=$(CUDA_SDK_HOME)
-NVCC=$(CUDA_HOME)/bin/nvcc
+NVCC=$(CUDA_HOME)/bin/nvcc -arch=sm_13 -g -G
 
 NVCFLAGS= \
 	-I $(CUDASDKROOT)/C/common/inc \
@@ -18,7 +18,7 @@ OBJECTS =\
       
 	
 Size: $(OBJECTS)
-	$(CC) $(CFLAGS)  -o $@ $^ -lcuda -lcudart -lcutil_x86_64
+	$(CC) $(CFLAGS)  -o $@ $^ -lcuda -lcudart -lcutil
 
 clean:
 	rm -f *.o *.linkinfo Constant
