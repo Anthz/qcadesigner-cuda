@@ -83,21 +83,21 @@ __constant__ double clock_total_shift;
 
 __global__ void kernelIterationParallel 
 (
-	double *d_polarization/*, 
+	double *d_polarization, 
 	double *d_lambda_x, 
 	double *d_lambda_y, 
 	double *d_lambda_z, 
 	double *d_Ek, 
 	unsigned int *d_clock,
-	int *d_neighbours*/, 
-	int cells_number/*, 
+	int *d_neighbours, 
+	int cells_number, 
 	int neighbours_number, 
 	int sample_number, 
-	int total_number_of_inputs*/
+	int total_number_of_inputs
 )
 {
 
-   int th_index; /*
+   int th_index; 
    int nb_index;   // Neighbour index
    int i;
    double clock_value;
@@ -107,16 +107,9 @@ __global__ void kernelIterationParallel
    double lambda_z, next_lambda_z;
 	double k1, k2, k3, k4;
 	double mag;
-	double COS;
-*/
-	float pippo = 103.3;
+
 	th_index =  blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
-	if (th_index < cells_number)
-	{
-		pippo = (float)d_polarization[th_index];
-		d_polarization[th_index] = (double)pippo;
-	}
-/*
+
    // Only useful threads must work
    if (th_index < cells_number)
    {
@@ -126,13 +119,12 @@ __global__ void kernelIterationParallel
 			if (d_neighbours[th_index*neighbours_number+i] != -1)
 			{
 	 			nb_index = d_neighbours[th_index*neighbours_number+i];
-	 			PEk += d_polarization[nb_index] * d_Ek[th_index*neighbours_number+i];
+	 			PEk = PEk + (d_polarization[nb_index] * d_Ek[th_index*neighbours_number+i]) ;
 			}
       }
 
 		// Generate clock
-		COS = cos(((double) (1 << total_number_of_inputs)) * (double)sample_number *  optimization_options_four_pi_over_number_samples - PI * (double)d_clock[th_index] * 0.5);
-      clock_value = optimization_options_clock_prefactor * COS + clock_total_shift;
+		clock_value = optimization_options_clock_prefactor * cos(((double) (1 << total_number_of_inputs)) * (double)sample_number *  optimization_options_four_pi_over_number_samples - PI * (double)d_clock[th_index] * 0.5) + clock_total_shift;
 		
 		if ( clock_value > options_clock_high )
 		{
@@ -212,7 +204,6 @@ __global__ void kernelIterationParallel
       d_lambda_z[th_index] = next_lambda_z;
       
    }
-*/
 }
 
 
@@ -405,7 +396,7 @@ void launch_coherence_vector_simulation
 
 		// Launch Kernel
       //printf ("Iteration# %d...", j); 
-      kernelIterationParallel<<< grid, threads >>> (d_polarization, /*d_lambda_x, d_lambda_y, d_lambda_z, d_Ek, d_clock, d_neighbours,*/ cells_number/*, max_neighbours_number, j, design->bus_layout->inputs->icUsed*/);
+      kernelIterationParallel<<< grid, threads >>> (d_polarization, d_lambda_x, d_lambda_y, d_lambda_z, d_Ek, d_clock, d_neighbours, cells_number, max_neighbours_number, j, design->bus_layout->inputs->icUsed);
 
       // Wait Device
       cudaThreadSynchronize ();

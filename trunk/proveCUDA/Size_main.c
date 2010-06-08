@@ -3,8 +3,9 @@
 int main(){
    
    int i;
-   int cpu_size[5];
-   int gpu_size[5];
+   double cpu_size[5];
+
+   double gpu_size[5];
 
    cpu_size[0] = sizeof(short);
    cpu_size[1] = sizeof(int);
@@ -16,11 +17,11 @@ int main(){
 
    printf("\n         |   CPU  |   GPU  \n");
    printf("---------------------------\n");
-   printf("Short    |   %d   |   %d   \n", cpu_size[0]*8, gpu_size[0]*8);
-   printf("Int      |   %d   |   %d   \n", cpu_size[1]*8, gpu_size[1]*8);
-   printf("Float    |   %d   |   %d   \n", cpu_size[2]*8, gpu_size[2]*8);
-   printf("Double   |   %d   |   %d   \n", cpu_size[3]*8, gpu_size[3]*8);  
-   printf("Long Int     |   %d   |   %d   \n\n", cpu_size[4]*8, gpu_size[4]*8); 
+   printf("Short    |   %g   |   %g   \n", cpu_size[0]*8, gpu_size[0]*8);
+   printf("Int      |   %g   |   %g   \n", cpu_size[1]*8, gpu_size[1]*8);
+   printf("Float    |   %g   |   %g   \n", cpu_size[2]*8, gpu_size[2]*8);
+   printf("Double   |   %g   |   %g   \n", cpu_size[3]*8, gpu_size[3]*8);  
+   printf("Long Int     |   %g   |   %g   \n\n", cpu_size[4]*8, gpu_size[4]*8); 
 
    return 0;
 

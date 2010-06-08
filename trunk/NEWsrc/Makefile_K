@@ -1,5 +1,5 @@
 CC = gcc -g
-NVCC = $(CUDA_HOME)/bin/nvcc -G -g --ptxas-options=-v --machine=64 -arch=sm13 --use_fast_math
+NVCC = $(CUDA_HOME)/bin/nvcc -arch=sm_13 -G -g  
 GLIB=`pkg-config gtk+-2.0 --cflags --libs glib-2.0`
 
 CFLAGS= \

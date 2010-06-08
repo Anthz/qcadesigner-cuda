@@ -1,14 +1,13 @@
 #include<cutil_inline.h>
 
-
 __global__ void kernel (double* gpu_size) {
 
 	double pippo = 1.0;
 
-	pippo += 1;
-	pippo *= pippo;
-	pippo = cos(pippo);
-	pippo /= pippo;
+	pippo = pippo + 1;
+	pippo = pippo* pippo;
+	pippo = cos(pippo + 20.0);
+	pippo = 1 / pippo;
 
    gpu_size[0] = sizeof(short);
    gpu_size[1] = sizeof(int);
