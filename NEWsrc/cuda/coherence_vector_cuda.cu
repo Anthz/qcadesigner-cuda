@@ -37,7 +37,7 @@ extern "C"{
 #define kB 1.381e-23
 #define over_kB 7.24296e22
 #define E 1.602e-19
-
+float
 // Simulation Types (from global_consts.h)
 #define EXHAUSTIVE_VERIFICATION 0
 #define VECTOR_TABLE 1
@@ -109,12 +109,12 @@ __global__ void kernelIterationParallel
 	double mag;
 	double COS;
 */
-	double pippo = 103.3;
+	float pippo = 103.3;
 	th_index =  blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
 	if (th_index < cells_number)
 	{
-		pippo = d_polarization[th_index];
-		d_polarization[th_index] = pippo;
+		pippo = (float)d_polarization[th_index];
+		d_polarization[th_index] = (double)pippo;
 	}
 /*
    // Only useful threads must work
