@@ -145,6 +145,8 @@ output_counter = 0;
 		}
 	}
 	free(tmp);
+	
+	for (i=0;i<cells_number;i++) printf("%e\n",h_polarization[i]);
 
 
 }
