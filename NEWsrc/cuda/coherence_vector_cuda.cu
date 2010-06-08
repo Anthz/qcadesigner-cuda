@@ -37,7 +37,7 @@ extern "C"{
 #define kB 1.381e-23
 #define over_kB 7.24296e22
 #define E 1.602e-19
-float
+
 // Simulation Types (from global_consts.h)
 #define EXHAUSTIVE_VERIFICATION 0
 #define VECTOR_TABLE 1
