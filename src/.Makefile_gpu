@@ -6,15 +6,15 @@ NVCC = $(CUDA_HOME)/bin/nvcc
 	
 GLIB = `pkg-config gtk+-2.0 --cflags --libs glib-2.0`
 	 
-CUDAROOT = $(CUDA_HOME)
+CUDAROOT := $(CUDA_HOME)
 
-CUDASDKROOT = $(CUDA_SDK_HOME)
+CUDASDKROOT := $(CUDA_SDK_HOME)
 
-NVCFLAGS = \
+NVCFLAGS := \
 	-I $(CUDASDKROOT)/C/common/inc \
 	-I $(CUDAROOT)/include
 
-CFLAGS_LIBRARIES = \
+CFLAGS_LIBRARIES := \
 	-L$(CUDAROOT)/lib\
 	-L$(CUDASDKROOT)/C/lib \
 	-lcuda \
