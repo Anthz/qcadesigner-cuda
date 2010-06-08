@@ -18,6 +18,9 @@ qcadesigner-cpu:
 
 qcadesigner-cuda:
 	@echo "Making GPU version of qcadesigner. Please stand by..."
+	@echo $(GPU_ARCH)
+	@echo $(GPU_OPT)
+	@echo $(GPU_DBG)
 	@make -f .Makefile_gpu EXTRA_PARAMS1=$(GPU_ARCH) EXTRA_PARAMS2=$(GPU_OPT) EXTRA_PARAMS3=$(GPU_DBG) 
 	@echo "done."
 clean:
