@@ -325,8 +325,6 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 		clock_shift,
 		options->clock_low,
 		options->clock_high,
-		input_values_number,
-		input_values,
 		tolerance,
 		&output_traces
 		);
@@ -343,11 +341,8 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 	for (icLayers = 0; icLayers < number_of_cell_layers; icLayers++)
 		for (icCellsInLayer = 0 ; icCellsInLayer < number_of_cells_in_layer[icLayers] ; icCellsInLayer++)
 			cells_number++;
-	  
-	new_polarizations = malloc(cells_number*sizeof(double));
-	old_polarizations = malloc(cells_number*sizeof(double));
-	old_old_polarizations = malloc(cells_number*sizeof(double));
 	
+	new_polarizations = (double*)malloc(cells_number*sizeof(double));
 
 	
 	/*for (icLayers = 0, counter = 0; icLayers < number_of_cell_layers; icLayers++)
@@ -360,7 +355,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 
 
 	printf("inizio simulazione\n");
-	for (j = 0; j < sim_data_number_samples; j++)
+	for (j = 0; j < 5 /*sim_data_number_samples*/; j++)
 	{
 
 		// if (j % 10 == 0)
@@ -438,7 +433,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 
 		iteration = 0;
 		stable = FALSE;
-		printf("\nsample: %d\tclock0/clock_high: %f\n", j, sim_data->clock_data[0].data[j]/options->clock_high);  
+		//printf("\nsample: %d\tclock0/clock_high: %f\n", j, sim_data->clock_data[0].data[j]/options->clock_high);  
 		while (!stable && iteration < max_iterations_per_sample)
 		{
 			iteration++;
@@ -455,16 +450,14 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 
 
 
-
-			printf("I:%d \t", iteration-1);
-			counter = 0;
-			for (icLayers = 0; icLayers < number_of_cell_layers; icLayers++)
+			//printf("I:%d \t", iteration-1);
+			for (icLayers = 0, counter=0; icLayers < number_of_cell_layers; icLayers++)
 			{
 				/*#ifdef REDUCE_DEREF*/
 				/*        number_of_cells_in_current_layer = number_of_cells_in_layer[icLayers] ;*/
 				/*        for (icCellsInLayer = 0 ; icCellsInLayer < number_of_cells_in_current_layer ; icCellsInLayer++)*/
 				/*#else*/
-				for (icCellsInLayer = 0 ; icCellsInLayer < number_of_cells_in_layer[icLayers] ; icCellsInLayer++)
+				for (icCellsInLayer = 0 ; icCellsInLayer < number_of_cells_in_layer[icLayers] ; icCellsInLayer++, counter++)
 				/*#endif*/
 				{
 					cell = sorted_cells[icLayers][icCellsInLayer] ;
@@ -476,8 +469,12 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 					}*/
 					current_cell_model = ((bistable_model *)cell->cell_model) ;
 					old_polarization = current_cell_model->polarization;
-
 					
+					if(j==1 && iteration==1) 
+					{
+						printf("%e\n",old_polarization);
+					}
+
 					if (!((QCAD_CELL_INPUT == cell->cell_function)||(QCAD_CELL_FIXED == cell->cell_function)))
 					{
 						polarization_math = 0;
@@ -519,8 +516,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 					{
 						new_polarizations[counter]=old_polarization;
 					}
-					printf("%f\t", fabs(old_polarization-new_polarizations[counter]));
-					counter++;
+					//printf("%f\t", fabs(old_polarization-new_polarizations[counter]));
 				}
 			}
 
@@ -532,7 +528,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 				{
 					((bistable_model *)sorted_cells[icLayers][icCellsInLayer]->cell_model)->polarization = new_polarizations[counter];
 				}
-			printf("\n");
+			//printf("\n");
 
 		}//WHILE !STABLE
 		
@@ -553,7 +549,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 		for (design_bus_layout_iter_first (design_bus_layout, &bli, QCAD_CELL_OUTPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i))
 			sim_data->trace[design_bus_layout_inputs_icUsed + i].data[j] = ((bistable_model *)exp_array_index_1d (design_bus_layout_outputs, BUS_LAYOUT_CELL, i).cell->cell_model)->polarization;
 	
-		if(j%1 ==0) fprintf(stderr,"Simulating: %d%%, iterations: %d\n",j*100/sim_data_number_samples,iteration);
+		if(j%10 ==0) fprintf(stderr,"Simulating: %d%%, iterations: %d\n",j*100/sim_data_number_samples,iteration);
 		// -- if the user wants to stop the simulation then exit. -- //
 		/*if(TRUE == STOP_SIMULATION)
 			j = sim_data_number_samples ;*/
