@@ -53,7 +53,7 @@ OBJECTS = \
 	objects/QCADLabel.o \
 	objects/QCADLayer.o \
 	objects/QCADStretchyObject.o \
-	objects/QCADSubstrate.o 
+	objects/QCADSubstrate.o \
 	cuda/bistable_cuda.o \
 	cuda/conversion.o 
 
@@ -86,7 +86,7 @@ qcadesigner-cuda: $(OBJECTS)
 	@echo "NVCFLAGS: $(NVCFLAGS)"
 	@echo "CFLAGS: $(CFLAGS)"
 	@echo "CFLAGS_LIBRARIES: $(CFLAGS_LIBRARIES)"
-	@$(CC) $(GLIB) $(CFLAGS_LIBRARIES) $(CFLAGS) $(EXTRA_PARAMS3) -o $@ $^\
+	@$(CC) $(GLIB) $(CFLAGS_LIBRARIES) $(CFLAGS) $(EXTRA_PARAMS3) -o ../bin/$@ $^\
 	
 %.o: %.c
 	@$(CC) $(GLIB) $(CFLAGS_LIBRARIES) $(CFLAGS) $(EXTRA_PARAMS3) -c -o $@ $<
