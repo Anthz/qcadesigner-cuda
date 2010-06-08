@@ -209,9 +209,9 @@ void launch_bistable_simulation(
 	double *h_output_data;
 
 
-	printf("\nentrato nella launch gay!\n");
-	printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %d \n number_of_samples = %d\n max_iterations = %d\n, tolerance = %e\npref: %e, shift: %e, low: %e, high: %e\n",cells_number, neighbours_number, number_of_samples, max_iterations, tolerance,clock_prefactor,clock_shift,clock_low,clock_high);
-	printf("output_number = %d, output_indexes[0]= %d\n", output_number , output_indexes[0]);
+	
+	/*printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %d \n number_of_samples = %d\n max_iterations = %d\n, tolerance = %e\npref: %e, shift: %e, low: %e, high: %e\n",cells_number, neighbours_number, number_of_samples, max_iterations, tolerance,clock_prefactor,clock_shift,clock_low,clock_high);
+	printf("output_number = %d, output_indexes[0]= %d\n", output_number , output_indexes[0]);*/
 
 
 	h_output_data = (double *) malloc(sizeof(double) * output_number);
@@ -277,10 +277,10 @@ void launch_bistable_simulation(
 		cudaThreadSynchronize ();
 		
 		cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
-		if (j==1) 
+		if (j%100==0) 
 		{
 			for (i=0;i<cells_number;i++) printf("%e\n",h_polarization[i]);
-			j=number_of_samples;
+			//j=number_of_samples;
 		}
 	
 		// In each sample...

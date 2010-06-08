@@ -355,7 +355,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 
 
 	printf("inizio simulazione\n");
-	for (j = 0; j < 5 /*sim_data_number_samples*/; j++)
+	for (j = 0; j < sim_data_number_samples; j++)
 	{
 
 		// if (j % 10 == 0)
@@ -470,7 +470,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 					current_cell_model = ((bistable_model *)cell->cell_model) ;
 					old_polarization = current_cell_model->polarization;
 					
-					if(j==1 && iteration==1) 
+					if(j%100==0 && iteration==1) 
 					{
 						printf("%e\n",old_polarization);
 					}
