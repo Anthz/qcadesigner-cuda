@@ -324,7 +324,7 @@ void launch_bistable_simulation(
 		}
 
 	
-		if(j%100 == 0) printf("#Simulating: %d % \titerations: %d\n", (j*100/number_of_samples), i);
+		if(j%100 == 0) fprintf(stderr,"#Simulating: %d % \titerations: %d\n", (j*100/number_of_samples), i);
 
 		
 
