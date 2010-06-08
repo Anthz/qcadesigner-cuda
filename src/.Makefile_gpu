@@ -86,16 +86,16 @@ qcadesigner-cuda: $(OBJECTS)
 	@echo "NVCFLAGS: $(NVCFLAGS)"
 	@echo "CFLAGS: $(CFLAGS)"
 	@echo "CFLAGS_LIBRARIES: $(CFLAGS_LIBRARIES)"
-	@$(CC) $(GLIB) $(CFLAGS_LIBRARIES) $(CFLAGS) $(EXTRA_PARAMS3) -o ../bin/$@ $^\
+	$(CC) $(GLIB) $(CFLAGS_LIBRARIES) $(CFLAGS) $(EXTRA_PARAMS3) -o ../bin/$@ $^\
 	
 %.o: %.c
-	@$(CC) $(GLIB) $(CFLAGS_LIBRARIES) $(CFLAGS) $(EXTRA_PARAMS3) -c -o $@ $<
+	$(CC) $(GLIB) $(CFLAGS_LIBRARIES) $(CFLAGS) $(EXTRA_PARAMS3) -c -o $@ $<
 	
 cuda/%.o: cuda/%.c
-	@$(CC) $(GLIB) $(CFLAGS_LIBRARIES) $(CFLAGS) $(EXTRA_PARAMS3) -c -o $@ $<
+	$(CC) $(GLIB) $(CFLAGS_LIBRARIES) $(CFLAGS) $(EXTRA_PARAMS3) -c -o $@ $<
 	
 objects/%.o: objects/%.c
-	@$(CC) $(GLIB) $(CFLAGS_LIBRARIES) $(CFLAGS) $(EXTRA_PARAMS3) -c -o $@ $<
+	$(CC) $(GLIB) $(CFLAGS_LIBRARIES) $(CFLAGS) $(EXTRA_PARAMS3) -c -o $@ $<
 	
 cuda/%.o: cuda/%.cu
-	@$(NVCC) $(NVCFLAGS) $(EXTRA_PARAMS3) -c -o $@ $<
+	$(NVCC) $(NVCFLAGS) $(EXTRA_PARAMS3) -c -o $@ $<
