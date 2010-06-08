@@ -30,7 +30,7 @@
 #ifndef _GDK_STRUCTS_
 #define _GDK_STRUCTS_
 
-#ifndef GTK_GUI
+//#ifndef GTK_GUI
 
 #include <glib.h>
 
@@ -56,10 +56,10 @@ typedef struct
   gint y ;
   } GdkPoint ;
 
-#else /* def GTK_GUI */
+//#else /* def GTK_GUI */
 
-#include <gdk/gdk.h>
+//#include <gdk/gdk.h>
 
-#endif /* ndef GTK_GUI */
+//#endif /* ndef GTK_GUI */
 
 #endif /* _GDK_STRUCTS_ */

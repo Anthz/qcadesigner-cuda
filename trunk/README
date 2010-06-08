@@ -1,21 +1,11 @@
-QCADesigner README Notes
-============================
+======================
+cuda-qcadesigner notes
+======================
 
-If you would like to run QCADesigner from the source tree,
-that is, you do not want to perform "make install", you
-may do so by switching to the src/ subdirectory and
-running ./QCADesigner .
+src/ contains all the source code of this project
+obj/ contains all the object code resultinf from the compilation phase
+data/ contains both the circuits to be used for simulation and the output from those former processes
+doc/ contains all the documentation attached to this project
+scripts/ contains a number of useful scripts to run the software
+bin/ after installation, this folder contains all the binaries
 
-If you would like to install QCADesigner to a path other
-than the default you can run configure with the --prefix
-option and specify the path. For example if you are
-configuring QCADesigner for the first time, you can run:
-
-./autogen.sh --prefix=<Your path>
-make
-make install
-
-"ls <Your path>" should show a "bin" and "share" directory
-that contain all the files that QCADesigner has installed.
-You can then use the script provided above to run
-QCADesigner.

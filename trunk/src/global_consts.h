@@ -29,10 +29,10 @@
 
 #ifndef _GLOBAL_CONSTS_H_
 #define _GLOBAL_CONSTS_H_
-
-#ifdef WIN32
-  #include <windows.h>
-#endif
+//
+//#ifdef WIN32
+//  #include <windows.h>
+//#endif
 
 ///////////////////////////////////////////////////////////////////
 ///////////////////////// DEFINES /////////////////////////////////
@@ -55,22 +55,22 @@
 #define FILEOP_NEW 6
 #define FILEOP_CLOSE 8
 
-#define PRINTED_OBJECTS_DIE     0
-#define PRINTED_OBJECTS_CELLS   1
-#define PRINTED_OBJECTS_COLOURS 2
+//#define PRINTED_OBJECTS_DIE     0
+//#define PRINTED_OBJECTS_CELLS   1
+//#define PRINTED_OBJECTS_COLOURS 2
 
 //!Color defines
-#define GREEN 0
-#define GREEN1 5
-#define GREEN2 6
-#define GREEN3 7
-#define RED 1
-#define BLUE 2
-#define YELLOW 3
-#define WHITE 4
-#define ORANGE 8
-#define BLACK 9
-#define HONEYCOMB_BACKGROUND 10
+//#define GREEN 0
+//#define GREEN1 5
+//#define GREEN2 6
+//#define GREEN3 7
+//#define RED 1
+//#define BLUE 2
+//#define YELLOW 3
+//#define WHITE 4
+//#define ORANGE 8
+//#define BLACK 9
+//#define HONEYCOMB_BACKGROUND 10
 
 //!Simulation Engines
 #define BISTABLE 1
@@ -108,11 +108,11 @@
 #endif
 
 // Font to use
-#ifndef WIN32
-  #define QCAD_GDKFONT "-adobe-courier-medium-r-normal--12-*-*-*-*-*-*"
-#else
-  #define QCAD_GDKFONT "Courier"
-#endif
-#define PS_FONT "Helvetica"
+//#ifndef WIN32
+//  #define QCAD_GDKFONT "-adobe-courier-medium-r-normal--12-*-*-*-*-*-*"
+//#else
+//  #define QCAD_GDKFONT "Courier"
+//#endif
+//#define PS_FONT "Helvetica"
 
 #endif /* _GLOBAL_CONSTS_H_ */

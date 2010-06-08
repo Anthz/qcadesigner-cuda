@@ -33,6 +33,10 @@
 #include <glib.h>
 #include "exp_array.h"
 
+#ifndef va_copy
+#define va_copy(va, va_orig) (*(va) = *(va_orig))
+#endif
+
 static void exp_array_vinsert_vals (EXP_ARRAY *exp_array, void *data, int icElements, int iDimension, va_list va) ;
 static void exp_array_vremove_vals (EXP_ARRAY *exp_array, int icDimPairs, va_list va) ;
 static void exp_array_dump_priv (EXP_ARRAY *exp_array, FILE *pfile, int icIndent, gboolean bReverseVideo) ;
@@ -129,9 +133,9 @@ static void exp_array_vinsert_vals (EXP_ARRAY *exp_array, void *data, int icElem
 
       for (Nix = 0 ; Nix < icElements ; Nix++)
         {
-        va_copy (vaNew, va) ;
+        va_copy (vaNew, va) ;		
         exp_array_vinsert_vals (exp_array_index_1d (exp_array, EXP_ARRAY *, Nix + idx), 
-          NULL == data ? NULL : data + Nix * exp_array->cbSize, 1, exp_array->icDimensions - 1, vaNew) ;
+          NULL == data ? NULL : (char*)data + Nix * exp_array->cbSize, 1, exp_array->icDimensions - 1, vaNew) ;
         va_end (vaNew) ;
         }
       exp_array->icUsed = MAX (exp_array->icUsed, Nix + idx) ;
@@ -157,9 +161,9 @@ static void exp_array_insert_vals_flat (EXP_ARRAY *exp_array, void *data, int ic
       (exp_array->icUsed - idx) * cbSize) ;
 
   if (NULL != data)
-    memcpy (exp_array->data + idx * cbSize, data, icElements * cbSize) ;
+    memcpy ((char*)exp_array->data + idx * cbSize, data, icElements * cbSize) ;
   else
-    memset (exp_array->data + idx * cbSize, 0, icElements * cbSize) ;
+    memset ((char*)exp_array->data + idx * cbSize, 0, icElements * cbSize) ;
   exp_array->icUsed += icElements ;
   }
 
@@ -230,8 +234,8 @@ static void exp_array_vremove_vals (EXP_ARRAY *exp_array, int icDimPairs, va_lis
   if (exp_array->icUsed > 0)
     {
     if (idx + icElements < exp_array->icUsed)
-      memmove (exp_array->data + (      idx          * exp_array->cbSize),
-               exp_array->data + ((idx + icElements) * exp_array->cbSize),
+      memmove ((char*)exp_array->data + (      idx          * exp_array->cbSize),
+               (char*)exp_array->data + ((idx + icElements) * exp_array->cbSize),
               (exp_array->icUsed - idx - icElements) * exp_array->cbSize) ;
     exp_array->icUsed -= icElements ;
     }
