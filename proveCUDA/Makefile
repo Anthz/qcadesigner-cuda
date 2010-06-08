@@ -1,4 +1,4 @@
-CC=gcc-4.3
+CC=gcc
 
 CUDAROOT=$(CUDA_HOME)
 CUDASDKROOT=$(CUDA_SDK_HOME)
@@ -9,19 +9,19 @@ NVCFLAGS= \
 	-I $(CUDAROOT)/include
 
 CFLAGS= \
-	 -L$(CUDAROOT)/lib64  \
-	 -L$(CUDASDKROOT)/C/lib
+	-L$(CUDAROOT)/lib64  \
+	-L$(CUDASDKROOT)/C/lib
 
 OBJECTS =\
-	GlobalVSTexture_kernel.o \
- 	GlobalVSTexture_main.o 
+	Size_kernel.o\
+      	Size_main.o 
       
 	
-GlobalVSTexture: $(OBJECTS)
+Size: $(OBJECTS)
 	$(CC) $(CFLAGS)  -o $@ $^ -lcuda -lcudart -lcutil_x86_64
 
 clean:
-	rm -f *.o *.linkinfo GlobalVSTexture
+	rm -f *.o *.linkinfo Constant
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
