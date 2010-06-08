@@ -1,17 +1,3 @@
-Running 1 simulations with a radial tolerance of 0.001000
-design_bus_layout_inputs_icUsed = 2
-------------2,66------------
-
-entrato nella launch gay!
-
-testing launch parameters:
- cells_number = 179
- neighbours_number = 25 
- number_of_samples = 8000
- max_iterations = 100
-, tolerance = 1.000000e-03
-pref: 1.884000e-21, shift: 5.090000e-22, low: 3.800000e-23, high: 9.800000e-22
-output_number = 1, output_indexes[0]= 169
 0.000000e+00
 0.000000e+00
 0.000000e+00
