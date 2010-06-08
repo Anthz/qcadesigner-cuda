@@ -109,7 +109,7 @@ __global__ void kernelIterationParallel
 	double mag;
 	double COS;
 */
-	double pippo;
+	double pippo = 103.3;
 	th_index =  blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
 	if (th_index < cells_number)
 	{
