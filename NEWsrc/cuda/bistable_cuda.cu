@@ -273,13 +273,13 @@ void launch_bistable_simulation(
 
 		stable = 0;
 
-		cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
-		if (j==0) 
+	/*	cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
+		if (j==1) 
 		{
 			for (i=0;i<cells_number;i++) printf("%e\n",h_polarization[i]);
 			j=number_of_samples;
 		}
-		
+	*/	
 		update_inputs<<< grid, threads >>> (d_polarization, d_input_indexes, j);
 		cudaThreadSynchronize ();
 	
