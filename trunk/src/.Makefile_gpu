@@ -1,6 +1,6 @@
 .DEFAULT: qcadesigner-cuda
 
-CC = gcc-4.3
+CC = gcc
 
 NVCC = $(CUDA_HOME)/bin/nvcc
 	
@@ -17,8 +17,10 @@ NVCFLAGS := \
 CFLAGS_LIBRARIES := \
 	-L$(CUDAROOT)/lib\
 	-L$(CUDASDKROOT)/C/lib \
+	-Lusr/lib64\
 	-lcuda \
-	-lcudart 
+	-lcudart \
+	-lglib2.0
 
 LBITS := $(shell getconf LONG_BIT)
 ifeq ($(LBITS),64)
@@ -28,7 +30,7 @@ else
 endif
 
 ifeq ($(LBITS),64)
-	CFLAGS_LIBRARIES += -lcutil_x86_64
+	CFLAGS_LIBRARIES += -lcutil
 endif
 
 NVCFLAGS += -DCUDA
@@ -57,7 +59,8 @@ OBJECTS = \
 	objects/QCADStretchyObject.o \
 	objects/QCADSubstrate.o \
 	cuda/bistable_cuda.o \
-	cuda/conversion.o 
+	cuda/conversion.o\
+	cuda/coherence_vector_cuda.o 
 
 ifeq ($(EXTRA_PARAMS1), sm_10)
       NVCFLAGS += -arch=sm_10
