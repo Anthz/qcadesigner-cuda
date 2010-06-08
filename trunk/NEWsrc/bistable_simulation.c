@@ -226,7 +226,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   
   
 
-//#ifndef CUDA
+#ifndef CUDA
  
   // randomize the cells in the design so as to minimize any numerical problems associated //
   // with having cells simulated in some predefined order. //
@@ -247,7 +247,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   // -- get and print the total initialization time -- //
   if((end_time = time (NULL)) < 0)
      fprintf(stderr, "Could not get end time\n");
-//#endif //CUDA
+#endif //CUDA
 
 	 
 /*  command_history_message("Total initialization time: %g s\n", (double)(end_time - start_time));*/
@@ -385,20 +385,20 @@ fprintf(stderr,"\n...eseguita!\n");
       for (Nix = 0 ; Nix < number_of_cell_layers ; Nix++)
         {
         // ...perform as many swaps as there are cells therein
-/*#ifdef REDUCE_DEREF*/
-/*        number_of_cells_in_current_layer = number_of_cells_in_layer[Nix] ;*/
-/*        for (Nix1 = 0 ; Nix1 < number_of_cells_in_current_layer ; Nix1++)*/
-/*#else*/
+//#ifdef REDUCE_DEREF
+//        number_of_cells_in_current_layer = number_of_cells_in_layer[Nix] ;
+//        for (Nix1 = 0 ; Nix1 < number_of_cells_in_current_layer ; Nix1++)
+//#else
         for (Nix1 = 0 ; Nix1 < number_of_cells_in_layer[Nix] ; Nix1++)
-/*#endif*/
+//#endif
           {
-/*#ifdef REDUCE_DEREF*/
-/*          idxCell1 = rand () % number_of_cells_in_current_layer ;*/
-/*          idxCell2 = rand () % number_of_cells_in_current_layer ;*/
-/*#else*/
+//#ifdef REDUCE_DEREF
+//          idxCell1 = rand () % number_of_cells_in_current_layer ;
+//          idxCell2 = rand () % number_of_cells_in_current_layer ;
+//#else
           idxCell1 = rand () % number_of_cells_in_layer[Nix] ;
           idxCell2 = rand () % number_of_cells_in_layer[Nix] ;
-/*#endif*/
+//#endif//
 
           swap = sorted_cells[Nix][idxCell1] ;
           sorted_cells[Nix][idxCell1] = sorted_cells[Nix][idxCell2] ;
@@ -406,64 +406,65 @@ fprintf(stderr,"\n...eseguita!\n");
           }
         }
 
+
     // -- run the iteration with the given clock value -- //
     // -- iterate until the entire design has stabalized -- //
     iteration = 0;
     stable = FALSE;
-    while (!stable && iteration < max_iterations_per_sample)
-      {
-      iteration++;
-      counter++;
-      // -- assume that the circuit is stable -- //
-      stable = TRUE;
+	while (!stable && iteration < max_iterations_per_sample)
+	{
+		iteration++;
+		counter++;
+		// -- assume that the circuit is stable -- //
+		stable = TRUE;
 
-      for (icLayers = 0; icLayers < number_of_cell_layers; icLayers++)
-        {
-/*#ifdef REDUCE_DEREF*/
-/*        number_of_cells_in_current_layer = number_of_cells_in_layer[icLayers] ;*/
-/*        for (icCellsInLayer = 0 ; icCellsInLayer < number_of_cells_in_current_layer ; icCellsInLayer++)*/
-/*#else*/
-        for (icCellsInLayer = 0 ; icCellsInLayer < number_of_cells_in_layer[icLayers] ; icCellsInLayer++)
-/*#endif*/
-          {
-          cell = sorted_cells[icLayers][icCellsInLayer] ;
+		for (icLayers = 0; icLayers < number_of_cell_layers; icLayers++)
+		{
+			/*#ifdef REDUCE_DEREF*/
+			/*        number_of_cells_in_current_layer = number_of_cells_in_layer[icLayers] ;*/
+			/*        for (icCellsInLayer = 0 ; icCellsInLayer < number_of_cells_in_current_layer ; icCellsInLayer++)*/
+			/*#else*/
+			for (icCellsInLayer = 0 ; icCellsInLayer < number_of_cells_in_layer[icLayers] ; icCellsInLayer++)
+			/*#endif*/
+			{
+				cell = sorted_cells[icLayers][icCellsInLayer] ;
 
-          if (!((QCAD_CELL_INPUT == cell->cell_function)||
-                (QCAD_CELL_FIXED == cell->cell_function)))
-            {
-            current_cell_model = ((bistable_model *)cell->cell_model) ;
-            old_polarization = current_cell_model->polarization;
-            polarization_math = 0;
+				if (!((QCAD_CELL_INPUT == cell->cell_function)||
+				(QCAD_CELL_FIXED == cell->cell_function)))
+				{
+					current_cell_model = ((bistable_model *)cell->cell_model) ;
+					old_polarization = current_cell_model->polarization;
+					polarization_math = 0;
 
-            for (q = 0; q < current_cell_model->number_of_neighbours; q++)
-              polarization_math += (current_cell_model->Ek[q] * ((bistable_model *)current_cell_model->neighbours[q]->cell_model)->polarization) ;
+					for (q = 0; q < current_cell_model->number_of_neighbours; q++)
+						polarization_math += (current_cell_model->Ek[q] * ((bistable_model *)current_cell_model->neighbours[q]->cell_model)->polarization) ;
 
-            // math = math / 2 * gamma
-            polarization_math /= (2.0 * sim_data->clock_data[cell->cell_options.clock].data[j]);
+					// math = math / 2 * gamma
+					polarization_math /= (2.0 * sim_data->clock_data[cell->cell_options.clock].data[j]);
 
-            // -- calculate the new cell polarization -- //
-            // if math < 0.05 then math/sqrt(1+math^2) ~= math with error <= 4e-5
-            // if math > 100 then math/sqrt(1+math^2) ~= +-1 with error <= 5e-5
-            new_polarization =
-              (polarization_math        >  1000.0)   ?  1                 :
-              (polarization_math        < -1000.0)   ? -1                 :
-              (fabs (polarization_math) <     0.001) ?  polarization_math :
-                polarization_math / sqrt (1 + polarization_math * polarization_math) ;
+					// -- calculate the new cell polarization -- //
+					// if math < 0.05 then math/sqrt(1+math^2) ~= math with error <= 4e-5
+					// if math > 100 then math/sqrt(1+math^2) ~= +-1 with error <= 5e-5
+					new_polarization =
+					(polarization_math        >  1000.0)   ?  1                 :
+					(polarization_math        < -1000.0)   ? -1                 :
+					(fabs (polarization_math) <     0.001) ?  polarization_math :
+					polarization_math / sqrt (1 + polarization_math * polarization_math) ;
 
-            // -- set the polarization of this cell -- //
-            
-	    current_cell_model->polarization = new_polarization;
+					// -- set the polarization of this cell -- //
 
-            // If any cells polarization has changed beyond this threshold
-            // then the entire circuit is assumed to have not converged.
-			//
-			// 			====> "&& stable" added by Miglie
-			//
-            stable = (fabs (new_polarization - old_polarization) <= tolerance) && stable ;
-            }
-          }
-	}
-      }//WHILE !STABLE
+					current_cell_model->polarization = new_polarization;
+
+					// If any cells polarization has changed beyond this threshold
+					// then the entire circuit is assumed to have not converged.
+					//
+					// 			====> "&& stable" added by Miglie
+					//
+					stable = (fabs (new_polarization - old_polarization) <= tolerance) && stable ;
+				}
+			}
+		}
+	}//WHILE !STABLE
 
 
 
