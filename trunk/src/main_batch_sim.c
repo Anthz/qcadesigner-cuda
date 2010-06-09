@@ -150,7 +150,7 @@ int main (int argc, char **argv)
 
 	for (Nix = 0 ; Nix < number_of_sims ; Nix++)
 	{
-		fprintf (stderr, "Running simulation %d\n", Nix) ;
+		fprintf (stdout, "Running simulation %d\n", Nix) ;
 		if (NULL != (working_design = design_copy (design)))
 		{
 
