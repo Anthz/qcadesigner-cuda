@@ -312,7 +312,7 @@ static void parse_cmdline (int argc, char **argv, int *sim_engine, char **pszSim
     {
     printf (
       "Usage:\n"
-      "batch_sim -f qca_file [-e [BISTABLE]|COHERENCE_VECTOR] -o engine_options_file -n number_of_simulations -t radial_tolerance\n") ;
+      "batch_sim -f qca_file [-e [BISTABLE]|COHERENCE_VECTOR] -o engine_options_file -n number_of_simulations -t radial_tolerance -s outputfile\n") ;
     exit (1) ;
     }
   }
