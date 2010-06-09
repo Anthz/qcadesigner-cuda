@@ -41,12 +41,12 @@ endif
 CPU_DBG += $(EXTRA_PARAMS2)
 
 qcadesigner-cpu: $(OBJECTS)
-	@$(CC) $(GLIB) -o ../bin/$@ $^\
+	@$(CC) $(GLIB) $(CPU_DBG) $(CFLAGS) -o ../bin/$@ $^\
 	
 %.o: %.c
-	@$(CC) $(GLIB) $(CFLAGS) -c -o $@ $<
+	@$(CC) $(GLIB) $(CPU_DBG) $(CFLAGS) -c -o $@ $<
 	
 objects/%.o: objects/%.c
-	@$(CC) $(GLIB) $(CFLAGS) -c -o $@ $<
+	@$(CC) $(GLIB) $(CPU_DBG) $(CFLAGS) -c -o $@ $<
 	
 
