@@ -11,6 +11,6 @@ radius_of_effect=80.000000
 epsilonR=12.900000
 layer_separation=11.500000
 algorithm=2
-randomize_cells=true
+randomize_cells=FALSE
 animate_simulation=false
 [#COHERENCE_OPTIONS]
