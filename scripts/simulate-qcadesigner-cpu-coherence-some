@@ -7,7 +7,7 @@ echo These files will be used for testing:
 echo $circuit_ls
 for i in $circuit_ls
 do
-	../bin/qcadesigner-cpu -f ../data/circuits/$i -o ../scripts/coherence_options.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/$i
+	../bin/qcadesigner-cpu -f ../data/circuits/$i -o ../scripts/coherence_options.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/coherence/$i > ../data/sim_outputs/coherence/$i.cpu.log
 	echo $i - Done.
 done
 echo All done.
