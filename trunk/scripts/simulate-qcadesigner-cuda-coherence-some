@@ -1,0 +1,13 @@
+circuit_ls+="../data/circuits/CircuitAND.qca " #pay attention to last space!
+circuit_ls+="../data/circuits/CircuitNAND_8000.qca "
+circuit_ls+="../data/circuits/CircuitNOR_8000.qca "
+circuit_ls+="../data/circuits/CircuitXNOR_8000.qca "
+circuit_ls+="../data/circuits/CircuitXOR_8000.qca "
+echo These files will be used for testing:
+echo $circuit_ls
+for i in $circuit_ls
+do
+	qcadesigner-cuda -f ../data/circuits/$i -o ../scripts/coherence_options.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/$i
+	echo $i - Done.
+done
+echo All done.
