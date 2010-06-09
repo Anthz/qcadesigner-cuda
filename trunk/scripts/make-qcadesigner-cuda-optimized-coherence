@@ -1,3 +1,4 @@
 cd ../src
+make clean
 make qcadesigner-cuda GPU_ARCH=sm_13 GPU_OPT=--fast-math
 
