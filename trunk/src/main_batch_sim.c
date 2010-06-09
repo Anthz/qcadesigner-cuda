@@ -98,13 +98,13 @@ int main (int argc, char **argv)
 
   if (!open_project_file (pszFName, &design))
     {
-    fprintf (stderr, "Failed to open the circuit file !\n") ;
+    fprintf (stderr, "Failed to open the circuit file %s!\n", pszFName) ;
     return 3 ;
     }
   else
   if (NULL == design)
     {
-    fprintf (stderr, "Failed to open the circuit file !\n") ;
+    fprintf (stderr, "Failed to open the circuit file %s!\n", pszFName) ;
     return 3 ;
     }
 
@@ -115,7 +115,7 @@ int main (int argc, char **argv)
 
     if (NULL == (bo = open_bistable_options_file (pszSimOptsFName)))
       {
-      fprintf (stderr, "Failed to open simulation options file !\n") ;
+      fprintf (stderr, "Failed to open simulation options file %s!\n", pszSimOptsFName) ;
       return 2 ;
       }
 /*    bistable_options_dump (bo, stderr) ;*/
@@ -128,7 +128,7 @@ int main (int argc, char **argv)
 
     if (NULL == (co = open_coherence_options_file (pszSimOptsFName)))
       {
-      fprintf (stderr, "Failed to open simulation options file !\n") ;
+      fprintf (stderr, "Failed to open simulation options file %s!\n",pszSimOptsFName) ;
       return 2 ;
       }
 /*    coherence_options_dump (co, stderr) ;*/
