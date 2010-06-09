@@ -1,8 +1,8 @@
-circuit_ls+="../data/circuits/CircuitAND.qca " #pay attention to last space!
-circuit_ls+="../data/circuits/CircuitNAND_8000.qca "
-circuit_ls+="../data/circuits/CircuitNOR_8000.qca "
-circuit_ls+="../data/circuits/CircuitXNOR_8000.qca "
-circuit_ls+="../data/circuits/CircuitXOR_8000.qca "
+circuit_ls+="CircuitAND.qca " #pay attention to last space!
+circuit_ls+="CircuitNAND_8000.qca "
+circuit_ls+="CircuitNOR_8000.qca "
+circuit_ls+="CircuitXNOR_8000.qca "
+circuit_ls+="CircuitXOR_8000.qca "
 echo These files will be used for testing:
 echo $circuit_ls
 for i in $circuit_ls

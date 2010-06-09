@@ -302,7 +302,6 @@ static void parse_cmdline (int argc, char **argv, int *sim_engine, char **pszSim
       if (++Nix < argc)
         {
         strcpy((*pszFileSave),argv[Nix]);
-        printf("AAh AH! Letto correttamente! %s\n", *pszFileSave);
         icParms++ ;
         }
       }
