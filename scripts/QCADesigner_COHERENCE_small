@@ -1,2 +1,2 @@
-../bin/qcadesigner-cpu -f ../data/circuits/CircuitXOR.qca -o coherence_options.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -out ../data/outputs/CircuitXOR.qca
+../bin/qcadesigner-cpu -f ../data/circuits/CircuitXOR_8000.qca -o ../scripts/coherence_options.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/CircuitXOR_8000.qca
 

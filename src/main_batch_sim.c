@@ -50,7 +50,7 @@ static void randomize_design_cells (GRand *rnd, DESIGN *design, double dMinRadiu
 //
 //static int determine_success (HONEYCOMB_DATA *hcIn, HONEYCOMB_DATA *hcOut) ;
 //
-static void parse_cmdline (int argc, char **argv, int *sim_engine, char **pszSimOptsFName, char *pszFName, int *number_of_sims, double *dTolerance, char *pszFileSave) ;
+static void parse_cmdline (int argc, char **argv, int *sim_engine, char **pszSimOptsFName, char **pszFName, int *number_of_sims, double *dTolerance, char **pszFileSave) ;
 
 int main (int argc, char **argv)
   {
@@ -72,15 +72,15 @@ int main (int argc, char **argv)
   double dTolerance = -1.0 ;
   EXP_ARRAY *icSuccesses = NULL ;
   int icOutputBuses = 0 ;
-  char* pszFileSaveOut = NULL;
-  char* pszFileSaveBin = NULL;
+  char *pszFileSaveOut=(char*)malloc(1000*sizeof(char));
+  char *pszFileSaveBin=(char*)malloc(1000*sizeof(char));
   long int lTime = 0;
-  char* sTime = NULL;
+  char *sTime=(char*)malloc(100*sizeof(char));
 
   //intial time for simulation.
   time(&t_start);
 
-  parse_cmdline (argc, argv, &sim_engine, &pszSimOptsFName, pszFName, &number_of_sims, &dTolerance, pszFileSaveOut) ;
+  parse_cmdline (argc, argv, &sim_engine, &pszSimOptsFName, &pszFName, &number_of_sims, &dTolerance, &pszFileSaveOut) ;
 
 //#ifdef GTK_GUI
 //  gtk_init (&argc, &argv) ;
@@ -176,7 +176,12 @@ int main (int argc, char **argv)
 				//strcat(pszFileSaveOut, pszFName);
 				strcat(pszFileSaveOut, sTime);
 				file_out = fopen(pszFileSaveOut, "w");
-				create_simulation_output_file_fp_cuda (file_out, &sim_output,bistable_options.delay); 
+				if (file_out == NULL)
+				{
+					printf("Output file doesn't exist.\n");
+					return -1;
+				}
+				create_simulation_output_file_fp_cuda (file_out, &sim_output, bistable_options.delay); 
 				fclose(file_out);
 				
 				FILE *file_bin;
@@ -184,6 +189,11 @@ int main (int argc, char **argv)
 				//strcat(pszFileSaveBin, pszFName);
 				strcat(pszFileSaveBin, sTime);
 				file_bin = fopen(pszFileSaveBin, "w");
+				if (file_out == NULL)
+				{
+					printf("Output file doesn't exist.\n");
+					return -1;
+				}
 				create_simulation_output_binary_cuda (file_bin, &sim_output,bistable_options.delay);
 				fclose(file_bin);
 
@@ -226,7 +236,7 @@ static void randomize_design_cells (GRand *rnd, DESIGN *design, double dMinRadiu
           }
   }
 
-static void parse_cmdline (int argc, char **argv, int *sim_engine, char **pszSimOptsFName, char *pszFName, int *number_of_sims, double *dTolerance, char* pszFileSave)
+static void parse_cmdline (int argc, char **argv, int *sim_engine, char **pszSimOptsFName, char **pszFName, int *number_of_sims, double *dTolerance, char** pszFileSave)
   {
   int icParms = 0 ;
   int Nix ;
@@ -240,7 +250,7 @@ static void parse_cmdline (int argc, char **argv, int *sim_engine, char **pszSim
       {
       if (++Nix < argc)
         {
-        pszFName = argv[Nix] ;
+        (*pszFName) = argv[Nix] ;
         icParms++ ;
         }
       }
@@ -287,12 +297,12 @@ static void parse_cmdline (int argc, char **argv, int *sim_engine, char **pszSim
       }
     
     else
-    if (!strncmp (argv[Nix], "-out", 2))
+    if (!strncmp (argv[Nix], "-s", 4))
     {      
       if (++Nix < argc)
         {
-        pszFileSave = argv[Nix];
-        printf("AAh AH! Letto correttamente! %s\n", pszFileSave);
+        strcpy((*pszFileSave),argv[Nix]);
+        printf("AAh AH! Letto correttamente! %s\n", *pszFileSave);
         icParms++ ;
         }
       }
