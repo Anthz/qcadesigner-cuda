@@ -13,7 +13,7 @@ OBJECTS = \
 	design.o \
 	exp_array.o \
 	fileio_helpers.o \
-	generic_utils.o\ 
+	generic_utils.o \ 
 	simulation.o \
 	simulation_data.o \
 	vector_table.o \
