@@ -328,7 +328,9 @@ void launch_coherence_vector_simulation
 			#endif
 		}	
 	}
+	#ifdef DEBUG_ON
 	fclose (fp);
+	#endif
 
    // Initialize Device Memory
    cutilSafeCall (cudaMalloc (&d_polarization, cells_number*sizeof(double)));
