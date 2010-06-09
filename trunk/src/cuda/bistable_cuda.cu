@@ -14,7 +14,7 @@
 
 #include <cutil_inline.h>
 #include <cuda.h>
-//#include "cuPrintf.cu"
+#include "cuPrintf.cu"
 #include <time.h>
 
 #include <math.h>
@@ -56,6 +56,7 @@ __device__ inline int find(int x, int *array, int length)
 __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int sample)
 {
 	int input_idx;
+        double tmp;
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;
 
 	if (threadIdx.x < d_input_number)
@@ -66,10 +67,13 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	__syncthreads();
 	
 	input_idx = find(thr_idx, shm_array, d_input_number);
-
+        cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
 	if (input_idx >= 0)
 	{
-		d_polarization[thr_idx] = (-1 * sin(((double)( 1 << input_idx)) * (double)sample * 4.0 * PI /(double) d_number_of_samples) > 0 ) ? 1 : -1;
+	  tmp = -1 * sin(((double)( 1 << input_idx)) * (double)sample * 4.0 * PI /(double) d_number_of_samples);
+          cuPrintf("tmp: %e\n",tmp);
+	  d_polarization[thr_idx]=(tmp > 0) ? 1: -1;
+          cuPrintf("input: %e\n",d_polarization[thr_idx]);
 	}
 }
 
@@ -226,7 +230,7 @@ void launch_bistable_simulation(
 
 	// Set Devices
 	//cudaSetDevice (cutGetMaxGflopsDeviceId());
-	//cudaPrintfInit ();
+	cudaPrintfInit ();
 
 	//starting timer
 	timespec startTime, endTime;
@@ -277,11 +281,11 @@ void launch_bistable_simulation(
 		cudaThreadSynchronize ();
 		
 		cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
-		/*if (j%100==0) 
+		if (j==0) 
 		{
 			for (i=0;i<cells_number;i++) printf("%e\n",h_polarization[i]);
-			//j=number_of_samples;
-		}*/
+			j=number_of_samples;
+		}
 	
 		// In each sample...
 		for (i = 0; i < max_iterations && !stable; i++)
@@ -329,8 +333,8 @@ void launch_bistable_simulation(
 		
 
 	}
-	//cudaPrintfDisplay(stdout, true);
-	//cudaPrintfEnd();
+	cudaPrintfDisplay(stdout, true);
+	cudaPrintfEnd();
 
 
 
