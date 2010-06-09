@@ -50,7 +50,7 @@ static void randomize_design_cells (GRand *rnd, DESIGN *design, double dMinRadiu
 //
 //static int determine_success (HONEYCOMB_DATA *hcIn, HONEYCOMB_DATA *hcOut) ;
 //
-static void parse_cmdline (int argc, char **argv, int *sim_engine, char **pszSimOptsFName, char **pszFName, int *number_of_sims, double *dTolerance, char *pszFileSave) ;
+static void parse_cmdline (int argc, char **argv, int *sim_engine, char **pszSimOptsFName, char *pszFName, int *number_of_sims, double *dTolerance, char *pszFileSave) ;
 
 int main (int argc, char **argv)
   {
@@ -226,7 +226,7 @@ static void randomize_design_cells (GRand *rnd, DESIGN *design, double dMinRadiu
           }
   }
 
-static void parse_cmdline (int argc, char **argv, int *sim_engine, char *pszSimOptsFName, char **pszFName, int *number_of_sims, double *dTolerance, char* pszFileSave)
+static void parse_cmdline (int argc, char **argv, int *sim_engine, char **pszSimOptsFName, char *pszFName, int *number_of_sims, double *dTolerance, char* pszFileSave)
   {
   int icParms = 0 ;
   int Nix ;
@@ -240,7 +240,7 @@ static void parse_cmdline (int argc, char **argv, int *sim_engine, char *pszSimO
       {
       if (++Nix < argc)
         {
-        (*pszFName) = argv[Nix] ;
+        pszFName = argv[Nix] ;
         icParms++ ;
         }
       }
@@ -263,7 +263,7 @@ static void parse_cmdline (int argc, char **argv, int *sim_engine, char *pszSimO
       {
       if (++Nix < argc)
         {
-        pszSimOptsFName = argv[Nix] ;
+        (*pszSimOptsFName) = argv[Nix] ;
         icParms++ ;
         }
       }
@@ -285,10 +285,10 @@ static void parse_cmdline (int argc, char **argv, int *sim_engine, char *pszSimO
         icParms++ ;
         }
       }
-    }
+    
     else
     if (!strncmp (argv[Nix], "-out", 2))
-      {
+    {      
       if (++Nix < argc)
         {
         pszFileSave = argv[Nix];
