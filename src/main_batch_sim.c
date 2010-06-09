@@ -50,7 +50,7 @@ static void randomize_design_cells (GRand *rnd, DESIGN *design, double dMinRadiu
 //
 //static int determine_success (HONEYCOMB_DATA *hcIn, HONEYCOMB_DATA *hcOut) ;
 //
-static void parse_cmdline (int argc, char **argv, int *sim_engine, char **pszSimOptsFName, char **pszFName, int *number_of_sims, double *dTolerance) ;
+static void parse_cmdline (int argc, char **argv, int *sim_engine, char **pszSimOptsFName, char **pszFName, int *number_of_sims, double *dTolerance, char *pszFileSave) ;
 
 int main (int argc, char **argv)
   {
@@ -72,11 +72,15 @@ int main (int argc, char **argv)
   double dTolerance = -1.0 ;
   EXP_ARRAY *icSuccesses = NULL ;
   int icOutputBuses = 0 ;
+  char* pszFileSaveOut = NULL;
+  char* pszFileSaveBin = NULL;
+  long int lTime = 0;
+  char* sTime = NULL;
 
   //intial time for simulation.
   time(&t_start);
 
-  parse_cmdline (argc, argv, &sim_engine, &pszSimOptsFName, &pszFName, &number_of_sims, &dTolerance) ;
+  parse_cmdline (argc, argv, &sim_engine, &pszSimOptsFName, pszFName, &number_of_sims, &dTolerance, pszFileSaveOut) ;
 
 //#ifdef GTK_GUI
 //  gtk_init (&argc, &argv) ;
@@ -144,121 +148,50 @@ int main (int argc, char **argv)
     exp_array_index_1d (icSuccesses, int, Nix) = 0 ;
 
 
-  for (Nix = 0 ; Nix < number_of_sims ; Nix++)
-    {
-    fprintf (stderr, "Running simulation %d\n", Nix) ;
-    if (NULL != (working_design = design_copy (design)))
-      {
+	for (Nix = 0 ; Nix < number_of_sims ; Nix++)
+	{
+		fprintf (stderr, "Running simulation %d\n", Nix) ;
+		if (NULL != (working_design = design_copy (design)))
+		{
 
-/*DeBuG		GList *llItr = NULL, *llItrObj = NULL ;*/
-/*	  	QCADLayer *layer = NULL ;*/
-/*		for (llItr = design->lstLayers ; llItr != NULL ; llItr = llItr->next)*/
-/*		    if (LAYER_TYPE_CELLS == (layer = QCAD_LAYER (llItr->data))->type)*/
-/*		      for (llItrObj = layer->lstObjs ; llItrObj != NULL ; llItrObj = llItrObj->next)*/
-/*			if (NULL != llItrObj->data)*/
-/*				printf("the ass");*/
-/*		getchar();*/
+		   randomize_design_cells (rnd, working_design, 0.0, dTolerance) ;
 
-      randomize_design_cells (rnd, working_design, 0.0, dTolerance) ;
+		   if (NULL != (sim_data = run_simulation (sim_engine, EXHAUSTIVE_VERIFICATION, working_design, NULL)))
+			{
+				//final time for simulation.
+				time(&t_end);
+				printf("\nSimulation Time: %d seconds\n", (int) (t_end-t_start));
 
-      if (NULL != (sim_data = run_simulation (sim_engine, EXHAUSTIVE_VERIFICATION, working_design, NULL)))
-        {
-        //final time for simulation.
-        time(&t_end);
-		printf("\nSimulation Time: %d seconds\n", (int) (t_end-t_start));
-		//looking in sim_data 
-		FILE *file;
-		file = fopen("file_output","w");
-		FILE *file2;
-		file2 = fopen("file_binary","w");
-		SIMULATION_OUTPUT sim_output;
-		sim_output.sim_data = sim_data;
-		sim_output.bus_layout = NULL;
-		create_simulation_output_file_fp_cuda (file, &sim_output,bistable_options.delay); // TODO: load the delay from simulation option file. delay = #whiched clock phase / 4
-		create_simulation_output_binary_cuda (file2, &sim_output,bistable_options.delay); // TODO: load the delay
-        fclose(file);
-        fclose(file2);
-/*	
-	printf("\nnumber of samples %d",sim_data->number_samples);
-	printf("\nnumber of traces %d",sim_data->number_of_traces);
-	int i,sample;
-        char tmp1[20],*tmp2;
-	
-        for(i=0;i<sim_data->number_of_traces;i++){
-	  printf("\ndata label for trace %d: %s",i,sim_data->trace->data_labels);
-	  fputs("\nProssima Traccia\n",file);
+				// saving data
+				SIMULATION_OUTPUT sim_output;
+				sim_output.sim_data = sim_data;
+				sim_output.bus_layout = NULL;
+
+				lTime = time(NULL)/3600;
+				sprintf(sTime, "-%ld\0", lTime); 
+				strcpy(pszFileSaveBin, pszFileSaveOut);
+
+				FILE *file_out;
+				strcat(pszFileSaveOut, "-out\0");
+				//strcat(pszFileSaveOut, pszFName);
+				strcat(pszFileSaveOut, sTime);
+				file_out = fopen(pszFileSaveOut, "w");
+				create_simulation_output_file_fp_cuda (file_out, &sim_output,bistable_options.delay); 
+				fclose(file_out);
+				
+				FILE *file_bin;
+				strcat(pszFileSaveBin, "-bin\0");
+				//strcat(pszFileSaveBin, pszFName);
+				strcat(pszFileSaveBin, sTime);
+				file_bin = fopen(pszFileSaveBin, "w");
+				create_simulation_output_binary_cuda (file_bin, &sim_output,bistable_options.delay);
+				fclose(file_bin);
+
+				sim_data = simulation_data_destroy (sim_data) ;
+			}
+		working_design = design_destroy (working_design) ;
+		}
 	}
-        for(sample=0;sample<sim_data->number_samples;sample++)
-	  {
-            sprintf(tmp1, "%lf", sim_data->trace->data[sample]);
-            tmp2 = malloc(sizeof(tmp1)+sizeof(char));
-            strcpy(tmp2,tmp1);
-            strcat(tmp2,"\n");
-	    fputs(tmp2,file);
-	  }
-        fclose(file);*/
-
-	
-
-/*        input_hcs = exp_array_new (sizeof (HONEYCOMB_DATA *), 1) ;*/
-/*        output_hcs = exp_array_new (sizeof (HONEYCOMB_DATA *), 1) ;*/
-        // For each bus, create the appropriate HONEYCOMB_DATA, fill it in with
-        // the TRACEDATA structures, and place each HONEYCOMB_DATA into its
-        // appropriate EXP_ARRAY.
-/*        for (Nix1 = 0 ; Nix1 < working_design->bus_layout->buses->icUsed ; Nix1++)*/
-/*          {*/
-/*          bus = &exp_array_index_1d (working_design->bus_layout->buses, BUS, Nix1) ;*/
-/*          hc_ar = (QCAD_CELL_INPUT == bus->bus_function ? input_hcs : output_hcs) ;*/
-/*          hc = honeycomb_data_new (&clr) ;*/
-/*          for (Nix2 = 0 ; Nix2 < bus->cell_indices->icUsed ; Nix2++)*/
-/*            {*/
-/*            the_trace = &(sim_data->trace[exp_array_index_1d (bus->cell_indices, int, Nix2) + (QCAD_CELL_INPUT == bus->bus_function ? 0 : working_design->bus_layout->inputs->icUsed)]) ;*/
-/*            exp_array_insert_vals (hc->arTraces, &the_trace, 1, -1) ;*/
-/*            }*/
-/*          calculate_honeycomb_array (hc, sim_data->number_samples, -0.5, 0.5, 2) ;*/
-/*          exp_array_insert_vals (hc_ar, &hc, 1, -1) ;*/
-/*          }*/
-
-        // Compare the output honeycombs to the input honeycombs
-/*        for (Nix1 = 0 ; Nix1 < output_hcs->icUsed ; Nix1++)*/
-/*          exp_array_index_1d (icSuccesses, int, Nix1) +=*/
-/*            determine_success (*/
-/*              exp_array_index_1d (input_hcs, HONEYCOMB_DATA *, Nix1),*/
-/*              exp_array_index_1d (output_hcs, HONEYCOMB_DATA *, Nix1)) ;*/
-
-        // Print out the results
-/*        for (Nix1 = 0 ; Nix1 < MAX (input_hcs->icUsed, output_hcs->icUsed) ; Nix1++)*/
-/*          {*/
-/*          if (Nix1 < input_hcs->icUsed)*/
-/*            {*/
-/*            hc = exp_array_index_1d (input_hcs, HONEYCOMB_DATA *, Nix1) ;*/
-/*            fprintf (stderr, "First trace in this bus is \"%s\"\n", exp_array_index_1d (hc->arTraces, struct TRACEDATA *, 0)->data_labels) ;*/
-/*            for (Nix2 = 0 ; Nix2 < hc->arHCs->icUsed ; Nix2++)*/
-/*              fprintf (stderr, "%d ", (int)(exp_array_index_1d (hc->arHCs, HONEYCOMB, Nix2).value)) ;*/
-/*            fprintf (stderr, "\n") ;*/
-/*            }*/
-/*          if (Nix1 < output_hcs->icUsed)*/
-/*            {*/
-/*            hc = exp_array_index_1d (output_hcs, HONEYCOMB_DATA *, Nix1) ;*/
-/*            fprintf (stderr, "First trace in this bus is \"%s\"\n", exp_array_index_1d (hc->arTraces, struct TRACEDATA *, 0)->data_labels) ;*/
-/*            for (Nix2 = 0 ; Nix2 < hc->arHCs->icUsed ; Nix2++)*/
-/*              fprintf (stderr, "%d ", (int)(exp_array_index_1d (hc->arHCs, HONEYCOMB, Nix2).value)) ;*/
-/*            fprintf (stderr, "\n") ;*/
-/*            }*/
-/*          }*/
-
-/*        fprintf (stderr, "*******************\n") ;*/
-/*        for (Nix1 = 0 ; Nix1 < input_hcs->icUsed ; Nix1++)*/
-/*          honeycomb_data_free (exp_array_index_1d (input_hcs, HONEYCOMB_DATA *, Nix1)) ;*/
-/*        input_hcs = exp_array_free (input_hcs) ;*/
-/*        for (Nix1 = 0 ; Nix1 < output_hcs->icUsed ; Nix1++)*/
-/*          honeycomb_data_free (exp_array_index_1d (output_hcs, HONEYCOMB_DATA *, Nix1)) ;*/
-/*        output_hcs = exp_array_free (output_hcs) ;*/
-        sim_data = simulation_data_destroy (sim_data) ;
-        }
-      working_design = design_destroy (working_design) ;
-      }
-    }
 
   for (Nix = 0 ; Nix < icSuccesses->icUsed ; Nix++)
     printf ("success_rate[%d] = %.2lf%%\n", Nix, (double)(exp_array_index_1d (icSuccesses, int, Nix)) / ((double)(number_of_sims)) * 100.0) ;
@@ -293,7 +226,7 @@ static void randomize_design_cells (GRand *rnd, DESIGN *design, double dMinRadiu
           }
   }
 
-static void parse_cmdline (int argc, char **argv, int *sim_engine, char **pszSimOptsFName, char **pszFName, int *number_of_sims, double *dTolerance)
+static void parse_cmdline (int argc, char **argv, int *sim_engine, char *pszSimOptsFName, char **pszFName, int *number_of_sims, double *dTolerance, char* pszFileSave)
   {
   int icParms = 0 ;
   int Nix ;
@@ -330,7 +263,7 @@ static void parse_cmdline (int argc, char **argv, int *sim_engine, char **pszSim
       {
       if (++Nix < argc)
         {
-        (*pszSimOptsFName) = argv[Nix] ;
+        pszSimOptsFName = argv[Nix] ;
         icParms++ ;
         }
       }
@@ -353,8 +286,19 @@ static void parse_cmdline (int argc, char **argv, int *sim_engine, char **pszSim
         }
       }
     }
+    else
+    if (!strncmp (argv[Nix], "-out", 2))
+      {
+      if (++Nix < argc)
+        {
+        pszFileSave = argv[Nix];
+        printf("AAh AH! Letto correttamente! %s\n", pszFileSave);
+        icParms++ ;
+        }
+      }
+    }
 
-  if (icParms < 5)
+  if (icParms < 6)
     {
     printf (
       "Usage:\n"
