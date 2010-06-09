@@ -243,7 +243,9 @@ void launch_coherence_vector_simulation
 	int *d_neighbours;
 
 	// Others
+	#ifdef DEBUG_ON
 	FILE *fp;
+	#endif
    int i, j, k, l;
    unsigned int cells_number;
    unsigned int max_neighbours_number;
@@ -289,7 +291,9 @@ void launch_coherence_vector_simulation
 
 	// Fill CUDA-Compatible Structures 
 	index = 0;
+	#ifdef DEBUG_ON
 	fp = fopen ("cuda/log_coherence/circuit_structure", "w");
+	#endif
 	for (i = 0; i < number_of_cell_layers; i++)
   	{
 		for (j = 0; j < number_of_cells_in_layer[i]; j++)
@@ -299,8 +303,9 @@ void launch_coherence_vector_simulation
 		   h_lambda_y[index] = ((coherence_model *)sorted_cells[i][j]->cell_model)->lambda_y;
 		   h_lambda_z[index] = ((coherence_model *)sorted_cells[i][j]->cell_model)->lambda_z;
 			h_clock[index] = (sorted_cells[i][j]->cell_options).clock;
-
+			#ifdef DEBUG_ON
 			fprintf (fp, "Cell: %d, Initial Polarization: %g\n\tNeighbours (Ek):\n", index, h_polarization[index]);
+			#endif
 			for (k = 0; k < max_neighbours_number; k++)
 	   	{
 	   		if (k < ((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours)
@@ -313,10 +318,14 @@ void launch_coherence_vector_simulation
          		h_Ek[index*max_neighbours_number+k] = -1;
          		h_neighbours[index*max_neighbours_number+k] = -1;
       		}
+      		#ifdef DEBUG_ON
 				fprintf (fp, "\t\t%d(%g)\n", h_neighbours[index*max_neighbours_number+k], h_Ek[index*max_neighbours_number+k]);
+				#endif
 	   	}	
 			index++;
+			#ifdef DEBUG_ON
 			fprintf (fp, "\n");
+			#endif
 		}	
 	}
 	fclose (fp);

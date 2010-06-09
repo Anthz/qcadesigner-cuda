@@ -167,7 +167,7 @@ int main (int argc, char **argv)
 				sim_output.sim_data = sim_data;
 				sim_output.bus_layout = NULL;
 
-				lTime = time(NULL)/3600;
+				lTime = time(NULL)/60;
 				sprintf(sTime, "-%ld\0", lTime); 
 				strcpy(pszFileSaveBin, pszFileSaveOut);
 
