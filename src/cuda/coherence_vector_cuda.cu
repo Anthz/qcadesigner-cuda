@@ -134,7 +134,7 @@ double arg , dmod;
 		
 	dmod = dmod + 2*PI;
 	if ((dmod < (PI/2+0.00001*PI) && dmod > (PI/2-0.00001*PI)) || (dmod < (3*PI/2+0.00001*PI) && dmod > (3*PI/2-0.00001*PI))) 
-			cuPrintf("Cosine function (hazardous arg): arg: %.15g, cos: %.15g\n", arg, cos(arg));
+			cuPrintf("Cosine function (hazardous arg): arg: %.15g, cos: %.15g\n", dmod, cos(dmod));
 
 
 
