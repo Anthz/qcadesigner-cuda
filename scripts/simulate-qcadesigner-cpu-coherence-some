@@ -3,12 +3,13 @@ circuit_ls+="CircuitNAND_8000.qca "
 circuit_ls+="CircuitNOR_8000.qca "
 circuit_ls+="CircuitXNOR_8000.qca "
 circuit_ls+="CircuitXOR_8000.qca "
+now=$(date +%s)
 echo These files will be used for testing:
 echo $circuit_ls
 for i in $circuit_ls
 do
 	echo Simulating $i...
 	../bin/qcadesigner-cpu -f ../data/circuits/$i -o ../scripts/coherence_options.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/coherence/$i-$now > ../data/sim_outputs/coherence/$i-$now-cpu.log
-	echo $i - Done.
+	echo $i-$now Done. 
 done
 echo All done.
