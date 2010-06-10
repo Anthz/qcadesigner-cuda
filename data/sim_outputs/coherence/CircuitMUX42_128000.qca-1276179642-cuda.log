@@ -2,8 +2,8 @@ Running 1 simulations with a radial tolerance of 0.001000
 Running simulation 0
 About to start the coherence vector simulation with 700000 samples
 3000 samples will be recorded for graphing.
-Coherence vector simulation: 0.0Simulation found 5 inputs 1 outputs
-It took 2 iterations to converge the initial steady state polarization
+Coherence vector simulation: 0.0Simulation found 6 inputs 1 outputs
+It took 10 iterations to converge the initial steady state polarization
 Percentage: 0
 Percentage: 0.0142857
 Percentage: 0.0285714
@@ -74,6 +74,6 @@ Percentage: 0.942857
 Percentage: 0.957143
 Percentage: 0.971429
 Percentage: 0.985714
-Total simulation time: 15038 s
+Total simulation time: 87 s
 
-Simulation Time: 15044 seconds
+Simulation Time: 87 seconds
