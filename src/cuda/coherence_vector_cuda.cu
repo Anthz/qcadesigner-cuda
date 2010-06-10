@@ -130,8 +130,8 @@ double arg , dmod;
 	arg = ((double) (1 << total_number_of_inputs)) * (double)sample_number *  optimization_options_four_pi_over_number_samples - PI * (double)d_clock[th_index] * 0.5;
 	
 	
-	for (dmod = arg; dmod > 0;)
-		dmod = dmod - 2*PI;
+	for (dmod = arg; dmod > 0; dmod = dmod - 2*PI);
+		
 	dmod = dmod + 2*PI;
 	if ((dmod < (PI/2+0.00001*PI) && dmod > (PI/2-0.00001*PI)) || (dmod < (3*PI/2+0.00001*PI) && dmod > (3*PI/2-0.00001*PI))) 
 			cuPrintf("Cosine function (hazardous arg): arg: %.15g, cos: %.15g\n", arg, cos(arg));
