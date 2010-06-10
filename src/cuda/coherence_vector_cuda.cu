@@ -11,7 +11,7 @@ TODO:
 
 #include <cutil_inline.h>
 #include <cuda.h>
-//#include "cuPrintf.cu"
+#include "cuPrintf.cu"
 
 extern "C"{
 #include "design.h"
@@ -107,6 +107,7 @@ __global__ void kernelIterationParallel
    double lambda_z, next_lambda_z;
 	double k1, k2, k3, k4;
 	double mag;
+double arg;
 
 	th_index =  blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
 
@@ -122,6 +123,16 @@ __global__ void kernelIterationParallel
 	 			PEk = PEk + (d_polarization[nb_index] * d_Ek[th_index*neighbours_number+i]) ;
 			}
       }
+
+
+
+
+	arg = ((double) (1 << total_number_of_inputs)) * (double)sample_number *  optimization_options_four_pi_over_number_samples - PI * (double)d_clock[th_index] * 0.5;
+		
+	if ((fmod (arg, 2*PI) < (PI/2+0.00001*PI)  && fmod(arg,2*PI) > (PI/2-0.00001*PI)) || (fmod(arg, 2*PI) < (3*PI/2+0.00001*PI) && fmod (arg, 2*PI) > (3*PI/2-0.00001*PI))) 
+			cuPrintf("Cosine function (hazardous arg): arg: %g, cos: %g\n", arg, cos(arg));
+
+
 
 		// Generate clock
 		clock_value = optimization_options_clock_prefactor * cos(((double) (1 << total_number_of_inputs)) * (double)sample_number *  optimization_options_four_pi_over_number_samples - PI * (double)d_clock[th_index] * 0.5) + clock_total_shift;
@@ -184,7 +195,7 @@ __global__ void kernelIterationParallel
 
 		// LAMBDA_Z------------------------------------------------------------------------
 		k1 = options_time_step * (PEk * tanh (optimization_options_hbar_over_kBT * mag) + mag * (2.0 * clock_value * options_relaxation * lambda_y - hbar * lambda_z)) / (options_relaxation * hbar * mag);
-
+		if  (optimization_options_hbar_over_kBT*mag)
 		if (RUNGE_KUTTA == options_algorithm)
 		{
 		   k2 = options_time_step * (PEk * tanh (optimization_options_hbar_over_kBT * mag) + mag * (2.0 * clock_value * options_relaxation * lambda_y - hbar * (lambda_z + k1/2))) / (options_relaxation * hbar * mag);
@@ -406,12 +417,22 @@ void launch_coherence_vector_simulation
 		cutilSafeCall (cudaMemcpy (d_polarization, h_polarization, cells_number*sizeof(double), cudaMemcpyHostToDevice));
 
 		// Launch Kernel
+
       //printf ("Iteration# %d...", j); 
-      kernelIterationParallel<<< grid, threads >>> (d_polarization, d_lambda_x, d_lambda_y, d_lambda_z, d_Ek, d_clock, d_neighbours, cells_number, max_neighbours_number, j, design->bus_layout->inputs->icUsed);
+	cudaPrintfInit();
+
+	kernelIterationParallel<<< grid, threads >>> (d_polarization, d_lambda_x, d_lambda_y, d_lambda_z, d_Ek, d_clock, d_neighbours, cells_number, max_neighbours_number, j, design->bus_layout->inputs->icUsed);
 
       // Wait Device
       cudaThreadSynchronize ();
 		
+
+cudaPrintfDisplay(stdout, true);
+
+ 
+
+cudaPrintfEnd();
+
 		//printf("Complete!\n");
 
 		/*char str[256] = "cuda/log_coherence/";
