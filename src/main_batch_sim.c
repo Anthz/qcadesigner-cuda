@@ -167,14 +167,15 @@ int main (int argc, char **argv)
 				sim_output.sim_data = sim_data;
 				sim_output.bus_layout = NULL;
 
-				lTime = time(NULL)/60;
-				sprintf(sTime, "-%ld\0", lTime); 
 				strcpy(pszFileSaveBin, pszFileSaveOut);
 
 				FILE *file_out;
-				strcat(pszFileSaveOut, "-out\0");
+				#ifdef CUDA
+				strcat(pszFileSaveOut, "-cuda.out\0");
+				#else
+				strcat(pszFileSaveOut, "-cpu.out\0");
+				#endif
 				//strcat(pszFileSaveOut, pszFName);
-				strcat(pszFileSaveOut, sTime);
 				file_out = fopen(pszFileSaveOut, "w");
 				if (file_out == NULL)
 				{
@@ -185,9 +186,13 @@ int main (int argc, char **argv)
 				fclose(file_out);
 				
 				FILE *file_bin;
-				strcat(pszFileSaveBin, "-bin\0");
+				#ifdef CUDA
+				strcat(pszFileSaveBin, "-cuda.bin\0");
+				#else
+				strcat(pszFileSaveBin, "-cpu.bin\0");
+				#endif
+
 				//strcat(pszFileSaveBin, pszFName);
-				strcat(pszFileSaveBin, sTime);
 				file_bin = fopen(pszFileSaveBin, "w");
 				if (file_out == NULL)
 				{
