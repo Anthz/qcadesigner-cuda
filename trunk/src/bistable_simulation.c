@@ -25,7 +25,6 @@
 //                                                      //
 //////////////////////////////////////////////////////////
 
-//#define CUDA //uncomment this to use CUDA technology
 
 #include <stdlib.h>
 #include <math.h>
@@ -67,7 +66,7 @@ static inline void bistable_refresh_all_Ek (int number_of_cell_layers, int *numb
 //-------------------------------------------------------------------//
 simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, bistable_OP *options, VectorTable *pvt)
   {
-  int i, j, k,counter, l, total_cells = 0 ;
+  int i, j, k, l, total_cells = 0 ;
   int icLayers, icCellsInLayer;
   time_t start_time, end_time;
   simulation_data *sim_data = NULL ;
@@ -112,13 +111,6 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   double *h_polarization, *h_Ek, *h_clock_data, **output_traces;
   int *h_neighbours, max_neighbours, *h_cell_clock;
   int *input_indexes, input_number, *output_indexes, output_number;
-  char * input_values;
-  int ambros, input_values_number;
-  input_values_number = -1;
-  counter = 0;
-  //initialize pointer to matrix structures
-  //float *h_polarization, *h_cell_clock, **h_Ek;
-  //int **h_neighbours;
 #endif //CUDA
   
 
@@ -174,9 +166,12 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   // -- Initialize the simualtion data structure -- //
   sim_data = g_malloc0 (sizeof(simulation_data));
   sim_data->number_of_traces = design->bus_layout->inputs->icUsed + design->bus_layout->outputs->icUsed;
-  sim_data->number_samples = options->number_of_samples;
+  //sim_data->number_samples = options->number_of_samples;
+  sim_data->number_samples = options->number_of_samples != -1 ? options->number_of_samples : 2000*(1<<design->bus_layout->inputs->icUsed); //modified by MIGLIE
   sim_data->trace = g_malloc0 (sizeof (struct TRACEDATA) * sim_data->number_of_traces);
 
+  
+  
   // create and initialize the inputs into the sim data structure //
   for (i = 0; i < design->bus_layout->inputs->icUsed; i++)
     {
@@ -226,7 +221,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   
   
 
-#ifndef CUDA
+
  
   // randomize the cells in the design so as to minimize any numerical problems associated //
   // with having cells simulated in some predefined order. //
@@ -247,7 +242,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   // -- get and print the total initialization time -- //
   if((end_time = time (NULL)) < 0)
      fprintf(stderr, "Could not get end time\n");
-#endif //CUDA
+
 
 	 
 /*  command_history_message("Total initialization time: %g s\n", (double)(end_time - start_time));*/
@@ -411,10 +406,11 @@ fprintf(stderr,"\n...eseguita!\n");
     // -- iterate until the entire design has stabalized -- //
     iteration = 0;
     stable = FALSE;
+	
 	while (!stable && iteration < max_iterations_per_sample)
 	{
 		iteration++;
-		counter++;
+		
 		// -- assume that the circuit is stable -- //
 		stable = TRUE;
 
@@ -482,7 +478,7 @@ fprintf(stderr,"\n...eseguita!\n");
     if(TRUE == STOP_SIMULATION)
       j = sim_data_number_samples ;
     }//for number of samples
-printf("\ncounter: %d",counter);
+
 	
 #endif //CUDA
 

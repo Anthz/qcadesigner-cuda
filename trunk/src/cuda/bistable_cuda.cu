@@ -16,7 +16,7 @@
 #include <cuda.h>
 #include "cuPrintf.cu"
 #include <time.h>
-
+#include "../coloring/coloring.h"
 #include <math.h>
 
 #define BLOCK_DIM 256
@@ -67,13 +67,13 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	__syncthreads();
 	
 	input_idx = find(thr_idx, shm_array, d_input_number);
-        cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
+        //cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
 	if (input_idx >= 0)
 	{
 	  tmp = -1 * sin(((double)( 1 << input_idx)) * (double)sample * 4.0 * PI /(double) d_number_of_samples);
-          cuPrintf("decision: %e\n",tmp);
+          //cuPrintf("decision: %e\n",tmp);
 	  d_polarization[thr_idx]=(tmp > 0) ? 1: -1;
-          cuPrintf("input: %e\n",d_polarization[thr_idx]);
+          //cuPrintf("input: %e\n",d_polarization[thr_idx]);
 	}
 }
 
@@ -88,7 +88,9 @@ __global__ void bistable_kernel (
 		int *d_output_indexes,
 		int *d_stability,
 		double tolerance,
-		double *d_output_data
+		double *d_output_data,
+		int *d_cells_colors,
+		int color
 		)
 {
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
@@ -113,7 +115,7 @@ __global__ void bistable_kernel (
 	__syncthreads();
 
 	// Only useful threads must work
-	if (thr_idx < d_cells_number)
+	if (thr_idx < d_cells_number && color == d_cells_colors[thr_idx])
 	{		
 		//cuPrintf("\nd_output_number = %d,\t d_output_indexes[0]=%d\n",d_output_number, d_output_indexes[0] );	
 		  
@@ -130,7 +132,6 @@ __global__ void bistable_kernel (
 				{
 					kink = d_Ek[thr_idx + q*d_cells_number];
 					polarization_math += kink * d_polarization[nb_idx];
-					
 				}
 			}
 
@@ -205,8 +206,8 @@ void launch_bistable_simulation(
 	// Variables
 	double *d_next_polarization, *d_polarization, *d_Ek;
 	int *d_neighbours, *d_cell_clock, *d_input_indexes, *d_output_indexes;
-	int i,j,stable;
-	int *d_stability, *h_stability;
+	int i,j,stable,color, num_colors;
+	int *d_stability, *h_stability, *h_cells_colors, *d_cells_colors;
 	int count;
 	int k;
 	double *d_output_data;
@@ -220,7 +221,9 @@ void launch_bistable_simulation(
 
 	h_output_data = (double *) malloc(sizeof(double) * output_number);
 	h_stability = (int *)malloc(sizeof(int)*cells_number);
-	for (i=0;i<cells_number;i++) h_stability[i] = 1;
+	
+	//coloring
+	color_graph(h_neighbours, cells_number, neighbours_number, &h_cells_colors, &num_colors);
 
 	// Set GPU Parameters
 
@@ -247,6 +250,8 @@ void launch_bistable_simulation(
 	cutilSafeCall (cudaMalloc ((void**)&d_input_indexes, sizeof(int)*input_number));
 	cutilSafeCall (cudaMalloc ((void**)&d_output_indexes, sizeof(int)*output_number));
 	cutilSafeCall (cudaMalloc ((void**)&d_stability, sizeof(int)*cells_number));
+	cutilSafeCall (cudaMalloc ((void**)&d_cells_colors, sizeof(int)*cells_number));
+	
 
 	// Set Memory
 
@@ -257,7 +262,8 @@ void launch_bistable_simulation(
 	cutilSafeCall (cudaMemcpy (d_neighbours, h_neighbours, sizeof(int) * neighbours_number * cells_number, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpy (d_input_indexes, input_indexes, sizeof(int)*input_number, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpy (d_output_indexes, output_indexes, sizeof(int)*output_number, cudaMemcpyHostToDevice));
-	cutilSafeCall (cudaMemcpy (d_stability, h_stability, sizeof(int)*cells_number, cudaMemcpyHostToDevice));
+	cutilSafeCall (cudaMemcpy (d_cells_colors, h_cells_colors, sizeof(int)*cells_number, cudaMemcpyHostToDevice));
+	
 
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_prefactor", &(clock_prefactor), sizeof(double), 0, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_shift", &(clock_shift), sizeof(double), 0, cudaMemcpyHostToDevice));
@@ -291,13 +297,16 @@ void launch_bistable_simulation(
 		for (i = 0; i < max_iterations && !stable; i++)
 		{
 			// Launch Kernel
-			bistable_kernel<<< grid, threads >>> (d_polarization, d_next_polarization, d_cell_clock, d_Ek, d_neighbours, j, d_output_indexes, d_stability, tolerance, d_output_data);
+			for(color = 1; color <= num_colors; color++)
+			{
+				bistable_kernel<<< grid, threads >>> (d_polarization, d_next_polarization, d_cell_clock, d_Ek, d_neighbours, 
+					j, d_output_indexes, d_stability, tolerance, d_output_data, d_cells_colors, color);
+			}
+			//	for (count = 0; count<cells_number; count++) printf("%d",h_stability[count]);
+			//	printf("\n");
 
-		//	for (count = 0; count<cells_number; count++) printf("%d",h_stability[count]);
-		//	printf("\n");
-
-			// Wait Device
-			cudaThreadSynchronize ();
+				// Wait Device
+				cudaThreadSynchronize ();
 			
 			cutilSafeCall (cudaMemcpy (h_stability, d_stability, cells_number*sizeof(int), cudaMemcpyDeviceToHost));
 
