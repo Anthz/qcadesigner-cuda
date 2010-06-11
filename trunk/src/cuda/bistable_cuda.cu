@@ -10,7 +10,7 @@
 	con i nuovi valori di polarizzazione degli input (ancora DA MODIFICARE!)
 					*/
 /* ========================================================================== */
-#define CUPRINTF_B
+//#define CUPRINTF_B
 
 #include <cutil_inline.h>
 #include <cuda.h>
@@ -64,7 +64,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	int input_idx;
     double tmp;
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;
-	if (thr_idx == 0) cuPrintf("ESISTO in update inputs!\n");
+	
 	if (threadIdx.x < d_input_number)
 	{
 		shm_array[threadIdx.x] = d_input_indexes[threadIdx.x];
@@ -124,8 +124,6 @@ __global__ void bistable_kernel (
 	int *shm_output_indexes = shm_array;
 	double nb_pol;
 	double kink;
-  
-	if (thr_idx == 0) cuPrintf("ESISTO in kernel!\n");
 	
 	if (threadIdx.x < d_output_number)
 	{
