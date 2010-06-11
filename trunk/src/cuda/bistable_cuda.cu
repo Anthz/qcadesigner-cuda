@@ -86,7 +86,7 @@ __global__ void bistable_kernel (
 	extern	__shared__ int shm_array[];
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
 	int nb_idx;   // Neighbour index
-	int q;
+	int q,j;
 	int current_cell_clock;   //could be 0, 1, 2 or 3
 	double new_polarization;
 	double polarization_math;
@@ -149,13 +149,17 @@ __global__ void bistable_kernel (
 			d_polarization[thr_idx] = new_polarization; //There is no conflicts because there is no read from other thread on this (they have other colors)
 
 			// If any cells polarization has changed beyond this threshold
-			// then the entire circuit is assumed to have not converged.      
-
-			output_idx = find(thr_idx, shm_output_indexes, d_output_number);
-
-			if (output_idx >= 0)
+			// then the entire circuit is assumed to have not converged.
+			
+			q=0;
+			j=d_output_number-1;
+			while (q <= j)
 			{
-				d_output_data[output_idx] = new_polarization;
+				output_idx = (q + j) / 2;
+				if (shm_output_indexes[output_idx] == thr_idx)
+					d_output_data[output_idx] = new_polarization;
+				else if (shm_output_indexes[output_idx] > thr_idx) j = output_idx - 1;
+				else q = output_idx + 1;
 			}
 		}
 		/*else
