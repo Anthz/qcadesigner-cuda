@@ -64,7 +64,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	int input_idx;
     double tmp;
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;
-
+	if (thr_idx == 0) cuPrintf("ESISTO in update inputs!\n");
 	if (threadIdx.x < d_input_number)
 	{
 		shm_array[threadIdx.x] = d_input_indexes[threadIdx.x];
@@ -73,7 +73,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	__syncthreads();
 	
 	input_idx = find(thr_idx, shm_array, d_input_number);
-    cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
+    //cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
 	if (input_idx >= 0)
 	{
 		tmp = ((double)( 1 << input_idx)) * (double)sample * 4.0 * PI /(double) d_number_of_samples;
@@ -81,10 +81,10 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 		tmp = -1 * sin(tmp);
 		//cuPrintf("tmp: %e, ",tmp);
 		d_polarization[thr_idx]=(tmp > 0) ? 1: -1;
-		cuPrintf("Ciao sono l'input %d: %e. Input index:",thr_idx,d_polarization[thr_idx]);
-		int i;
-		for (i=0;i<d_input_number;i++) cuPrintf("%d ", shm_array[i]);
-		cuPrintf("\n");
+		//cuPrintf("Ciao sono l'input %d: %e. Input index:",thr_idx,d_polarization[thr_idx]);
+		//int i;
+		//for (i=0;i<d_input_number;i++) cuPrintf("%d ", shm_array[i]);
+		//cuPrintf("\n");
 		/*double sin0=sin(0.0);
 		double sinf0=__sinf(0.0);
 		double cospi2=cos(PI/2);
@@ -125,6 +125,8 @@ __global__ void bistable_kernel (
 	double nb_pol;
 	double kink;
   
+	if (thr_idx == 0) cuPrintf("ESISTO in kernel!\n");
+	
 	if (threadIdx.x < d_output_number)
 	{
 		shm_output_indexes[threadIdx.x] = d_output_indexes[threadIdx.x];
@@ -290,6 +292,9 @@ void launch_bistable_simulation(
 	cutilSafeCall (cudaMemcpy (d_output_indexes, output_indexes, sizeof(int)*output_number, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpy (d_cells_colors, h_cells_colors, sizeof(int)*cells_number, cudaMemcpyHostToDevice));
 	
+	printf("\nIo host mando questi al device:\n");
+	for (i=0;i<input_number;i++) printf("%d ", input_indexes[i]);
+	printf("\n\n");
 
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_prefactor", &(clock_prefactor), sizeof(double), 0, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_shift", &(clock_shift), sizeof(double), 0, cudaMemcpyHostToDevice));
