@@ -313,13 +313,12 @@ void launch_bistable_simulation(
 		// In each sample...
 		for (i = 0; i < 10/*max_iterations && !stable*/; i++)
 		{
-		
-			cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
-			for (k=0;k<cells_number;k++) printf("%d\t%e\n",k,h_polarization[k]);
 				
 			// Launch Kernel
 			for(color = 1; color <= num_colors; color++)
 			{
+				cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
+				for (k=0;k<cells_number;k++) printf("i:%d, col:%d\t%e\n",k,color,h_polarization[k]);
 				bistable_kernel<<< grid, threads >>> (d_polarization, d_next_polarization, d_cell_clock, d_Ek, d_neighbours, 
 					j, d_output_indexes, d_stability, tolerance, d_output_data, d_cells_colors, color);
 			}
