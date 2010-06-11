@@ -10,7 +10,7 @@
 	con i nuovi valori di polarizzazione degli input (ancora DA MODIFICARE!)
 					*/
 /* ========================================================================== */
-//#define CUPRINTF_B
+#define CUPRINTF_B
 
 #include <cutil_inline.h>
 #include <cuda.h>
@@ -71,12 +71,13 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	}
 	__syncthreads();
 	
-	//input_idx = find(thr_idx, shm_array, d_input_number);
-	input_idx = find(thr_idx, d_input_indexes, d_input_number);
+	input_idx = find(thr_idx, shm_array, d_input_number);
+	//input_idx = find(thr_idx, d_input_indexes, d_input_number);
 		
     //cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
 	if (input_idx >= 0)
 	{
+		cuPrintf("[%d %d %d %d %d %d]\n",shm_array[0],shm_array[1],shm_array[2],shm_array[3],shm_array[4], shm_array[5]);
 		tmp = ((double)( 1 << input_idx)) * (double)sample * 4.0 * PI /(double) d_number_of_samples;
 		//cuPrintf("tmp: %e, ",tmp);
 		tmp = -1 * sin(tmp);
