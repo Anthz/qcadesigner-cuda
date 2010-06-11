@@ -356,7 +356,7 @@ void launch_bistable_simulation(
 
 		new_percentage = j*100/number_of_samples;
 		if( new_percentage != old_percentage) fprintf(stderr,"\r#Simulating: %d%%\n", new_percentage, i);
-		old_percentage = new_pecentage;
+		old_percentage = new_percentage;
 		
 
 	}
