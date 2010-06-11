@@ -8,10 +8,10 @@ do
 	../bin/qcadesigner-cpu -f ../data/circuits/$i -o ../scripts/coherence_options.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/coherence/$i-$now > ../data/sim_outputs/coherence/$i-$now-cpu.log
 	echo $i - Done.
 	rm ../data/gnuplot/circuit
-	mv ../data/sim_outputs/coherence/$i-$now-cpu.out ../data/gnuplot/circuit
+	mv -T ../data/sim_outputs/coherence/$i-$now-cpu.out ../data/gnuplot/circuit
 	chmod ugoa=+rwx ../data/gnuplot/circuit
 	gnuplot ../data/gnuplot/script_plot.gpi
-	mv ../data/gnuplot/circuit.png ../data/gnuplot/$i-$now-cpu.png
+	mv -T ../data/gnuplot/circuit.png ../data/gnuplot/$i-$now-cpu.png
 	for mail in $@
 	do
 		cat ../data/sim_outputs/coherence/$i-$now-cpu.log | mutt -a ../data/gnuplot/$i-$now-cpu.png -s "$i-$now-cpu - Simulation done." $mail
