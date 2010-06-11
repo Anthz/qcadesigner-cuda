@@ -9,6 +9,7 @@ do
 	echo $i - Done.
 	rm ../data/gnuplot/circuit
 	mv ../data/sim_outputs/coherence/$i-$now-cpu.out ../data/gnuplot/circuit
+	chmod ugoa=+rwx ../data/gnuplot/circuit
 	gnuplot ../data/gnuplot/script_plot.gpi
 	mv ../data/gnuplot/circuit.png ../data/gnuplot/$i-$now-cpu.png
 	for mail in $@
