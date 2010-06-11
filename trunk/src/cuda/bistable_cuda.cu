@@ -80,7 +80,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 		//cuPrintf("[%d %d %d %d %d %d]\n",shm_array[0],shm_array[1],shm_array[2],shm_array[3],shm_array[4], shm_array[5]);
 		tmp = ((double)( 1 << input_idx)) * (double)sample * 4.0 * PI /(double) d_number_of_samples;
 		//cuPrintf("tmp: %e, ",tmp);
-		tmp = -1 * sin(tmp);
+		tmp = -1 * __sinf(tmp);
 		//cuPrintf("tmp: %e, ",tmp);
 		d_polarization[thr_idx]=(tmp > 0) ? 1: -1;
 	}
@@ -148,7 +148,7 @@ __global__ void bistable_kernel (
 
 			//math = math / 2 * gamma
 			current_cell_clock  = d_cell_clock[thr_idx];
-			clock_value = d_clock_prefactor * cos (((double)(1 << d_input_number)) * (double)sample * 4.0 * PI / (double)d_number_of_samples - PI * current_cell_clock / 2) + d_clock_shift;
+			clock_value = d_clock_prefactor * __cosf (((double)(1 << d_input_number)) * (double)sample * 4.0 * PI / (double)d_number_of_samples - PI * current_cell_clock / 2) + d_clock_shift;
 			clock_value = CLAMP(clock_value,d_clock_low,d_clock_high);
 			polarization_math /= (2.0 * clock_value);
 			 
@@ -361,8 +361,11 @@ void launch_bistable_simulation(
 		}
 
 		new_percentage = j*100/number_of_samples;
-		if( new_percentage != old_percentage) fprintf(stderr,"\r#Simulating: %d%%");
-		fflush(stderr);
+		if( new_percentage != old_percentage) 
+		{
+			fprintf(stderr,"\r#Simulating: %d%%",new_percentage);
+			fflush(stderr);
+		}
 		old_percentage = new_percentage;
 	}
 	fprintf(stderr,"\r#Simulating: 100%%!\n");
