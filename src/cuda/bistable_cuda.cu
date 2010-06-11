@@ -14,7 +14,7 @@
 
 #include <cutil_inline.h>
 #include <cuda.h>
-#include "cuPrintf.cu"
+//#include "cuPrintf.cu"
 #include <time.h>
 #include "../coloring/coloring.h"
 #include <math.h>
