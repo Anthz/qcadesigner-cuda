@@ -47,7 +47,6 @@ extern	__shared__ int shm_array[];
 
 __device__ inline int find(int x, int *array, int length)
 {
-	cuPrintf("%d: C'è ancora? [%d]? sto per cercare..\n", x,array[4]);
 	int l = 0, r = length - 1, mid;
 	while (l <= r)
 	{
@@ -71,8 +70,8 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	{
 		shm_array[threadIdx.x] = d_input_indexes[threadIdx.x];
 	}
-	
 	__syncthreads();
+	
 	cuPrintf("%d: ECCOLO: %d\n",thr_idx, shm_array[4]);
 	input_idx = find(thr_idx, shm_array, d_input_number);
 	cuPrintf("%d: RIECCOLO: %d\n",thr_idx, shm_array[4]);
