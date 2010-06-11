@@ -129,14 +129,14 @@ __global__ void bistable_kernel (
 	__syncthreads();
 
 	// Only useful threads must work
-	if (thr_idx < d_cells_number && color == d_cells_colors[thr_idx])
+	if (thr_idx < d_cells_number)
 	{		
 		//cuPrintf("GO! my_color:%d\n",color);
 		//cuPrintf("\nd_output_number = %d,\t d_output_indexes[0]=%d\n",d_output_number, d_output_indexes[0] );	
 		  
 		//cuPrintf("%f ", d_polarization[thr_idx]);	
 
-		if (!(d_neighbours[thr_idx] == -1)) // if thr_idx corresponding cell type is not FIXED or INPUT
+		if (!(d_neighbours[thr_idx] == -1) && color == d_cells_colors[thr_idx]) // if thr_idx corresponding cell type is not FIXED or INPUT and is my turn
 		{
 			nb_idx = 0;
 			polarization_math = 0;
@@ -319,14 +319,21 @@ void launch_bistable_simulation(
 			{
 				cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
 				for (k=0;k<cells_number;k++) printf("i:%d, col:%d, cell:%d\t%e\n",i,color,k,h_polarization[k]);
+				
 				bistable_kernel<<< grid, threads >>> (d_polarization, d_next_polarization, d_cell_clock, d_Ek, d_neighbours, 
 					j, d_output_indexes, d_stability, tolerance, d_output_data, d_cells_colors, color);
+					
+				// Wait Device
+				cudaThreadSynchronize ();
+				
+				// Set Memory for the next iteration
+				//			cutilSafeCall (cudaMemcpy (d_polarization, d_next_polarization, cells_number * sizeof(double), cudaMemcpyDeviceToDevice));
+				swap_arrays(&d_polarization,&d_next_polarization);
 			}
 			//	for (count = 0; count<cells_number; count++) printf("%d",h_stability[count]);
 			//	printf("\n");
 
-				// Wait Device
-				cudaThreadSynchronize ();
+			
 			
 			cutilSafeCall (cudaMemcpy (h_stability, d_stability, cells_number*sizeof(int), cudaMemcpyDeviceToHost));
 
@@ -342,9 +349,7 @@ void launch_bistable_simulation(
 			printf("\n");*/
 
 
-			// Set Memory for the next iteration
-//			cutilSafeCall (cudaMemcpy (d_polarization, d_next_polarization, cells_number * sizeof(double), cudaMemcpyDeviceToDevice));
-			swap_arrays(&d_polarization,&d_next_polarization);
+			
 		}
 
 		// Get desidered iteration results from GPU
