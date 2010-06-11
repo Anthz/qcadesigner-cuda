@@ -10,11 +10,15 @@
 	con i nuovi valori di polarizzazione degli input (ancora DA MODIFICARE!)
 					*/
 /* ========================================================================== */
-
+#define CUPRINTF_B
 
 #include <cutil_inline.h>
 #include <cuda.h>
-//#include "cuPrintf.cu"
+
+#ifdef CUPRINTF_B
+#include "cuPrintf.cu"
+#endif //CUPRINTF_B
+
 #include <time.h>
 extern "C"{
 #include "../coloring/coloring.h"
@@ -73,9 +77,15 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	if (input_idx >= 0)
 	{
 	  tmp = -1 * sin(((double)( 1 << input_idx)) * (double)sample * 4.0 * PI /(double) d_number_of_samples);
-          //cuPrintf("decision: %e\n",tmp);
+          cuPrintf("tmp: %e, ",tmp);
 	  d_polarization[thr_idx]=(tmp > 0) ? 1: -1;
-          //cuPrintf("input: %e\n",d_polarization[thr_idx]);
+	double sin0=sin(0.0);
+	double sinf0=__sinf(0.0);
+	double cospi2=cos(PI/2);
+	double cosfpi2=cosf(PI/2);
+	float flsin0=sin(0.0);
+	float flsinf0=__sinf(0.0);
+          cuPrintf("input: %e, sin(0)=%e, __sinf(0)=%e, cos(pi/2)=%e, __cosf(pi/2)=%e, float sin(0)=%e, float __sinf(0)=%e\n",d_polarization[thr_idx],sin0,sinf0,cospi2,cosfpi2,flsin0,flsinf0);
 	}
 }
 
@@ -119,6 +129,7 @@ __global__ void bistable_kernel (
 	// Only useful threads must work
 	if (thr_idx < d_cells_number && color == d_cells_colors[thr_idx])
 	{		
+		cuPrintf("GO! my_color:%d\n",color);
 		//cuPrintf("\nd_output_number = %d,\t d_output_indexes[0]=%d\n",d_output_number, d_output_indexes[0] );	
 		  
 		//cuPrintf("%f ", d_polarization[thr_idx]);	
@@ -227,7 +238,7 @@ void launch_bistable_simulation(
 	//coloring
 	color_graph(h_neighbours, cells_number, neighbours_number, &h_cells_colors, &num_colors);
 	//debug
-	printf("Number of colors:%d\nColors:\n", num_colors);
+	printf("Number of samples:%d\nNumber of colors:%d\nColors:\n",number_of_samples, num_colors);
 	for (i=0;i<cells_number;i++) printf("%d ",h_cells_colors[i]);
 	printf("\n");
 	
@@ -239,7 +250,10 @@ void launch_bistable_simulation(
 
 	// Set Devices
 	//cudaSetDevice (cutGetMaxGflopsDeviceId());
-//	cudaPrintfInit ();
+
+#ifdef CUPRINTF_B
+	cudaPrintfInit ();
+#endif
 
 	//starting timer
 	timespec startTime, endTime;
@@ -348,9 +362,11 @@ void launch_bistable_simulation(
 		
 
 	}
-//	cudaPrintfDisplay(stdout, true);
-//	cudaPrintfEnd();
 
+#ifdef CUPRINTF_B
+	cudaPrintfDisplay(stdout, true);
+	cudaPrintfEnd();
+#endif //CUPRINTF_B
 
 
 
@@ -384,3 +400,4 @@ void launch_bistable_simulation(
 
 	fprintf(stdout, "\tProcessing time2: %f (ns)\n", (double)temp.tv_nsec);
 }
+#undef CUPRINTF_B
