@@ -78,7 +78,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	if (input_idx >= 0)
 	{
 		//cuPrintf("[%d %d %d %d %d %d]\n",shm_array[0],shm_array[1],shm_array[2],shm_array[3],shm_array[4], shm_array[5]);
-		tmp = ((double)( 1 << input_idx)) * (double)sample * 4.0 * PI /(double) d_number_of_samples;
+		tmp = ((double)( 1 << input_idx)) * __fdividef((double)sample * 4.0 * PI ,(double) d_number_of_samples);
 		//cuPrintf("tmp: %e, ",tmp);
 		tmp = -1 * __sinf(tmp);
 		//cuPrintf("tmp: %e, ",tmp);
@@ -116,6 +116,7 @@ __global__ void bistable_kernel (
 	int *shm_output_indexes = shm_array;
 	double nb_pol;
 	double kink;
+	int total_iterations = 0;
 	
 	if (threadIdx.x < d_output_number)
 	{
@@ -148,9 +149,9 @@ __global__ void bistable_kernel (
 
 			//math = math / 2 * gamma
 			current_cell_clock  = d_cell_clock[thr_idx];
-			clock_value = d_clock_prefactor * __cosf (((double)(1 << d_input_number)) * (double)sample * 4.0 * PI / (double)d_number_of_samples - PI * current_cell_clock / 2) + d_clock_shift;
+			clock_value = d_clock_prefactor * __cosf (((double)(1 << d_input_number)) * __fdividef((double)sample * 4.0 * PI , (double)d_number_of_samples) - __fdividef(PI * current_cell_clock , 2)) + d_clock_shift;
 			clock_value = CLAMP(clock_value,d_clock_low,d_clock_high);
-			polarization_math /= (2.0 * clock_value);
+			polarization_math = __fdividef(polarization_math,(2.0 * clock_value));
 			 
 			// -- calculate the new cell polarization -- //
 			// if math < 0.05 then math/sqrt(1+math^2) ~= math with error <= 4e-5
@@ -159,7 +160,7 @@ __global__ void bistable_kernel (
 			(polarization_math        >  1000.0)   ?  1                 :
 			(polarization_math        < -1000.0)   ? -1                 :
 			(fabs (polarization_math) <     0.001) ?  polarization_math :
-			polarization_math / sqrt (1 + polarization_math * polarization_math) ;
+			__fdividef(polarization_math , sqrt (1 + polarization_math * polarization_math)) ;
 			
 			stable = (fabs (new_polarization - d_polarization[thr_idx]) <= tolerance);
 			d_stability[thr_idx] = stable;
@@ -239,10 +240,8 @@ void launch_bistable_simulation(
 	
 	//coloring
 	color_graph(h_neighbours, cells_number, neighbours_number, &h_cells_colors, &num_colors);
-	//debug
-	/*printf("Number of samples:%d\nNumber of colors:%d\nColors:\n",number_of_samples, num_colors);
-	for (i=0;i<cells_number;i++) printf("%d ",h_cells_colors[i]);
-	printf("\n");*/
+	
+	printf("Number of samples:%d\nNumber of colors:%d\n",number_of_samples, num_colors);
 	
 	// Set GPU Parameters
 	
@@ -350,7 +349,9 @@ void launch_bistable_simulation(
 
 			
 		}
-
+		
+		total_iterations += i;
+		
 		// Get desidered iteration results from GPU
 		cutilSafeCall (cudaMemcpy (h_output_data, d_output_data, output_number * sizeof(double), cudaMemcpyDeviceToHost));
 
@@ -368,6 +369,9 @@ void launch_bistable_simulation(
 		}
 		old_percentage = new_percentage;
 	}
+	
+	printf("Iterations per sample: %f\n", (double)total_iterations/number_of_samples);
+	
 	fprintf(stderr,"\r#Simulating: 100%%!\n");
 #ifdef CUPRINTF_B
 	cudaPrintfDisplay(stdout, true);
