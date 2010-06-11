@@ -78,7 +78,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
     //cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
 	if (input_idx >= 0)
 	{
-		cuPrintf("Inputs[%d %d %d %d %d %d]\n",shm_array[0],shm_array[1],shm_array[2],shm_array[3],shm_array[4]);
+		//cuPrintf("Inputs[%d %d %d %d %d %d]\n",shm_array[0],shm_array[1],shm_array[2],shm_array[3],shm_array[4]);
 		tmp = ((double)( 1 << input_idx)) * __fdividef((double)sample * 4.0 * PI ,(double) d_number_of_samples);
 		//cuPrintf("tmp: %e, ",tmp);
 		tmp = -1 * __sinf(tmp);
@@ -129,9 +129,9 @@ __global__ void bistable_kernel (
 		shm_polarizations[threadIdx.x] = d_polarization[thr_idx];
 		__syncthreads();
 		
-		if(threadIdx.x == 0)
+		if(threadIdx.x == 0 && color == 2 && sample == 100)
 		{
-			cuPrintf("Polarizations[0:%d 50:%d 255:%d ...]\n", shm_polarizations[0], shm_polarizations[50], shm_polarizations[255]);
+			cuPrintf("Polarizations[0:%e 50:%e 255:%e ...]\n", shm_polarizations[0], shm_polarizations[50], shm_polarizations[255]);
 		}
 		
 		//cuPrintf("GO! my_color:%d\n",color);
