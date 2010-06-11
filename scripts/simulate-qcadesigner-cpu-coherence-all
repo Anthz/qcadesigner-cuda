@@ -7,5 +7,7 @@ do
 	echo Simulating $i...
 	../bin/qcadesigner-cpu -f ../data/circuits/$i -o ../scripts/coherence_options.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/coherence/$i-$now > ../data/sim_outputs/coherence/$i-$now-cpu.log
 	echo $i - Done.
+	mail -s "$i-$now-cpu in $circuit_ls - Simulation done." $1 < ../data/sim_outputs/coherence/$i-$now-cpu.log
+	mail -s "$i-$now-cpu in $circuit_ls - Simulation done." $2 < ../data/sim_outputs/coherence/$i-$now-cpu.log
 done
 echo All done.
