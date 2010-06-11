@@ -115,10 +115,8 @@ __global__ void bistable_kernel (
 	int input_idx;
 	int output_idx;
 	int stable;
-	int *shm_output_indexes = shm_array;
 	double nb_pol;
 	double kink;
-	double nb_pol;
 	
 	if (threadIdx.x < d_output_number)
 	{
@@ -153,7 +151,7 @@ __global__ void bistable_kernel (
 					kink = d_Ek[thr_idx + q*d_cells_number];
 					if (nb_idx >= blockIdx.x*blockDim.x & nb_idx < blockIdx.x*blockDim.x + blockDim.x - 1)
 					{
-						nb_pol = shm_polarization[nb_idx - blockIdx.x*blockDim.x];
+						nb_pol = shm_polarizations[nb_idx - blockIdx.x*blockDim.x];
 					}
 					else
 					{
