@@ -1,0 +1,13 @@
+Running 1 simulations with a radial tolerance of 0.001000
+Running simulation 0
+design_bus_layout_inputs_icUsed = 5
+
+Io host mando questi al device:
+10187 10188 10189 10190 10191 
+
+	Processing time1: 450.000000 (s)
+	Processing time2: 225995119.000000 (ns)
+
+Launch conclusa
+
+Simulation Time: 488 seconds

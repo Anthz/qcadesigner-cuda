@@ -1,0 +1,137 @@
+Running 1 simulations with a radial tolerance of 0.001000
+Running simulation 0
+design_bus_layout_inputs_icUsed = 5
+
+Io host mando questi al device:
+10187 10188 10189 10190 10191 
+
+[18, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[28, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[38, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[8, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[12, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[22, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[32, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[2, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[37, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[7, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[27, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[17, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[19, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[29, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[39, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[9, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[10, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[20, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[30, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[0, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[13, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[23, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[11, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[21, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[33, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[31, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[3, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[1, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[14, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[24, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[34, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[4, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[15, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[25, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[35, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[5, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[36, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[6, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[26, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[16, 4]: 
+Sono 4 nel mio blocco, e leggo 10191
+Lo metto in shared e.... 10191 VOILà!
+[39, 207]: 10191:ECCOMI! length:5 -> 10187 10188 10189 10190 0, mi cerco...
+[39, 207]: is 10189?
+[39, 207]: is 10190?
+[39, 207]: is 0?
+	Processing time1: 0.000000 (s)
+	Processing time2: 7651898.000000 (ns)
+
+Launch conclusa
+
+Simulation Time: 38 seconds
