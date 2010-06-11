@@ -81,13 +81,13 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 		tmp = -1 * sin(tmp);
 		cuPrintf("tmp: %e, ",tmp);
 		d_polarization[thr_idx]=(tmp > 0) ? 1: -1;
-		double sin0=sin(0.0);
+		/*double sin0=sin(0.0);
 		double sinf0=__sinf(0.0);
 		double cospi2=cos(PI/2);
 		double cosfpi2=cosf(PI/2);
 		double flsin0=sin(PI/5);
 		double flsinf0=__sinf(PI/5);
-		cuPrintf("input: %e, sin(0)=%e, __sinf(0)=%e, cos(pi/4)=%e, __cosf(pi/4)=%e, sin(pi/5)=%e, __sinf(pi/5)=%e\n",d_polarization[thr_idx],sin0,sinf0,cospi2,cosfpi2,flsin0,flsinf0);
+		cuPrintf("input: %e, sin(0)=%e, __sinf(0)=%e, cos(pi/4)=%e, __cosf(pi/4)=%e, sin(pi/5)=%e, __sinf(pi/5)=%e\n",d_polarization[thr_idx],sin0,sinf0,cospi2,cosfpi2,flsin0,flsinf0);*/
 	}
 }
 
