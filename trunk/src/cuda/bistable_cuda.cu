@@ -44,20 +44,6 @@ __device__ __constant__ double d_clock_low;
 __device__ __constant__ double d_clock_high;
 
 
-__device__ inline int find(int x, int *array, int length)
-{
-	int l = 0, r = length - 1, mid;
-	while (l <= r)
-	{
-		mid = (l + r) / 2;
-		if (array[mid] == x) return mid;
-		else if (array[mid] > x) r = mid - 1;
-		else l = mid + 1;
-	}
-	return -1;
-}
-
-
 __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int sample)
 {
 	extern	__shared__ int shm_array[];
