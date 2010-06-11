@@ -43,6 +43,7 @@ __device__ __constant__ int d_number_of_samples;
 __device__ __constant__ double d_clock_low;
 __device__ __constant__ double d_clock_high;
 
+extern	__shared__ int shm_array[];
 
 __device__ inline int find(int x, int *array, int length)
 {
@@ -60,18 +61,18 @@ __device__ inline int find(int x, int *array, int length)
 
 __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int sample)
 {
-	extern	__shared__ int shm_array[];
 	int input_idx;
     double tmp;
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;
+	int *shm_input_indexes = shm_array;
 	
 	if (threadIdx.x < d_input_number)
 	{
-		shm_array[threadIdx.x] = d_input_indexes[threadIdx.x];
+		shm_input_indexes[threadIdx.x] = d_input_indexes[threadIdx.x];
 	}
 	__syncthreads();
 	
-	input_idx = find(thr_idx, shm_array, d_input_number);
+	input_idx = find(thr_idx, shm_input_indexes, d_input_number);
 	//input_idx = find(thr_idx, d_input_indexes, d_input_number);
 		
     //cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
@@ -102,7 +103,8 @@ __global__ void bistable_kernel (
 		int color
 		)
 {
-	extern	__shared__ int shm_array[];
+	int* shm_output_indexes = shm_array;
+	double *shm_polarizations = (double*)&shm_array[d_output_number];
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
 	int nb_idx;   // Neighbour index
 	int q;
@@ -116,11 +118,15 @@ __global__ void bistable_kernel (
 	int *shm_output_indexes = shm_array;
 	double nb_pol;
 	double kink;
-	int total_iterations = 0;
+	double nb_pol;
 	
 	if (threadIdx.x < d_output_number)
 	{
 		shm_output_indexes[threadIdx.x] = d_output_indexes[threadIdx.x];
+	}
+	if (threadIdx.x < d_cells_number)
+	{
+		shm_polarizations[threadIdx.x] = d_polarization[threadIdx.x];
 	}
 
 	__syncthreads();
@@ -143,7 +149,11 @@ __global__ void bistable_kernel (
 				if (nb_idx != -1) 
 				{
 					kink = d_Ek[thr_idx + q*d_cells_number];
-					polarization_math += kink * d_polarization[nb_idx];
+					if (nb_idx >= blockIdx.x*blockDim.x & nb_idx < blockIdx.x*blockDim.x + blockDim.x - 1)
+						nb_pol = shm_polarization[nb_idx - blockIdx.x*blockDim.x];
+					else
+						nb_pol = d_polarization[nb_idx];
+					polarization_math += kink * nb_pol;
 				}
 			}
 
@@ -229,7 +239,7 @@ void launch_bistable_simulation(
 	int old_percentage = 0, new_percentage;
 	int input_indexes_bytes = sizeof(int)*input_number;
 	int output_indexes_bytes = sizeof(int)*output_number;
-
+	int total_iterations = 0;
 	
 	/*printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %d \n number_of_samples = %d\n max_iterations = %d\n, tolerance = %e\npref: %e, shift: %e, low: %e, high: %e\n",cells_number, neighbours_number, number_of_samples, max_iterations, tolerance,clock_prefactor,clock_shift,clock_low,clock_high);
 	printf("output_number = %d, output_indexes[0]= %d\n", output_number , output_indexes[0]);*/
