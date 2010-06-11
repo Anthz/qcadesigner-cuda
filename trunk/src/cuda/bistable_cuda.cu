@@ -62,7 +62,7 @@ __device__ inline int find(int x, int *array, int length)
 __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int sample)
 {
 	int input_idx;
-        double tmp;
+    double tmp;
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;
 
 	if (threadIdx.x < d_input_number)
@@ -76,16 +76,18 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
         //cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
 	if (input_idx >= 0)
 	{
-	  tmp = -1 * sin(((double)( 1 << input_idx)) * (double)sample * 4.0 * PI /(double) d_number_of_samples);
-          cuPrintf("tmp: %e, ",tmp);
-	  d_polarization[thr_idx]=(tmp > 0) ? 1: -1;
-	double sin0=sin(0.0);
-	double sinf0=__sinf(0.0);
-	double cospi2=cos(PI/4);
-	double cosfpi2=cosf(PI/4);
-	double flsin0=sin(PI/5);
-	double flsinf0=__sinf(PI/5);
-          cuPrintf("input: %e, sin(0)=%e, __sinf(0)=%e, cos(pi/4)=%e, __cosf(pi/4)=%e, sin(pi/5)=%e, __sinf(pi/5)=%e\n",d_polarization[thr_idx],sin0,sinf0,cospi2,cosfpi2,flsin0,flsinf0);
+		tmp = ((double)( 1 << input_idx)) * (double)sample * 4.0 * PI /(double) d_number_of_samples;
+		cuPrintf("tmp: %e, ",tmp);
+		tmp = -1 * sin(tmp);
+		cuPrintf("tmp: %e, ",tmp);
+		d_polarization[thr_idx]=(tmp > 0) ? 1: -1;
+		double sin0=sin(0.0);
+		double sinf0=__sinf(0.0);
+		double cospi2=cos(PI/2);
+		double cosfpi2=cosf(PI/2);
+		double flsin0=sin(PI/5);
+		double flsinf0=__sinf(PI/5);
+		cuPrintf("input: %e, sin(0)=%e, __sinf(0)=%e, cos(pi/4)=%e, __cosf(pi/4)=%e, sin(pi/5)=%e, __sinf(pi/5)=%e\n",d_polarization[thr_idx],sin0,sinf0,cospi2,cosfpi2,flsin0,flsinf0);
 	}
 }
 
@@ -307,10 +309,8 @@ void launch_bistable_simulation(
 		cudaThreadSynchronize ();
 		
 		cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
-		if (j==0) 
-		{
+		
 			for (i=0;i<cells_number;i++) printf("%e\n",h_polarization[i]);
-		}
 	
 		// In each sample...
 		for (i = 0; i < max_iterations && !stable; i++)
