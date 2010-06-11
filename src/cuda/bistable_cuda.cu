@@ -43,7 +43,6 @@ __device__ __constant__ int d_number_of_samples;
 __device__ __constant__ double d_clock_low;
 __device__ __constant__ double d_clock_high;
 
-extern	__shared__ double shm_array[];
 
 __device__ inline int find(int x, int *array, int length)
 {
@@ -61,29 +60,24 @@ __device__ inline int find(int x, int *array, int length)
 
 __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int sample)
 {
-	int input_idx;
-    double tmp;
+	extern	__shared__ int shm_array[];
+	int i=0,j=d_input_number-1,input_idx;
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;
-	int *shm_input_indexes = (int*)shm_array;
 	
 	if (threadIdx.x < d_input_number)
 	{
-		shm_input_indexes[threadIdx.x] = d_input_indexes[threadIdx.x];
+		shm_array[threadIdx.x] = d_input_indexes[threadIdx.x];
 	}
 	__syncthreads();
 	
-	input_idx = find(thr_idx, shm_input_indexes, d_input_number);
-	//input_idx = find(thr_idx, d_input_indexes, d_input_number);
-		
-    //cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
-	if (input_idx >= 0)
+	//find input index and update it
+	while (i <= j)
 	{
-		//cuPrintf("Inputs[%d %d %d %d %d %d]\n",shm_array[0],shm_array[1],shm_array[2],shm_array[3],shm_array[4]);
-		tmp = ((double)( 1 << input_idx)) * __fdividef((double)sample * 4.0 * PI ,(double) d_number_of_samples);
-		//cuPrintf("tmp: %e, ",tmp);
-		tmp = -1 * __sinf(tmp);
-		//cuPrintf("tmp: %e, ",tmp);
-		d_polarization[thr_idx]=(tmp > 0) ? 1: -1;
+		input_idx = (i + j) / 2;
+		if (shm_array[input_idx] == thr_idx)
+			d_polarization[thr_idx]=(-1 * __sinf(((double)( 1 << input_idx)) * __fdividef((double)sample * 4.0 * PI ,(double) d_number_of_samples)) > 0) ? 1: -1;
+		else if (array[input_idx] > x) j = input_idx - 1;
+		else i = input_idx + 1;
 	}
 }
 
@@ -103,9 +97,7 @@ __global__ void bistable_kernel (
 		int color
 		)
 {
-	
-	int* shm_output_indexes = (int *)shm_array;
-	double *shm_polarizations = (double*)&shm_output_indexes[d_output_number];
+	extern	__shared__ int shm_array[];
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
 	int nb_idx;   // Neighbour index
 	int q;
@@ -116,25 +108,21 @@ __global__ void bistable_kernel (
 	int input_idx;
 	int output_idx;
 	int stable;
+	int *shm_output_indexes = shm_array;
 	double nb_pol;
-	double kink;
+	//double kink;
+	int total_iterations = 0;
 	
 	if (threadIdx.x < d_output_number)
 	{
 		shm_output_indexes[threadIdx.x] = d_output_indexes[threadIdx.x];
 	}
-	
+
+	__syncthreads();
+
 	// Only useful threads must work
 	if (thr_idx < d_cells_number)
-	{
-		shm_polarizations[threadIdx.x] = d_polarization[thr_idx];
-		__syncthreads();
-		
-/*		if(threadIdx.x == 0 && color == 2 && sample == 100)
-		{
-			//cuPrintf("Polarizations[0:%e 50:%e 255:%e ...]\n", shm_polarizations[0], shm_polarizations[50], shm_polarizations[255]);
-		}*/
-		
+	{		
 		//cuPrintf("GO! my_color:%d\n",color);
 		//cuPrintf("\nd_output_number = %d,\t d_output_indexes[0]=%d\n",d_output_number, d_output_indexes[0] );	
 		  
@@ -144,26 +132,20 @@ __global__ void bistable_kernel (
 		{
 			nb_idx = 0;
 			polarization_math = 0;
+			current_cell_clock  = d_cell_clock[thr_idx];
+
+			
 			for(q = 0; q < d_neighbours_number & nb_idx != -1; q++)
 			{
 				nb_idx = d_neighbours[thr_idx + q * d_cells_number];
 				if (nb_idx != -1) 
 				{
-					kink = d_Ek[thr_idx + q*d_cells_number];
-					if (nb_idx >= blockIdx.x*blockDim.x & nb_idx < blockIdx.x*blockDim.x + blockDim.x - 1)
-					{
-						nb_pol = shm_polarizations[nb_idx - blockIdx.x*blockDim.x];
-					}
-					else
-					{
-						nb_pol = d_polarization[nb_idx];
-					}
-					polarization_math += kink * nb_pol;
+					//kink = d_Ek[thr_idx + q*d_cells_number];
+					polarization_math += d_Ek[thr_idx + q*d_cells_number] * d_polarization[nb_idx];
 				}
 			}
 
 			//math = math / 2 * gamma
-			current_cell_clock  = d_cell_clock[thr_idx];
 			clock_value = d_clock_prefactor * __cosf (((double)(1 << d_input_number)) * __fdividef((double)sample * 4.0 * PI , (double)d_number_of_samples) - __fdividef(PI * current_cell_clock , 2)) + d_clock_shift;
 			clock_value = CLAMP(clock_value,d_clock_low,d_clock_high);
 			polarization_math = __fdividef(polarization_math,(2.0 * clock_value));
@@ -188,9 +170,6 @@ __global__ void bistable_kernel (
 			// then the entire circuit is assumed to have not converged.      
 
 			output_idx = find(thr_idx, shm_output_indexes, d_output_number);
-
-	//		output_idx = find(thr_idx, d_output_indexes, d_output_number);
-
 
 			if (output_idx >= 0)
 			{
@@ -246,8 +225,8 @@ void launch_bistable_simulation(
 	double *h_output_data;
 	int old_percentage = 0, new_percentage;
 	int input_indexes_bytes = sizeof(int)*input_number;
-	int main_kernel_bytes = sizeof(double)*(output_number+BLOCK_DIM);
-	int total_iterations = 0;
+	int output_indexes_bytes = sizeof(int)*output_number;
+
 	
 	/*printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %d \n number_of_samples = %d\n max_iterations = %d\n, tolerance = %e\npref: %e, shift: %e, low: %e, high: %e\n",cells_number, neighbours_number, number_of_samples, max_iterations, tolerance,clock_prefactor,clock_shift,clock_low,clock_high);
 	printf("output_number = %d, output_indexes[0]= %d\n", output_number , output_indexes[0]);*/
@@ -321,7 +300,7 @@ void launch_bistable_simulation(
 
 		stable = 0;
 		
-		update_inputs<<< grid, threads, input_indexes_bytes>>> (d_polarization, d_input_indexes, j);
+		update_inputs<<< grid, threads,input_indexes_bytes>>> (d_polarization, d_input_indexes, j);
 		cudaThreadSynchronize ();
 		
 		
@@ -336,7 +315,7 @@ void launch_bistable_simulation(
 				/*cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
 				for (k=0;k<cells_number;k++) printf("i:%d, col:%d, cell:%d\t%e\n",i,color,k,h_polarization[k]);*/
 				
-				bistable_kernel<<< grid, threads, main_kernel_bytes >>> (d_polarization, /*d_next_polarization,*/ d_cell_clock, d_Ek, d_neighbours, 
+				bistable_kernel<<< grid, threads, output_indexes_bytes >>> (d_polarization, /*d_next_polarization,*/ d_cell_clock, d_Ek, d_neighbours, 
 					j, d_output_indexes, d_stability, tolerance, d_output_data, d_cells_colors, color);
 					
 				// Wait Device
