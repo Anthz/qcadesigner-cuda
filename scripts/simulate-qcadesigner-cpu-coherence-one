@@ -9,9 +9,10 @@ do
 	echo $i - Done.
 	rm ../data/gnuplot/circuit
 	mv -T ../data/sim_outputs/coherence/$i-$now-cpu.out ../data/gnuplot/circuit
-	chmod ugoa=+rwx ../data/gnuplot/circuit
-	gnuplot ../data/gnuplot/script_plot.gpi
-	mv -T ../data/gnuplot/circuit.png ../data/gnuplot/$i-$now-cpu.png
+	cd ../data/gnuplot
+	gnuplot script_plot.gpi
+	mv -T circuit.png $i-$now-cpu.png
+	cd ../../scripts
 	for mail in $@
 	do
 		cat ../data/sim_outputs/coherence/$i-$now-cpu.log | mutt -a ../data/gnuplot/$i-$now-cpu.png -s "$i-$now-cpu - Simulation done." $mail
