@@ -11,7 +11,6 @@ do
 	mv ../data/sim_outputs/coherence/$i-$now-cpu.out ../data/gnuplot/circuit
 	gnuplot ../data/gnuplot/script_plot.gpi
 	mv ../data/gnuplot/circuit.png ../data/gnuplot/$i-$now-cpu.png
-	rm ../data/gnuplot/circuit
 	for mail in $@
 	do
 		cat ../data/sim_outputs/coherence/$i-$now-cpu.log | mutt -a ../data/gnuplot/$i-$now-cpu.png -s "$i-$now-cpu - Simulation done." $mail
