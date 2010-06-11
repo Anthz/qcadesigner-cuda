@@ -81,6 +81,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 		tmp = -1 * sin(tmp);
 		//cuPrintf("tmp: %e, ",tmp);
 		d_polarization[thr_idx]=(tmp > 0) ? 1: -1;
+		cuPrintf("Ciao sono l'input %d: %e\n",thr_idx,d_polarization[thr_idx]);
 		/*double sin0=sin(0.0);
 		double sinf0=__sinf(0.0);
 		double cospi2=cos(PI/2);
@@ -317,8 +318,8 @@ void launch_bistable_simulation(
 			// Launch Kernel
 			for(color = 1; color <= num_colors; color++)
 			{
-				cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
-				for (k=0;k<cells_number;k++) printf("i:%d, col:%d, cell:%d\t%e\n",i,color,k,h_polarization[k]);
+				/*cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
+				for (k=0;k<cells_number;k++) printf("i:%d, col:%d, cell:%d\t%e\n",i,color,k,h_polarization[k]);*/
 				
 				bistable_kernel<<< grid, threads >>> (d_polarization, d_next_polarization, d_cell_clock, d_Ek, d_neighbours, 
 					j, d_output_indexes, d_stability, tolerance, d_output_data, d_cells_colors, color);
