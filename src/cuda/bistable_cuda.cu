@@ -226,9 +226,13 @@ void launch_bistable_simulation(
 	
 	//coloring
 	color_graph(h_neighbours, cells_number, neighbours_number, &h_cells_colors, &num_colors);
-
+	//debug
+	printf("Number of colors:%d\nColors:\n", num_colors);
+	for (i=0;i<num_colors;i++) printf("%d",h_cells_colors[i]);
+	printf("\n");
+	
 	// Set GPU Parameters
-
+	
 
 	dim3 threads (BLOCK_DIM);
 	dim3 grid (ceil ((double)cells_number/BLOCK_DIM));
