@@ -21,7 +21,7 @@ do
 		echo Subject: $i-$now-cpu - Simulation done.
 		echo Body: $(cat ../sim_outputs/coherence/$i-$now-cpu.log)
 		echo Attachment: $i-$now-cpu.png
-		cat ../sim_outputs/coherence/$i-$now-cpu.log | mutt -a $i-$now-cpu.png -s "$i-$now-cpu - Simulation done." $mail
+		cat ../sim_outputs/coherence/$i-$now-cpu.log | mutt -a $(PWD)/$i-$now-cpu.png -s "$i-$now-cpu - Simulation done." $mail
 		#mail -s "$i-$now-cpu - Simulation done." $mail < sim_outputs/coherence/$i-$now-cpu.log
 	done
 done
