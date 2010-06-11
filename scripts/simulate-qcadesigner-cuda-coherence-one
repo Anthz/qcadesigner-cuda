@@ -1,4 +1,4 @@
-circuit_ls+="CircuitMUX42_128000.qca "
+circuit_ls+="CircuitAND_8000.qca "
 now=$(date +%s)
 echo These files will be used for testing:
 echo $circuit_ls
@@ -7,5 +7,16 @@ do
 	echo Simulating $i...
 	../bin/qcadesigner-cuda -f ../data/circuits/$i -o ../scripts/coherence_options.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/coherence/$i-$now > ../data/sim_outputs/coherence/$i-$now-cuda.log
 	echo $i - Done.
+	cp ../data/sim_outputs/coherence/$i-$now-cuda.out ../data/gnuplot
+	rm ../data/gnuplot/circuit
+	mv ../data/gnuplot/$i-$now-cuda.out ../data/gnuplot/circuit
+	gnuplot ../data/gnuplot/script_plot.gpi
+	mv ../data/gnuplot/circuit.png ../data/gnuplot/$i-$now-cuda.png
+	rm ../data/gnuplot/circuit
+	for mail in $@
+	do
+		#cat ../data/sim_outputs/coherence/$i-$now-cuda.log | mutt -a ../data/gnuplot/$i-$now-cuda.png -s "$i-$now-cuda - Simulation done." $mail
+		mail -s "$i-$now-cuda - Simulation done." $mail < ../data/sim_outputs/coherence/$i-$now-cuda.log
+	done
 done
 echo All done.
