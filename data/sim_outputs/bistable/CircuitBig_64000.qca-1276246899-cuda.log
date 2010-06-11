@@ -1,0 +1,13 @@
+Running 1 simulations with a radial tolerance of 0.001000
+Running simulation 0
+design_bus_layout_inputs_icUsed = 5
+[39, 205]: Ciao sono l'input 10189: -1.000000e+00
+[39, 203]: Ciao sono l'input 10187: -1.000000e+00
+[39, 206]: Ciao sono l'input 10190: -1.000000e+00
+[39, 204]: Ciao sono l'input 10188: -1.000000e+00
+	Processing time1: 0.000000 (s)
+	Processing time2: 6505400.000000 (ns)
+
+Launch conclusa
+
+Simulation Time: 38 seconds
