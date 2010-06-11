@@ -78,7 +78,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
     //cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
 	if (input_idx >= 0)
 	{
-		cuPrintf("[%d %d %d %d %d %d]\n",shm_array[0],shm_array[1],shm_array[2],shm_array[3],shm_array[4]);
+		cuPrintf("Inputs[%d %d %d %d %d %d]\n",shm_array[0],shm_array[1],shm_array[2],shm_array[3],shm_array[4]);
 		tmp = ((double)( 1 << input_idx)) * __fdividef((double)sample * 4.0 * PI ,(double) d_number_of_samples);
 		//cuPrintf("tmp: %e, ",tmp);
 		tmp = -1 * __sinf(tmp);
@@ -124,16 +124,18 @@ __global__ void bistable_kernel (
 	{
 		shm_output_indexes[threadIdx.x] = d_output_indexes[threadIdx.x];
 	}
-	if (threadIdx.x < d_cells_number)
-	{
-		shm_polarizations[threadIdx.x] = d_polarization[threadIdx.x];
-	}
-
-	__syncthreads();
-
+	
 	// Only useful threads must work
 	if (thr_idx < d_cells_number)
-	{		
+	{
+		shm_polarizations[threadIdx.x] = d_polarization[thr_idx];
+		__syncthreads();
+		
+		if(threadIdx.x == 0)
+		{
+			cuPrintf("Polarizations[0:%d 50:%d 255:%d ...]\n", shm_polarizations[0], shm_polarizations[50], shm_polarizations[255]);
+		}
+		
 		//cuPrintf("GO! my_color:%d\n",color);
 		//cuPrintf("\nd_output_number = %d,\t d_output_indexes[0]=%d\n",d_output_number, d_output_indexes[0] );	
 		  
@@ -152,12 +154,10 @@ __global__ void bistable_kernel (
 					if (nb_idx >= blockIdx.x*blockDim.x & nb_idx < blockIdx.x*blockDim.x + blockDim.x - 1)
 					{
 						nb_pol = shm_polarization[nb_idx - blockIdx.x*blockDim.x];
-						cuPrintf("Vicino in shared %e\n",nb_pol);
 					}
 					else
 					{
 						nb_pol = d_polarization[nb_idx];
-						cuPrintf("Vicino in global %e\n",nb_pol);
 					}
 					polarization_math += kink * nb_pol;
 				}
