@@ -11,7 +11,7 @@ TODO:
 
 #include <cutil_inline.h>
 #include <cuda.h>
-#include "cuPrintf.cu"
+//#include "cuPrintf.cu"
 
 extern "C"{
 #include "design.h"
@@ -136,12 +136,12 @@ __global__ void kernelIterationParallel
 
 	if ((dmod < (PI/2+0.1) && dmod > (PI/2)) || (dmod > (3*PI/2-0.1) && dmod < (3*PI/2))) 
 			if (cos (arg) > 0)
-				cuPrintf("Cosine function error: arg: %.15g, cos: %.15g\n, dmod: %.15g", arg, cos(arg), dmod);
+				//cuPrintf("Cosine function error: arg: %.15g, cos: %.15g\n, dmod: %.15g", arg, cos(arg), dmod);
 
 	
 	if ((dmod > (PI/2-0.1) && dmod < (PI/2)) || (dmod < (3*PI/2+0.1) && dmod > (3*PI/2))) 
 			if (cos (arg) < 0)
-				cuPrintf("Cosine function error: arg: %.15g, cos: %.15g\n, dmod: %.15g", arg, cos(arg), dmod);
+				//cuPrintf("Cosine function error: arg: %.15g, cos: %.15g\n, dmod: %.15g", arg, cos(arg), dmod);
 
 	
 		// Generate clock
@@ -170,7 +170,7 @@ __global__ void kernelIterationParallel
 		k1 = options_time_step * (-(2.0 * clock_value * over_hbar / mag * tanh (optimization_options_hbar_over_kBT * mag) + lambda_x) / options_relaxation + (PEk * lambda_y * over_hbar));
 
 		if ((optimization_options_hbar_over_kBT * mag > 0 && tanh (optimization_options_hbar_over_kBT * mag) < 0) || (optimization_options_hbar_over_kBT * mag < 0 && tanh (optimization_options_hbar_over_kBT * mag) > 0))
-			cuPrintf("Tanh function error: arg: %.15g, tanh: %.15g\n, mag: %.15g", optimization_options_hbar_over_kBT * mag, tanh (optimization_options_hbar_over_kBT * mag), mag);
+			//cuPrintf("Tanh function error: arg: %.15g, tanh: %.15g\n, mag: %.15g", optimization_options_hbar_over_kBT * mag, tanh (optimization_options_hbar_over_kBT * mag), mag);
 
 		if (RUNGE_KUTTA == options_algorithm)
 		{
@@ -432,7 +432,7 @@ void launch_coherence_vector_simulation
 		// Launch Kernel
 
       //printf ("Iteration# %d...", j); 
-	cudaPrintfInit();
+	//cudaPrintfInit();
 
 	kernelIterationParallel<<< grid, threads >>> (d_polarization, d_lambda_x, d_lambda_y, d_lambda_z, d_Ek, d_clock, d_neighbours, cells_number, max_neighbours_number, j, design->bus_layout->inputs->icUsed);
 
@@ -440,11 +440,11 @@ void launch_coherence_vector_simulation
       cudaThreadSynchronize ();
 		
 
-cudaPrintfDisplay(stdout, true);
+//cudaPrintfDisplay(stdout, true);
 
  
 
-cudaPrintfEnd();
+//cudaPrintfEnd();
 
 		//printf("Complete!\n");
 
