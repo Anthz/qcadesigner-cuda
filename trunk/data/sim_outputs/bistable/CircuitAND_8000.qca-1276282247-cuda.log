@@ -1,0 +1,12 @@
+Running 1 simulations with a radial tolerance of 0.001000
+Running simulation 0
+design_bus_layout_inputs_icUsed = 2
+Number of samples:8000
+Number of colors:8
+Iterations per sample: 100.000000
+	Processing time1: 277.000000 (s)
+	Processing time2: 870902278.000000 (ns)
+
+Launch conclusa
+
+Simulation Time: 278 seconds
