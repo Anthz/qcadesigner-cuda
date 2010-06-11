@@ -43,7 +43,6 @@ __device__ __constant__ int d_number_of_samples;
 __device__ __constant__ double d_clock_low;
 __device__ __constant__ double d_clock_high;
 
-extern	__shared__ int shm_array[];
 
 __device__ inline int find(int x, int *array, int length)
 {
@@ -61,6 +60,7 @@ __device__ inline int find(int x, int *array, int length)
 
 __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int sample)
 {
+	extern	__shared__ int shm_array[];
 	int input_idx;
     double tmp;
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -102,6 +102,7 @@ __global__ void bistable_kernel (
 		int color
 		)
 {
+	extern	__shared__ int shm_array[];
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
 	int nb_idx;   // Neighbour index
 	int q;
@@ -224,7 +225,8 @@ void launch_bistable_simulation(
 	double *d_output_data;
 	double *h_output_data;
 	int old_percentage = 0, new_percentage;
-
+	int input_indexes_bytes = sizeof(int)*input_number;
+	int output_indexes_bytes = sizeof(int)*output_number;
 
 	
 	/*printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %d \n number_of_samples = %d\n max_iterations = %d\n, tolerance = %e\npref: %e, shift: %e, low: %e, high: %e\n",cells_number, neighbours_number, number_of_samples, max_iterations, tolerance,clock_prefactor,clock_shift,clock_low,clock_high);
@@ -300,8 +302,8 @@ void launch_bistable_simulation(
 	{
 
 		stable = 0;
-
-		update_inputs<<< grid, threads >>> (d_polarization, d_input_indexes, j);
+		
+		update_inputs<<< grid, threads,shm_array_size,input_indexes_bytes>>> (d_polarization, d_input_indexes, j);
 		cudaThreadSynchronize ();
 		
 		
@@ -316,7 +318,7 @@ void launch_bistable_simulation(
 				/*cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
 				for (k=0;k<cells_number;k++) printf("i:%d, col:%d, cell:%d\t%e\n",i,color,k,h_polarization[k]);*/
 				
-				bistable_kernel<<< grid, threads >>> (d_polarization,d_next_polarization, d_cell_clock, d_Ek, d_neighbours, 
+				bistable_kernel<<< grid, threads, output_indexes_bytes >>> (d_polarization, d_next_polarization, d_cell_clock, d_Ek, d_neighbours, 
 					j, d_output_indexes, d_stability, tolerance, d_output_data, d_cells_colors, color);
 					
 				// Wait Device
