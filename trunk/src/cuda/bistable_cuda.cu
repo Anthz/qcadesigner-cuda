@@ -51,7 +51,6 @@ __device__ inline int find(int x, int *array, int length)
 	while (l <= r)
 	{
 		mid = (l + r) / 2;
-		if (x==10191) cuPrintf("is %d?\n",array[mid]);
 		if (array[mid] == x) return mid;
 		else if (array[mid] > x) r = mid - 1;
 		else l = mid + 1;
@@ -68,16 +67,13 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	
 	if (threadIdx.x < d_input_number)
 	{
-		if (threadIdx.x == 4) cuPrintf("Prima: %d, nel blocco sono %d: array[4]=%d\n",thr_idx,threadIdx.x,shm_array[4]);
 		shm_array[threadIdx.x] = d_input_indexes[threadIdx.x];
-		if (threadIdx.x == 4) cuPrintf("Dopo: %d, nel blocco sono %d: array[4]=%d\n",thr_idx,threadIdx.x,shm_array[4]);
 	}
 	__syncthreads();
 	
-	if (threadIdx.x < 6) cuPrintf("Dopo sync: %d, nel blocco sono %d: array[4]=%d\n",thr_idx,threadIdx.x,shm_array[4]);
-	input_idx = find(thr_idx, shm_array, d_input_number);
-	if (threadIdx.x < 6) cuPrintf("Dopo find: %d, nel blocco sono %d: array[4]=%d\n",thr_idx,threadIdx.x,shm_array[4]);
-	
+	//input_idx = find(thr_idx, shm_array, d_input_number); <-----AHAHhahahahHAHH non copia l'ultimo su 5 la copia in shared
+	input_idx = find(thr_idx, d_input_indexes, d_input_number);
+		
     //cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
 	if (input_idx >= 0)
 	{
@@ -312,7 +308,7 @@ void launch_bistable_simulation(
 	//srand(time(0));
 
 
-	for (j = 0; j < 1/*number_of_samples*/; j++)
+	for (j = 0; j < number_of_samples; j++)
 	{
 
 		stable = 0;
@@ -323,7 +319,7 @@ void launch_bistable_simulation(
 		
 	
 		// In each sample...
-		for (i = 0; i < 2/*max_iterations && !stable*/; i++)
+		for (i = 0; i < max_iterations && !stable; i++)
 		{
 				
 			// Launch Kernel
