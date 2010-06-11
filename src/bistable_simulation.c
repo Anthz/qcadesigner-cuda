@@ -220,7 +220,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   
   
 
-
+/*
  
   // randomize the cells in the design so as to minimize any numerical problems associated //
   // with having cells simulated in some predefined order. //
@@ -242,7 +242,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   if((end_time = time (NULL)) < 0)
      fprintf(stderr, "Could not get end time\n");
 
-
+*/
 	 
 /*  command_history_message("Total initialization time: %g s\n", (double)(end_time - start_time));*/
 

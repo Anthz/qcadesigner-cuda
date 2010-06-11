@@ -53,7 +53,7 @@ int color_graph(int *array_graph, int node_num, int max_num_arcs, int **cell_col
 			}
 			node_colors[i] = color_chosen-1;
 		}
-		(*num_colors)= MAX(color_chosen,(*num_colors));
+		(*num_colors)= MAX(color_chosen-1,(*num_colors));
 	}
 	return 0;
 }

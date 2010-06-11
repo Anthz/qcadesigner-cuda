@@ -11,7 +11,7 @@ TODO:
 
 #include <cutil_inline.h>
 #include <cuda.h>
-#include "cuPrintf.cu"
+//#include "cuPrintf.cu"
 
 extern "C"{
 #include "design.h"
@@ -134,7 +134,7 @@ double arg , dmod;
 		
 	dmod = dmod + 2*PI;
 	if ((dmod < (PI/2+0.00001*PI) && dmod > (PI/2-0.00001*PI)) || (dmod < (3*PI/2+0.00001*PI) && dmod > (3*PI/2-0.00001*PI))) 
-			cuPrintf("Cosine function (hazardous arg): arg: %.15g, cos: %.15g\n", dmod, cos(dmod));
+			//cuPrintf("Cosine function (hazardous arg): arg: %.15g, cos: %.15g\n", dmod, cos(dmod));
 
 
 
@@ -423,7 +423,7 @@ void launch_coherence_vector_simulation
 		// Launch Kernel
 
       //printf ("Iteration# %d...", j); 
-	cudaPrintfInit();
+	//cudaPrintfInit();
 
 	kernelIterationParallel<<< grid, threads >>> (d_polarization, d_lambda_x, d_lambda_y, d_lambda_z, d_Ek, d_clock, d_neighbours, cells_number, max_neighbours_number, j, design->bus_layout->inputs->icUsed);
 
@@ -431,11 +431,11 @@ void launch_coherence_vector_simulation
       cudaThreadSynchronize ();
 		
 
-cudaPrintfDisplay(stdout, true);
+//cudaPrintfDisplay(stdout, true);
 
  
 
-cudaPrintfEnd();
+//cudaPrintfEnd();
 
 		//printf("Complete!\n");
 
