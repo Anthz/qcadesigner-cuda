@@ -68,12 +68,15 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	
 	if (threadIdx.x < d_input_number)
 	{
+		if (threadIdx.x == 4) cuPrintf("Prima: %d, nel blocco sono %d: array[4]=%d\n",thr_idx,threadIdx.x,shm_array[4]);
 		shm_array[threadIdx.x] = d_input_indexes[threadIdx.x];
+		if (threadIdx.x == 4) cuPrintf("Dopo: %d, nel blocco sono %d: array[4]=%d\n",thr_idx,threadIdx.x,shm_array[4]);
 	}
 	__syncthreads();
 	
-	cuPrintf("%d: ECCOLO: %d\n",thr_idx, shm_array[3]);
+	if (threadIdx.x < 6) cuPrintf("Dopo sync: %d, nel blocco sono %d: array[4]=%d\n",thr_idx,threadIdx.x,shm_array[4]);
 	input_idx = find(thr_idx, shm_array, d_input_number);
+	if (threadIdx.x < 6) cuPrintf("Dopo find: %d, nel blocco sono %d: array[4]=%d\n",thr_idx,threadIdx.x,shm_array[4]);
 	
     //cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
 	if (input_idx >= 0)
