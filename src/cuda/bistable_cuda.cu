@@ -10,7 +10,7 @@
 	con i nuovi valori di polarizzazione degli input (ancora DA MODIFICARE!)
 					*/
 /* ========================================================================== */
-//#define CUPRINTF_B
+#define CUPRINTF_B
 
 #include <cutil_inline.h>
 #include <cuda.h>
@@ -47,10 +47,12 @@ extern	__shared__ int shm_array[];
 
 __device__ inline int find(int x, int *array, int length)
 {
+	if (x==10191) cuPrintf("10191:ECCOMI! length:%d -> %d %d %d %d %d, mi cerco...\n", length, array[0],array[1],array[2],array[3],array[4]);
 	int l = 0, r = length - 1, mid;
 	while (l <= r)
 	{
 		mid = (l + r) / 2;
+		if (x==10191) cuPrintf("is %d?\n",array[mid]);
 		if (array[mid] == x) return mid;
 		else if (array[mid] > x) r = mid - 1;
 		else l = mid + 1;
