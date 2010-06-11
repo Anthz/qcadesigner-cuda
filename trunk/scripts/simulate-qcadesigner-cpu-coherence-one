@@ -1,22 +1,28 @@
 circuit_ls+="CircuitAND_8000.qca "
 now=$(date +%s)
-echo These files will be used for testing:
+echo These files will be used for simulation:
 echo $circuit_ls
 for i in $circuit_ls
 do
 	echo Simulating $i...
 	../bin/qcadesigner-cpu -f ../data/circuits/$i -o ../scripts/coherence_options.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/coherence/$i-$now > ../data/sim_outputs/coherence/$i-$now-cpu.log
-	echo $i - Done.
-	rm ../data/gnuplot/circuit
-	mv -T ../data/sim_outputs/coherence/$i-$now-cpu.out ../data/gnuplot/circuit
-	cd ../data/gnuplot
+	echo Done simulating $i.
+	cd ../data
+	@rm gnuplot/circuit
+	mv -T sim_outputs/coherence/$i-$now-cpu.out gnuplot/circuit
+	cd gnuplot
 	gnuplot script_plot.gpi
 	mv -T circuit.png $i-$now-cpu.png
-	cd ../../scripts
+	rm circuit
+	cd .. #in data/
 	for mail in $@
 	do
-		cat ../data/sim_outputs/coherence/$i-$now-cpu.log | mutt -a ../data/gnuplot/$i-$now-cpu.png -s "$i-$now-cpu - Simulation done." $mail
-		#mail -s "$i-$now-cpu - Simulation done." $mail < ../data/sim_outputs/coherence/$i-$now-cpu.log
+		echo Emailing data to: $mail
+		echo Subject: $i-$now-cpu - Simulation done.
+		echo Body: $(cat sim_outputs/coherence/$i-$now-cpu.log)
+		echo Attachment: gnuplot/$i-$now-cpu.png
+		cat sim_outputs/coherence/$i-$now-cpu.log | mutt -a gnuplot/$i-$now-cpu.png -s "$i-$now-cpu - Simulation done." $mail
+		#mail -s "$i-$now-cpu - Simulation done." $mail < sim_outputs/coherence/$i-$now-cpu.log
 	done
 done
 echo All done.
