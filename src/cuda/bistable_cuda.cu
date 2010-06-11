@@ -84,7 +84,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 		cuPrintf("Ciao sono l'input %d: %e. Input index:",thr_idx,d_polarization[thr_idx]);
 		int i;
 		for (i=0;i<d_input_number;i++) cuPrintf("%d ", shm_array[i]);
-		printf("\n");
+		cuPrintf("\n");
 		/*double sin0=sin(0.0);
 		double sinf0=__sinf(0.0);
 		double cospi2=cos(PI/2);
