@@ -47,7 +47,7 @@ extern	__shared__ int shm_array[];
 
 __device__ inline int find(int x, int *array, int length)
 {
-	if (x==10191) cuPrintf("10191:ECCOMI! length:%d -> %d %d %d %d %d, mi cerco...\n", length, array[0],array[1],array[2],array[3],array[4]);
+	cuPrintf("%d: C'è ancora? [%d]? sto per cercare..\n", x,array[4]);
 	int l = 0, r = length - 1, mid;
 	while (l <= r)
 	{
@@ -70,12 +70,12 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	if (threadIdx.x < d_input_number)
 	{
 		shm_array[threadIdx.x] = d_input_indexes[threadIdx.x];
-		if (threadIdx.x==4) cuPrintf("\nSono %d nel mio blocco, e leggo %d\nLo metto in shared e.... %d VOILà!\n", threadIdx.x, d_input_indexes[threadIdx.x],shm_array[threadIdx.x]);
 	}
 	
 	__syncthreads();
-	
+	cuPrintf("%d: ECCOLO: %d\n",thr_idx, shm_array[4]);
 	input_idx = find(thr_idx, shm_array, d_input_number);
+	cuPrintf("%d: RIECCOLO: %d\n",thr_idx, shm_array[4]);
     //cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
 	if (input_idx >= 0)
 	{
