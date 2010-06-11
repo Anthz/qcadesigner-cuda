@@ -69,10 +69,10 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	if (threadIdx.x < d_input_number)
 	{
 		shm_array[threadIdx.x] = d_input_indexes[threadIdx.x];
-		cuPrintf("%d: ECCOLO: %d\n",thr_idx, shm_array[4]);
 	}
 	__syncthreads();
 	
+	cuPrintf("%d: ECCOLO: %d\n",thr_idx, shm_array[3]);
 	input_idx = find(thr_idx, shm_array, d_input_number);
 	
     //cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
