@@ -318,7 +318,6 @@ fprintf(stderr,"\n...eseguita!\n");
 		tolerance,
 		&output_traces
 		);
-	printf("\nLaunch conclusa\n");
   
   	for(k=0; k < output_number; k++)
 	   for(j=0; j < sim_data_number_samples; j++)	

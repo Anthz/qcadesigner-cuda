@@ -233,7 +233,10 @@ void launch_bistable_simulation(
 	h_stability = (int *)malloc(sizeof(int)*cells_number);
 	
 	//coloring
+	
+	fprintf(stderr,"Coloring...\n");
 	color_graph(h_neighbours, cells_number, neighbours_number, &h_cells_colors, &num_colors);
+	fprintf(stderr,"...colored!\n");
 	
 	printf("Number of samples:%d\nNumber of colors:%d\n",number_of_samples, num_colors);
 	
@@ -254,7 +257,7 @@ void launch_bistable_simulation(
 	timespec startTime, endTime;
 	clock_gettime(CLOCK_REALTIME, &startTime);
 
-	
+	fprintf(stderr,"Allocating memory on device...\n");
 	// Initialize Memory
 	cutilSafeCall (cudaMalloc ((void**)&d_output_data, output_number * sizeof(double)));
 	/*cutilSafeCall (cudaMalloc ((void**)&d_next_polarization, cells_number * sizeof(double)));*/
@@ -267,7 +270,7 @@ void launch_bistable_simulation(
 	cutilSafeCall (cudaMalloc ((void**)&d_stability, sizeof(int)*cells_number));
 	cutilSafeCall (cudaMalloc ((void**)&d_cells_colors, sizeof(int)*cells_number));
 	
-
+	fprintf(stderr,"CudaMalloc done!\n");
 	// Set Memory
 
 	/*cutilSafeCall (cudaMemcpy (d_next_polarization, h_polarization, cells_number * sizeof(double), cudaMemcpyHostToDevice));*/
@@ -279,6 +282,8 @@ void launch_bistable_simulation(
 	cutilSafeCall (cudaMemcpy (d_output_indexes, output_indexes, sizeof(int)*output_number, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpy (d_cells_colors, h_cells_colors, sizeof(int)*cells_number, cudaMemcpyHostToDevice));
 
+	fprintf(stderr, "CudaMemcpy done!\n");
+
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_prefactor", &(clock_prefactor), sizeof(double), 0, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_shift", &(clock_shift), sizeof(double), 0, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpyToSymbol("d_cells_number", &(cells_number), sizeof(int), 0, cudaMemcpyHostToDevice));
@@ -289,8 +294,7 @@ void launch_bistable_simulation(
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_low", &(clock_low), sizeof(double), 0, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_high", &(clock_high), sizeof(double), 0, cudaMemcpyHostToDevice));
 	
-	//srand(time(0));
-
+	fprintf(stderr,"...memory allocated!\nSimulation started...\n");
 
 	for (j = 0; j < number_of_samples; j++)
 	{
