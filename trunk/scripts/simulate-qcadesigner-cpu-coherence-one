@@ -7,9 +7,8 @@ do
 	echo Simulating $i...
 	../bin/qcadesigner-cpu -f ../data/circuits/$i -o ../scripts/coherence_options.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/coherence/$i-$now > ../data/sim_outputs/coherence/$i-$now-cpu.log
 	echo $i - Done.
-	cp ../data/sim_outputs/coherence/$i-$now-cpu.out ../data/gnuplot
 	rm ../data/gnuplot/circuit
-	mv ../data/gnuplot/$i-$now-cpu.out ../data/gnuplot/circuit
+	mv ../data/sim_outputs/coherence/$i-$now-cpu.out ../data/gnuplot/circuit
 	gnuplot ../data/gnuplot/script_plot.gpi
 	mv ../data/gnuplot/circuit.png ../data/gnuplot/$i-$now-cpu.png
 	rm ../data/gnuplot/circuit
