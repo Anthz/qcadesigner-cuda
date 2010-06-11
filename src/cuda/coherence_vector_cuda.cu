@@ -107,7 +107,7 @@ __global__ void kernelIterationParallel
    double lambda_z, next_lambda_z;
 	double k1, k2, k3, k4;
 	double mag;
-double arg , dmod;
+	double arg , dmod;
 
 	th_index =  blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
 
@@ -130,14 +130,20 @@ double arg , dmod;
 	arg = ((double) (1 << total_number_of_inputs)) * (double)sample_number *  optimization_options_four_pi_over_number_samples - PI * (double)d_clock[th_index] * 0.5;
 	
 	
-	for (dmod = arg; dmod > 0; dmod = dmod - 2*PI);
+	for (dmod = abs(arg); dmod > 0; dmod = dmod - 2*PI);
 		
 	dmod = dmod + 2*PI;
-	if ((dmod < (PI/2+0.00001*PI) && dmod > (PI/2-0.00001*PI)) || (dmod < (3*PI/2+0.00001*PI) && dmod > (3*PI/2-0.00001*PI))) 
-			//cuPrintf("Cosine function (hazardous arg): arg: %.15g, cos: %.15g\n", dmod, cos(dmod));
 
+	if ((dmod < (PI/2+0.1) && dmod > (PI/2)) || (dmod > (3*PI/2-0.1) && dmod < (3*PI/2))) 
+			if (cos (arg) > 0)
+				cuPrintf("Cosine function error: arg: %.15g, cos: %.15g\n, dmod: %.15g", arg, cos(arg), dmod);
 
+	
+	if ((dmod > (PI/2-0.1) && dmod < (PI/2)) || (dmod < (3*PI/2+0.1) && dmod > (3*PI/2))) 
+			if (cos (arg) < 0)
+				cuPrintf("Cosine function error: arg: %.15g, cos: %.15g\n, dmod: %.15g", arg, cos(arg), dmod);
 
+	
 		// Generate clock
 		clock_value = optimization_options_clock_prefactor * cos(((double) (1 << total_number_of_inputs)) * (double)sample_number *  optimization_options_four_pi_over_number_samples - PI * (double)d_clock[th_index] * 0.5) + clock_total_shift;
 		
@@ -162,6 +168,9 @@ double arg , dmod;
    	mag = magnitude_energy_vector (PEk, clock_value);
    
 		k1 = options_time_step * (-(2.0 * clock_value * over_hbar / mag * tanh (optimization_options_hbar_over_kBT * mag) + lambda_x) / options_relaxation + (PEk * lambda_y * over_hbar));
+
+		if ((optimization_options_hbar_over_kBT * mag > 0 && tanh (optimization_options_hbar_over_kBT * mag) < 0) || (optimization_options_hbar_over_kBT * mag < 0 && tanh (optimization_options_hbar_over_kBT * mag) > 0))
+			cuPrintf("Tanh function error: arg: %.15g, tanh: %.15g\n, mag: %.15g", optimization_options_hbar_over_kBT * mag, tanh (optimization_options_hbar_over_kBT * mag), mag);
 
 		if (RUNGE_KUTTA == options_algorithm)
 		{
