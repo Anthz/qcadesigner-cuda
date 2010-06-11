@@ -10,7 +10,7 @@
 	con i nuovi valori di polarizzazione degli input (ancora DA MODIFICARE!)
 					*/
 /* ========================================================================== */
-#define CUPRINTF_B
+//#define CUPRINTF_B
 
 #include <cutil_inline.h>
 #include <cuda.h>
@@ -77,7 +77,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
     //cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
 	if (input_idx >= 0)
 	{
-		cuPrintf("[%d %d %d %d %d %d]\n",shm_array[0],shm_array[1],shm_array[2],shm_array[3],shm_array[4], shm_array[5]);
+		//cuPrintf("[%d %d %d %d %d %d]\n",shm_array[0],shm_array[1],shm_array[2],shm_array[3],shm_array[4], shm_array[5]);
 		tmp = ((double)( 1 << input_idx)) * (double)sample * 4.0 * PI /(double) d_number_of_samples;
 		//cuPrintf("tmp: %e, ",tmp);
 		tmp = -1 * sin(tmp);
@@ -89,7 +89,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 
 __global__ void bistable_kernel (
 		double *d_polarization,
-		double *d_next_polarization,
+		/*double *d_next_polarization,*/
 		int *d_cell_clock,
 		double *d_Ek,
 		int *d_neighbours,
@@ -161,14 +161,15 @@ __global__ void bistable_kernel (
 			(fabs (polarization_math) <     0.001) ?  polarization_math :
 			polarization_math / sqrt (1 + polarization_math * polarization_math) ;
 			
+			stable = (fabs (new_polarization - d_polarization[thr_idx]) <= tolerance);
+			d_stability[thr_idx] = stable;
+
 			//set the new polarization in next_polarization array  
-			d_next_polarization[thr_idx] = new_polarization;
-			//d_polarization[thr_idx] = new_polarization; //There is no conflicts because there is no read from other thread on this (they have other colors)
+			//d_next_polarization[thr_idx] = new_polarization;
+			d_polarization[thr_idx] = new_polarization; //There is no conflicts because there is no read from other thread on this (they have other colors)
 
 			// If any cells polarization has changed beyond this threshold
 			// then the entire circuit is assumed to have not converged.      
-			stable = (fabs (new_polarization - d_polarization[thr_idx]) <= tolerance);
-			d_stability[thr_idx] = stable;
 
 			output_idx = find(thr_idx, shm_output_indexes, d_output_number);
 
@@ -177,10 +178,10 @@ __global__ void bistable_kernel (
 				d_output_data[output_idx] = new_polarization;
 			}
 		}
-		else
+		/*else
 		{
 			d_next_polarization[thr_idx] = d_polarization[thr_idx];
-		}
+		}*/
 	}
 }
 
@@ -216,7 +217,7 @@ void launch_bistable_simulation(
 
 
 	// Variables
-	double *d_next_polarization, *d_polarization, *d_Ek;
+	double /**d_next_polarization,*/ *d_polarization, *d_Ek;
 	int *d_neighbours, *d_cell_clock, *d_input_indexes, *d_output_indexes;
 	int i,j,stable,color, num_colors;
 	int *d_stability, *h_stability, *h_cells_colors, *d_cells_colors;
@@ -263,7 +264,7 @@ void launch_bistable_simulation(
 	
 	// Initialize Memory
 	cutilSafeCall (cudaMalloc ((void**)&d_output_data, output_number * sizeof(double)));
-	cutilSafeCall (cudaMalloc ((void**)&d_next_polarization, cells_number * sizeof(double)));
+	/*cutilSafeCall (cudaMalloc ((void**)&d_next_polarization, cells_number * sizeof(double)));*/
 	cutilSafeCall (cudaMalloc ((void**)&d_polarization, cells_number * sizeof(double))); 
 	cutilSafeCall (cudaMalloc ((void**)&d_Ek, sizeof(double)*neighbours_number*cells_number));
 	cutilSafeCall (cudaMalloc ((void**)&d_cell_clock, cells_number * sizeof(int)));
@@ -276,7 +277,7 @@ void launch_bistable_simulation(
 
 	// Set Memory
 
-	cutilSafeCall (cudaMemcpy (d_next_polarization, h_polarization, cells_number * sizeof(double), cudaMemcpyHostToDevice));
+	/*cutilSafeCall (cudaMemcpy (d_next_polarization, h_polarization, cells_number * sizeof(double), cudaMemcpyHostToDevice));*/
 	cutilSafeCall (cudaMemcpy (d_polarization, h_polarization, cells_number * sizeof(double), cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpy (d_Ek, (double *)h_Ek, sizeof(double) * neighbours_number * cells_number, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpy (d_cell_clock, h_cell_clock, cells_number * sizeof(int), cudaMemcpyHostToDevice));
@@ -303,7 +304,7 @@ void launch_bistable_simulation(
 
 		stable = 0;
 		
-		update_inputs<<< grid, threads,shm_array_size,input_indexes_bytes>>> (d_polarization, d_input_indexes, j);
+		update_inputs<<< grid, threads,input_indexes_bytes>>> (d_polarization, d_input_indexes, j);
 		cudaThreadSynchronize ();
 		
 		
@@ -318,7 +319,7 @@ void launch_bistable_simulation(
 				/*cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
 				for (k=0;k<cells_number;k++) printf("i:%d, col:%d, cell:%d\t%e\n",i,color,k,h_polarization[k]);*/
 				
-				bistable_kernel<<< grid, threads, output_indexes_bytes >>> (d_polarization, d_next_polarization, d_cell_clock, d_Ek, d_neighbours, 
+				bistable_kernel<<< grid, threads, output_indexes_bytes >>> (d_polarization, /*d_next_polarization,*/ d_cell_clock, d_Ek, d_neighbours, 
 					j, d_output_indexes, d_stability, tolerance, d_output_data, d_cells_colors, color);
 					
 				// Wait Device
@@ -326,7 +327,7 @@ void launch_bistable_simulation(
 				
 				// Set Memory for the next iteration
 				//			cutilSafeCall (cudaMemcpy (d_polarization, d_next_polarization, cells_number * sizeof(double), cudaMemcpyDeviceToDevice));
-				swap_arrays(&d_polarization,&d_next_polarization);// same array
+				/*swap_arrays(&d_polarization,&d_next_polarization);// same array*/
 			}
 			//	for (count = 0; count<cells_number; count++) printf("%d",h_stability[count]);
 			//	printf("\n");
@@ -374,7 +375,7 @@ void launch_bistable_simulation(
 
 	// Free-up resources
 	cudaFree(d_output_data);
-	cudaFree(d_next_polarization);
+//	cudaFree(d_next_polarization);
 	cudaFree(d_input_indexes);
 	cudaFree(d_output_indexes);
 	cudaFree(d_polarization);
