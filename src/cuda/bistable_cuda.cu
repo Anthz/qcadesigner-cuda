@@ -10,7 +10,7 @@
 	con i nuovi valori di polarizzazione degli input (ancora DA MODIFICARE!)
 					*/
 /* ========================================================================== */
-#define CUPRINTF_B
+//#define CUPRINTF_B
 
 #include <cutil_inline.h>
 #include <cuda.h>
@@ -43,7 +43,7 @@ __device__ __constant__ int d_number_of_samples;
 __device__ __constant__ double d_clock_low;
 __device__ __constant__ double d_clock_high;
 
-extern	__shared__ char shm_array[];
+extern	__shared__ double shm_array[];
 
 __device__ inline int find(int x, int *array, int length)
 {
@@ -103,8 +103,9 @@ __global__ void bistable_kernel (
 		int color
 		)
 {
-	double *shm_polarizations = (double*)shm_array;
-	int* shm_output_indexes = (int *)&shm_polarizations[255];
+	
+	int* shm_output_indexes = (int *)shm_array;
+	double *shm_polarizations = (double*)&shm_output_indexes[d_output_number];
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
 	int nb_idx;   // Neighbour index
 	int q;
@@ -129,10 +130,10 @@ __global__ void bistable_kernel (
 		shm_polarizations[threadIdx.x] = d_polarization[thr_idx];
 		__syncthreads();
 		
-		if(threadIdx.x == 0 && color == 2 && sample == 100)
+/*		if(threadIdx.x == 0 && color == 2 && sample == 100)
 		{
-			cuPrintf("Polarizations[0:%e 50:%e 255:%e ...]\n", shm_polarizations[0], shm_polarizations[48], shm_polarizations[254]);
-		}
+			//cuPrintf("Polarizations[0:%e 50:%e 255:%e ...]\n", shm_polarizations[0], shm_polarizations[50], shm_polarizations[255]);
+		}*/
 		
 		//cuPrintf("GO! my_color:%d\n",color);
 		//cuPrintf("\nd_output_number = %d,\t d_output_indexes[0]=%d\n",d_output_number, d_output_indexes[0] );	
@@ -245,7 +246,7 @@ void launch_bistable_simulation(
 	double *h_output_data;
 	int old_percentage = 0, new_percentage;
 	int input_indexes_bytes = sizeof(int)*input_number;
-	int output_indexes_bytes = sizeof(int)*output_number;
+	int main_kernel_bytes = sizeof(double)*(output_number+BLOCK_DIM);
 	int total_iterations = 0;
 	
 	/*printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %d \n number_of_samples = %d\n max_iterations = %d\n, tolerance = %e\npref: %e, shift: %e, low: %e, high: %e\n",cells_number, neighbours_number, number_of_samples, max_iterations, tolerance,clock_prefactor,clock_shift,clock_low,clock_high);
@@ -320,7 +321,7 @@ void launch_bistable_simulation(
 
 		stable = 0;
 		
-		update_inputs<<< grid, threads>>> (d_polarization, d_input_indexes, j);
+		update_inputs<<< grid, threads, input_indexes_bytes>>> (d_polarization, d_input_indexes, j);
 		cudaThreadSynchronize ();
 		
 		
@@ -335,7 +336,7 @@ void launch_bistable_simulation(
 				/*cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
 				for (k=0;k<cells_number;k++) printf("i:%d, col:%d, cell:%d\t%e\n",i,color,k,h_polarization[k]);*/
 				
-				bistable_kernel<<< grid, threads >>> (d_polarization, /*d_next_polarization,*/ d_cell_clock, d_Ek, d_neighbours, 
+				bistable_kernel<<< grid, threads, main_kernel_bytes >>> (d_polarization, /*d_next_polarization,*/ d_cell_clock, d_Ek, d_neighbours, 
 					j, d_output_indexes, d_stability, tolerance, d_output_data, d_cells_colors, color);
 					
 				// Wait Device
