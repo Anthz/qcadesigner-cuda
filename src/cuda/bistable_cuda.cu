@@ -81,11 +81,11 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	  d_polarization[thr_idx]=(tmp > 0) ? 1: -1;
 	double sin0=sin(0.0);
 	double sinf0=__sinf(0.0);
-	double cospi2=cos(PI/2);
-	double cosfpi2=cosf(PI/2);
-	float flsin0=sin(0.0);
-	float flsinf0=__sinf(0.0);
-          cuPrintf("input: %e, sin(0)=%e, __sinf(0)=%e, cos(pi/2)=%e, __cosf(pi/2)=%e, float sin(0)=%e, float __sinf(0)=%e\n",d_polarization[thr_idx],sin0,sinf0,cospi2,cosfpi2,flsin0,flsinf0);
+	double cospi2=cos(PI/4);
+	double cosfpi2=cosf(PI/4);
+	double flsin0=sin(PI/5);
+	double flsinf0=__sinf(PI/5);
+          cuPrintf("input: %e, sin(0)=%e, __sinf(0)=%e, cos(pi/4)=%e, __cosf(pi/4)=%e, sin(pi/5)=%e, __sinf(pi/5)=%e\n",d_polarization[thr_idx],sin0,sinf0,cospi2,cosfpi2,flsin0,flsinf0);
 	}
 }
 
@@ -129,7 +129,7 @@ __global__ void bistable_kernel (
 	// Only useful threads must work
 	if (thr_idx < d_cells_number && color == d_cells_colors[thr_idx])
 	{		
-		cuPrintf("GO! my_color:%d\n",color);
+		//cuPrintf("GO! my_color:%d\n",color);
 		//cuPrintf("\nd_output_number = %d,\t d_output_indexes[0]=%d\n",d_output_number, d_output_indexes[0] );	
 		  
 		//cuPrintf("%f ", d_polarization[thr_idx]);	
@@ -298,7 +298,7 @@ void launch_bistable_simulation(
 	//srand(time(0));
 
 
-	for (j = 0; j < 10 /*number_of_samples*/; j++)
+	for (j = 0; j < 5/*number_of_samples*/; j++)
 	{
 
 		stable = 0;
@@ -306,12 +306,11 @@ void launch_bistable_simulation(
 		update_inputs<<< grid, threads >>> (d_polarization, d_input_indexes, j);
 		cudaThreadSynchronize ();
 		
-		/*cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
+		cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
 		if (j==0) 
 		{
 			for (i=0;i<cells_number;i++) printf("%e\n",h_polarization[i]);
-			j=number_of_samples;
-		}*/
+		}
 	
 		// In each sample...
 		for (i = 0; i < max_iterations && !stable; i++)
