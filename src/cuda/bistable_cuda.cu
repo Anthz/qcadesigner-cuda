@@ -240,9 +240,9 @@ void launch_bistable_simulation(
 	//coloring
 	color_graph(h_neighbours, cells_number, neighbours_number, &h_cells_colors, &num_colors);
 	//debug
-	printf("Number of samples:%d\nNumber of colors:%d\nColors:\n",number_of_samples, num_colors);
+	/*printf("Number of samples:%d\nNumber of colors:%d\nColors:\n",number_of_samples, num_colors);
 	for (i=0;i<cells_number;i++) printf("%d ",h_cells_colors[i]);
-	printf("\n");
+	printf("\n");*/
 	
 	// Set GPU Parameters
 	
@@ -315,7 +315,7 @@ void launch_bistable_simulation(
 		{
 		
 			cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
-			for (i=0;i<cells_number;i++) printf("%d\t%e\n",i,h_polarization[i]);
+			for (k=0;k<cells_number;k++) printf("%d\t%e\n",k,h_polarization[k]);
 				
 			// Launch Kernel
 			for(color = 1; color <= num_colors; color++)
