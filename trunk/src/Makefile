@@ -22,9 +22,10 @@ qcadesigner-cuda:
 	@echo "done."
 clean:
 	@echo Cleaning...
-	@rm -f ../obj/*.o ../obj/objects/*.o ../obj/cuda/*.o\
+	@rm -f ../obj/*.o ../obj/objects/*.o ../obj/coloring/*.o ../obj/cuda/*.o\
 	@rm -f ../bin/*
 	@rm -f *.o
 	@rm -f cuda/*.o
 	@rm -f objects/*.o
+	@rm -f coloring/*.o
 	@echo done.
