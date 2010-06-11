@@ -16,7 +16,9 @@
 #include <cuda.h>
 //#include "cuPrintf.cu"
 #include <time.h>
+extern "C"{
 #include "../coloring/coloring.h"
+}
 #include <math.h>
 
 #define BLOCK_DIM 256
@@ -233,7 +235,7 @@ void launch_bistable_simulation(
 
 	// Set Devices
 	//cudaSetDevice (cutGetMaxGflopsDeviceId());
-	cudaPrintfInit ();
+//	cudaPrintfInit ();
 
 	//starting timer
 	timespec startTime, endTime;
@@ -342,8 +344,8 @@ void launch_bistable_simulation(
 		
 
 	}
-	cudaPrintfDisplay(stdout, true);
-	cudaPrintfEnd();
+//	cudaPrintfDisplay(stdout, true);
+//	cudaPrintfEnd();
 
 
 

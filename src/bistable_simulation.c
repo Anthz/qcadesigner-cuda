@@ -30,9 +30,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-extern "C"{
 #include "cuda/conversion.h"
-}
 
 /*#ifdef GTK_GUI*/
 /*  #include "callback_helpers.h"*/
