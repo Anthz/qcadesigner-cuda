@@ -73,7 +73,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	__syncthreads();
 	
 	input_idx = find(thr_idx, shm_array, d_input_number);
-        //cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
+    cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
 	if (input_idx >= 0)
 	{
 		tmp = ((double)( 1 << input_idx)) * (double)sample * 4.0 * PI /(double) d_number_of_samples;
@@ -81,7 +81,10 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 		tmp = -1 * sin(tmp);
 		//cuPrintf("tmp: %e, ",tmp);
 		d_polarization[thr_idx]=(tmp > 0) ? 1: -1;
-		cuPrintf("Ciao sono l'input %d: %e\n",thr_idx,d_polarization[thr_idx]);
+		cuPrintf("Ciao sono l'input %d: %e. Input index:",thr_idx,d_polarization[thr_idx]);
+		int i;
+		for (i=0;i<d_input_number;i++) cuPrintf("%d ", shm_array[i]);
+		printf("\n");
 		/*double sin0=sin(0.0);
 		double sinf0=__sinf(0.0);
 		double cospi2=cos(PI/2);
