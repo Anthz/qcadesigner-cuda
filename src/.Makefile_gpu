@@ -62,8 +62,9 @@ OBJECTS = \
 	objects/QCADStretchyObject.o \
 	objects/QCADSubstrate.o \
 	cuda/bistable_cuda.o \
-	cuda/conversion.o\
-	cuda/coherence_vector_cuda.o 
+	cuda/conversion.o \
+	cuda/coherence_vector_cuda.o \
+	coloring/coloring.o
 
 ifeq ($(EXTRA_PARAMS1), sm_10)
       NVCFLAGS += -arch=sm_10
@@ -100,6 +101,9 @@ qcadesigner-cuda: $(OBJECTS)
 	$(CC) $(GLIB) $(CFLAGS_LIBRARIES) $(CFLAGS) $(EXTRA_PARAMS3) -c -o $@ $<
 	
 cuda/%.o: cuda/%.c
+	@$(CC) $(GLIB) $(CFLAGS_LIBRARIES) $(CFLAGS) $(EXTRA_PARAMS3) -c -o $@ $<
+	
+coloring/%.o: coloring/%.c
 	@$(CC) $(GLIB) $(CFLAGS_LIBRARIES) $(CFLAGS) $(EXTRA_PARAMS3) -c -o $@ $<
 	
 objects/%.o: objects/%.c
