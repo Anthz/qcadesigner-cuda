@@ -69,8 +69,8 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	
 	if (threadIdx.x < d_input_number)
 	{
-		if (threadIdx.x==4) cuPrintf("Sono %d nel mio blocco, e leggo %d\n", threadIdx.x, d_input_indexes[threadIdx.x]);
 		shm_array[threadIdx.x] = d_input_indexes[threadIdx.x];
+		if (threadIdx.x==4) cuPrintf("\nSono %d nel mio blocco, e leggo %d\nLo metto in shared e.... %d VOILà!\n", threadIdx.x, d_input_indexes[threadIdx.x],shm_array[threadIdx.x]);
 	}
 	
 	__syncthreads();
