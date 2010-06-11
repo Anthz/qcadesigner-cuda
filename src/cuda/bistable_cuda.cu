@@ -77,9 +77,9 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	if (input_idx >= 0)
 	{
 		tmp = ((double)( 1 << input_idx)) * (double)sample * 4.0 * PI /(double) d_number_of_samples;
-		cuPrintf("tmp: %e, ",tmp);
+		//cuPrintf("tmp: %e, ",tmp);
 		tmp = -1 * sin(tmp);
-		cuPrintf("tmp: %e, ",tmp);
+		//cuPrintf("tmp: %e, ",tmp);
 		d_polarization[thr_idx]=(tmp > 0) ? 1: -1;
 		/*double sin0=sin(0.0);
 		double sinf0=__sinf(0.0);
