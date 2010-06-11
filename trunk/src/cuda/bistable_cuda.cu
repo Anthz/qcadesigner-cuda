@@ -76,7 +76,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 		input_idx = (i + j) / 2;
 		if (shm_array[input_idx] == thr_idx)
 			d_polarization[thr_idx]=(-1 * __sinf(((double)( 1 << input_idx)) * __fdividef((double)sample * 4.0 * PI ,(double) d_number_of_samples)) > 0) ? 1: -1;
-		else if (array[input_idx] > x) j = input_idx - 1;
+		else if (shm_array[input_idx] > thr_idx) j = input_idx - 1;
 		else i = input_idx + 1;
 	}
 }
@@ -105,13 +105,9 @@ __global__ void bistable_kernel (
 	double new_polarization;
 	double polarization_math;
 	double clock_value;
-	int input_idx;
 	int output_idx;
 	int stable;
 	int *shm_output_indexes = shm_array;
-	double nb_pol;
-	//double kink;
-	int total_iterations = 0;
 	
 	if (threadIdx.x < d_output_number)
 	{
@@ -226,6 +222,7 @@ void launch_bistable_simulation(
 	int old_percentage = 0, new_percentage;
 	int input_indexes_bytes = sizeof(int)*input_number;
 	int output_indexes_bytes = sizeof(int)*output_number;
+	int total_iterations = 0;
 
 	
 	/*printf("\ntesting launch parameters:\n cells_number = %d\n neighbours_number = %d \n number_of_samples = %d\n max_iterations = %d\n, tolerance = %e\npref: %e, shift: %e, low: %e, high: %e\n",cells_number, neighbours_number, number_of_samples, max_iterations, tolerance,clock_prefactor,clock_shift,clock_low,clock_high);
