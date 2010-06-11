@@ -10,7 +10,7 @@
 	con i nuovi valori di polarizzazione degli input (ancora DA MODIFICARE!)
 					*/
 /* ========================================================================== */
-#define CUPRINTF_B
+//#define CUPRINTF_B
 
 #include <cutil_inline.h>
 #include <cuda.h>
@@ -71,8 +71,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	}
 	__syncthreads();
 	
-	//input_idx = find(thr_idx, shm_array, d_input_number); <-----AHAHhahahahHAHH non copia l'ultimo su 5 la copia in shared
-	input_idx = find(thr_idx, d_input_indexes, d_input_number);
+	input_idx = find(thr_idx, shm_array, d_input_number);
 		
     //cuPrintf("input idx: %i, input_number: %i sample: %i\n",input_idx,d_input_number,sample);
 	if (input_idx >= 0)
@@ -82,17 +81,6 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 		tmp = -1 * sin(tmp);
 		//cuPrintf("tmp: %e, ",tmp);
 		d_polarization[thr_idx]=(tmp > 0) ? 1: -1;
-		//cuPrintf("Ciao sono l'input %d: %e. Input index:",thr_idx,d_polarization[thr_idx]);
-		//int i;
-		//for (i=0;i<d_input_number;i++) cuPrintf("%d ", shm_array[i]);
-		//cuPrintf("\n");
-		/*double sin0=sin(0.0);
-		double sinf0=__sinf(0.0);
-		double cospi2=cos(PI/2);
-		double cosfpi2=cosf(PI/2);
-		double flsin0=sin(PI/5);
-		double flsinf0=__sinf(PI/5);
-		cuPrintf("input: %e, sin(0)=%e, __sinf(0)=%e, cos(pi/4)=%e, __cosf(pi/4)=%e, sin(pi/5)=%e, __sinf(pi/5)=%e\n",d_polarization[thr_idx],sin0,sinf0,cospi2,cosfpi2,flsin0,flsinf0);*/
 	}
 }
 
@@ -290,10 +278,6 @@ void launch_bistable_simulation(
 	cutilSafeCall (cudaMemcpy (d_input_indexes, input_indexes, sizeof(int)*input_number, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpy (d_output_indexes, output_indexes, sizeof(int)*output_number, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpy (d_cells_colors, h_cells_colors, sizeof(int)*cells_number, cudaMemcpyHostToDevice));
-	
-	printf("\nIo host mando questi al device:\n");
-	for (i=0;i<input_number;i++) printf("%d ", input_indexes[i]);
-	printf("\n\n");
 
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_prefactor", &(clock_prefactor), sizeof(double), 0, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_shift", &(clock_shift), sizeof(double), 0, cudaMemcpyHostToDevice));
