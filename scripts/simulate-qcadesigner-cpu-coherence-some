@@ -28,5 +28,6 @@ do
 		cat ../sim_outputs/coherence/$i-$now-cpu.log | mutt -s "$i-$now-cpu - Simulation done." -a $i-$now-cpu.png -- $mail
 		#mail -s "$i-$now-cpu - Simulation done." $mail < sim_outputs/coherence/$i-$now-cpu.log
 	done
+	cd ../../scripts
 done
 echo All done.

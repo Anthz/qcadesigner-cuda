@@ -1,4 +1,4 @@
-.PHONY: all qcadesigner-cpu qcadesigner-cuda usage
+.PHONY: all qcadesigner-cpu qcadesigner-cuda usage clean clean-all
 
 .DEFAULT: usage
 
@@ -20,22 +20,29 @@ qcadesigner-cuda:
 	@echo "Making GPU version of qcadesigner. Please stand by..."
 	@make -f .Makefile_gpu EXTRA_PARAMS1=$(GPU_ARCH) EXTRA_PARAMS2=$(GPU_OPT) EXTRA_PARAMS3=$(GPU_DBG) 
 	@echo "done."
+	
 clean-all:
-	@echo Cleaning...
-	@rm -f ../obj/*.o ../obj/objects/*.o ../obj/coloring/*.o ../obj/cuda/*.o\
-	@rm -f ../bin/*
-	@rm -f *.o
-	@rm -f cuda/*.o
-	@rm -f objects/*.o
-	@rm -f coloring/*.o
-	@echo done.
+	@echo Removing object files and executables...
+	@rm -f ../obj/*.o 
+	@rm -f ../obj/objects/*.o 
+	@rm -f ../obj/coloring/*.o 
+	@rm -f ../obj/cuda/*.o 
+	@rm -f ../bin/* 
+	@rm -f *.o 
+	@rm -f cuda/*.o 
+	@rm -f objects/*.o 
+	@rm -f coloring/*.o 
+	@echo done. 
 
 clean:
-	@echo Cleaning...
-	@rm -f ../obj/*.o ../obj/objects/*.o ../obj/coloring/*.o ../obj/cuda/*.o\
-        @rm -f *.o
-	@rm -f cuda/*.o
-	@rm -f objects/*.o
-	@rm -f coloring/*.o
+	@echo Removing object files ...
+	@rm -f ../obj/*.o 
+	@rm -f ../obj/objects/*.o 
+	@rm -f ../obj/coloring/*.o 
+	@rm -f ../obj/cuda/*.o 
+	@rm -f *.o 
+	@rm -f cuda/*.o 
+	@rm -f objects/*.o 
+	@rm -f coloring/*.o 
 	@echo done.
 
