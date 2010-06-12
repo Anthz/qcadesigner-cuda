@@ -60,11 +60,12 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	while (i <= j)
 	{
 		input_idx = (i + j) / 2;
-		if (shm_array[input_idx] == thr_idx)
-			d_polarization[thr_idx]=(-1 * __sinf(((double)( 1 << input_idx)) * __fdividef((double)sample * 4.0 * PI ,(double) d_number_of_samples)) > 0) ? 1: -1;
+		if (shm_array[input_idx] == thr_idx) break;
 		else if (shm_array[input_idx] > thr_idx) j = input_idx - 1;
 		else i = input_idx + 1;
 	}
+	if (i<=j)
+		d_polarization[thr_idx]=(-1 * __sinf(((double)( 1 << input_idx)) * __fdividef((double)sample * 4.0 * PI ,(double) d_number_of_samples)) > 0) ? 1: -1;
 }
 
 
@@ -155,11 +156,12 @@ __global__ void bistable_kernel (
 			while (q <= j)
 			{
 				output_idx = (q + j) / 2;
-				if (shm_output_indexes[output_idx] == thr_idx)
-					d_output_data[output_idx] = new_polarization;
+				if (shm_output_indexes[output_idx] == thr_idx) break;
 				else if (shm_output_indexes[output_idx] > thr_idx) j = output_idx - 1;
 				else q = output_idx + 1;
 			}
+			if (q<=j)
+				d_output_data[output_idx] = new_polarization;
 		}
 		/*else
 		{
