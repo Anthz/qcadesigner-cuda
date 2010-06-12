@@ -374,7 +374,8 @@ void launch_bistable_simulation(
 	cudaFree(d_Ek);
 	cudaFree(d_neighbours);
 	cudaFree(d_cells_colors);
-
+	
+	//cudaThreadExit();
 
 	//get time result	
 	clock_gettime(CLOCK_REALTIME, &endTime);
