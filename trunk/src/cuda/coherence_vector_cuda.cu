@@ -1,32 +1,19 @@
-/**
-TODO:
-   1. double/Double
-   2. Il problema delle celle Fixed/Input è risolto settando tutti i vicini a -1
-   3. Parametri generate_next_clock. Valutare possibilità di generare next_clock nel kernel.
-   4. Valutare la possibilità di rendere le dimensioni degli array e delle matrici multipli di BLOCK_DIM in modo da eliminare gli "if" nel kernel.
-   5. Nel caso in cui double sia sufficiente, ottimizzare letture e scritture con double3
-   6. Le define sparse per il codice sono state copiate anzicchè includere gli header... non è il massimo.
-*/
-
-
 #include <cutil_inline.h>
 #include <cuda.h>
-//#include "cuPrintf.cu"
 
-extern "C"{
-#include "design.h"
-#include "objects/QCADCell.h"
-#include "exp_array.h"
-#include "coherence_vector.h"
+extern "C"
+{
+	#include "design.h"
+	#include "objects/QCADCell.h"
+	#include "exp_array.h"
+	#include "coherence_vector.h"
 }
 
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
-#undef	CLAMP
-#define	CLAMP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
-#define	BLOCK_DIM 64
+#define	BLOCK_DIM 256
 #define	magnitude_energy_vector(P,G) (hypot(2*(G), (P)) * over_hbar) /* (sqrt((4.0*(G)*(G) + (P)*(P))*over_hbar_sqr)) */
 
 // Physical Constants (from coherence_vector.h)
@@ -81,7 +68,7 @@ __constant__ int options_algorithm;
 __constant__ double clock_total_shift;
 
 
-__global__ void kernelIterationParallel 
+__global__ void kernelIterationParallelEuler 
 (
 	double *d_polarization, 
 	double *d_lambda_x, 
@@ -97,53 +84,126 @@ __global__ void kernelIterationParallel
 )
 {
 
-   int th_index; 
-   int nb_index;   // Neighbour index
-   int i;
-   double clock_value;
-   double PEk;
-   double lambda_x, next_lambda_x;
-   double lambda_y, next_lambda_y;
-   double lambda_z, next_lambda_z;
-	double k1, k2, k3, k4;
+	int th_index;	// Thread index 
+   	int nb_index;   // Neighbour index
+   	int i;
+   	double clock_value;
+   	double PEk;
+   	double lambda_x;
+   	double lambda_y;
+   	double lambda_z;
+	double k1;
 	double mag;
-	double arg , dmod;
 
-	th_index =  blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
+	th_index =  blockIdx.x * blockDim.x + threadIdx.x;
 
-   // Only useful threads must work
-   if (th_index < cells_number)
-   {
-      PEk = 0;
-      for (i = 0; i < neighbours_number; i++)
-      {
+   	// Only useful threads must work
+   	if (th_index < cells_number)
+   	{
+      		PEk = 0;
+      		for (i = 0; i < neighbours_number; i++)
+      		{
 			if (d_neighbours[th_index*neighbours_number+i] != -1)
 			{
 	 			nb_index = d_neighbours[th_index*neighbours_number+i];
 	 			PEk = PEk + (d_polarization[nb_index] * d_Ek[th_index*neighbours_number+i]) ;
 			}
-      }
+      		}
 
-
-
-
-	arg = ((double) (1 << total_number_of_inputs)) * (double)sample_number *  optimization_options_four_pi_over_number_samples - PI * (double)d_clock[th_index] * 0.5;
-	
-	
-	for (dmod = abs(arg); dmod > 0; dmod = dmod - 2*PI);
+		// Generate clock
+		clock_value = optimization_options_clock_prefactor * cos(((double) (1 << total_number_of_inputs)) * (double)sample_number *  optimization_options_four_pi_over_number_samples - PI * (double)d_clock[th_index] * 0.5) + clock_total_shift;
 		
-	dmod = dmod + 2*PI;
+		if ( clock_value > options_clock_high )
+		{
+			clock_value = options_clock_high;
+		}
+		if ( clock_value < options_clock_low )
+		{
+			clock_value = options_clock_low;
+		}
 
-	if ((dmod < (PI/2+0.1) && dmod > (PI/2)) || (dmod > (3*PI/2-0.1) && dmod < (3*PI/2))) 
-			if (cos (arg) > 0)
-				//cuPrintf("Cosine function error: arg: %.15g, cos: %.15g\n, dmod: %.15g", arg, cos(arg), dmod);
+		// Compute Magnitude
+		mag = magnitude_energy_vector (PEk, clock_value);
 
+
+		// Buffer Lambdas
+      		lambda_x = d_lambda_x[th_index];
+      		lambda_y = d_lambda_y[th_index];
+      		lambda_z = d_lambda_z[th_index];
+
+		
+		// LAMBDA_X-----------------------------------------------------------------------
+   
+		k1 = options_time_step * (-(2.0 * clock_value * over_hbar / mag * tanh (optimization_options_hbar_over_kBT * mag) + lambda_x) / options_relaxation + (PEk * lambda_y * over_hbar));
+
+		d_lambda_x[th_index] = lambda_x + k1;
+
+		//----------------------------------------------------------------------------------
+
+
+		// LAMBDA_Y-----------------------------------------------------------------------
+
+   		k1 = options_time_step * -(options_relaxation * (PEk * lambda_x + 2.0 * clock_value * lambda_z) + hbar * lambda_y) / (options_relaxation * hbar);
+			
+		d_lambda_y[th_index] = lambda_y + k1;
+
+		//--------------------------------------------------------------------------------
+
+
+		// LAMBDA_Z------------------------------------------------------------------------
+
+		k1 = options_time_step * (PEk * tanh (optimization_options_hbar_over_kBT * mag) + mag * (2.0 * clock_value * options_relaxation * lambda_y - hbar * lambda_z)) / (options_relaxation * hbar * mag);
 	
-	if ((dmod > (PI/2-0.1) && dmod < (PI/2)) || (dmod < (3*PI/2+0.1) && dmod > (3*PI/2))) 
-			if (cos (arg) < 0)
-				//cuPrintf("Cosine function error: arg: %.15g, cos: %.15g\n, dmod: %.15g", arg, cos(arg), dmod);
+		d_lambda_z[th_index] = lambda_z + k1;
+		
+		//-----------------------------------------------------------------------------------------
 
-	
+   	}
+}
+
+
+__global__ void kernelIterationParallelKutta 
+(
+	double *d_polarization, 
+	double *d_lambda_x, 
+	double *d_lambda_y, 
+	double *d_lambda_z, 
+	double *d_Ek, 
+	unsigned int *d_clock,
+	int *d_neighbours, 
+	int cells_number, 
+	int neighbours_number, 
+	int sample_number, 
+	int total_number_of_inputs
+)
+{
+
+   	int th_index;	// Thread index 
+   	int nb_index;   // Neighbour index
+   	int i;
+   	double clock_value;
+   	double PEk;
+   	double lambda_x, next_lambda_x;
+   	double lambda_y, next_lambda_y;
+   	double lambda_z, next_lambda_z;
+	double k1, k2, k3, k4;
+	double mag;
+
+	th_index =  blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
+
+   	// Only useful threads must work
+   	if (th_index < cells_number)
+   	{
+      		PEk = 0;
+      		for (i = 0; i < neighbours_number; i++)
+      		{
+			if (d_neighbours[th_index*neighbours_number+i] != -1)
+			{
+	 			nb_index = d_neighbours[th_index*neighbours_number+i];
+	 			PEk = PEk + (d_polarization[nb_index] * d_Ek[th_index*neighbours_number+i]) ;
+			}
+      		}
+
 		// Generate clock
 		clock_value = optimization_options_clock_prefactor * cos(((double) (1 << total_number_of_inputs)) * (double)sample_number *  optimization_options_four_pi_over_number_samples - PI * (double)d_clock[th_index] * 0.5) + clock_total_shift;
 		
@@ -157,78 +217,52 @@ __global__ void kernelIterationParallel
 		}
 
 
+		mag = magnitude_energy_vector (PEk, clock_value);
+
 		// subsequent calls
-      lambda_x = d_lambda_x[th_index];
-      lambda_y = d_lambda_y[th_index];
-      lambda_z = d_lambda_z[th_index];
+      		lambda_x = d_lambda_x[th_index];
+      		lambda_y = d_lambda_y[th_index];
+      		lambda_z = d_lambda_z[th_index];
 
 		
 		// LAMBDA_X-----------------------------------------------------------------------
 
-   	mag = magnitude_energy_vector (PEk, clock_value);
-   
-		k1 = options_time_step * (-(2.0 * clock_value * over_hbar / mag * tanh (optimization_options_hbar_over_kBT * mag) + lambda_x) / options_relaxation + (PEk * lambda_y * over_hbar));
-
-		if ((optimization_options_hbar_over_kBT * mag > 0 && tanh (optimization_options_hbar_over_kBT * mag) < 0) || (optimization_options_hbar_over_kBT * mag < 0 && tanh (optimization_options_hbar_over_kBT * mag) > 0))
-			//cuPrintf("Tanh function error: arg: %.15g, tanh: %.15g\n, mag: %.15g", optimization_options_hbar_over_kBT * mag, tanh (optimization_options_hbar_over_kBT * mag), mag);
-
-		if (RUNGE_KUTTA == options_algorithm)
-		{
-		   k2 = options_time_step * (-(2.0 * clock_value * over_hbar / mag * tanh (optimization_options_hbar_over_kBT * mag) + (lambda_x + k1/2)) / options_relaxation + (PEk * lambda_y * over_hbar));
-		   k3 = options_time_step * (-(2.0 * clock_value * over_hbar / mag * tanh (optimization_options_hbar_over_kBT * mag) + (lambda_x + k2/2)) / options_relaxation + (PEk * lambda_y * over_hbar));
-		   k4 = options_time_step * (-(2.0 * clock_value * over_hbar / mag * tanh (optimization_options_hbar_over_kBT * mag) + (lambda_x + k3)) / options_relaxation + (PEk * lambda_y * over_hbar));
-		   next_lambda_x = lambda_x + k1/6 + k2/3 + k3/3 + k4/6;
-		}
-		else if (EULER_METHOD == options_algorithm)
-		   next_lambda_x = lambda_x + k1;
-		else
-		   next_lambda_x = 0;
-
+   		k1 = options_time_step * (-(2.0 * clock_value * over_hbar / mag * tanh (optimization_options_hbar_over_kBT * mag) + lambda_x) / options_relaxation + (PEk * lambda_y * over_hbar));
+		k2 = options_time_step * (-(2.0 * clock_value * over_hbar / mag * tanh (optimization_options_hbar_over_kBT * mag) + (lambda_x + k1/2)) / options_relaxation + (PEk * lambda_y * over_hbar));
+		k3 = options_time_step * (-(2.0 * clock_value * over_hbar / mag * tanh (optimization_options_hbar_over_kBT * mag) + (lambda_x + k2/2)) / options_relaxation + (PEk * lambda_y * over_hbar));
+		k4 = options_time_step * (-(2.0 * clock_value * over_hbar / mag * tanh (optimization_options_hbar_over_kBT * mag) + (lambda_x + k3)) / options_relaxation + (PEk * lambda_y * over_hbar));
+		
+		d_lambda_x[th_index] = lambda_x + k1/6 + k2/3 + k3/3 + k4/6;
+		
 		//----------------------------------------------------------------------------------
 
 
 		// LAMBDA_Y-----------------------------------------------------------------------
 
-   	k1 = options_time_step * -(options_relaxation * (PEk * lambda_x + 2.0 * clock_value * lambda_z) + hbar * lambda_y) / (options_relaxation * hbar);
-
-		if (RUNGE_KUTTA == options_algorithm)
-		{
-			k2 = options_time_step * -(options_relaxation * (PEk * lambda_x + 2.0 * clock_value * lambda_z) + hbar * (lambda_y + k1/2)) / (options_relaxation * hbar);
-			k3 = options_time_step * -(options_relaxation * (PEk * lambda_x + 2.0 * clock_value * lambda_z) + hbar * (lambda_y + k2/2)) / (options_relaxation * hbar);
-			k4 = options_time_step * -(options_relaxation * (PEk * lambda_x + 2.0 * clock_value * lambda_z) + hbar * (lambda_y + k3)) / (options_relaxation * hbar);
-			next_lambda_y = lambda_y + k1/6 + k2/3 + k3/3 + k4/6;
-		}
-		else if (EULER_METHOD == options_algorithm)
-			next_lambda_y = lambda_y + k1;
-		else
-			next_lambda_y = 0;
-
+   		k1 = options_time_step * -(options_relaxation * (PEk * lambda_x + 2.0 * clock_value * lambda_z) + hbar * lambda_y) / (options_relaxation * hbar);
+		k2 = options_time_step * -(options_relaxation * (PEk * lambda_x + 2.0 * clock_value * lambda_z) + hbar * (lambda_y + k1/2)) / (options_relaxation * hbar);
+		k3 = options_time_step * -(options_relaxation * (PEk * lambda_x + 2.0 * clock_value * lambda_z) + hbar * (lambda_y + k2/2)) / (options_relaxation * hbar);
+		k4 = options_time_step * -(options_relaxation * (PEk * lambda_x + 2.0 * clock_value * lambda_z) + hbar * (lambda_y + k3)) / (options_relaxation * hbar);
+		
+		d_lambda_y[th_index] = lambda_y + k1/6 + k2/3 + k3/3 + k4/6;
+		
 		//--------------------------------------------------------------------------------
 
 
 		// LAMBDA_Z------------------------------------------------------------------------
+		
 		k1 = options_time_step * (PEk * tanh (optimization_options_hbar_over_kBT * mag) + mag * (2.0 * clock_value * options_relaxation * lambda_y - hbar * lambda_z)) / (options_relaxation * hbar * mag);
-		if  (optimization_options_hbar_over_kBT*mag)
-		if (RUNGE_KUTTA == options_algorithm)
-		{
-		   k2 = options_time_step * (PEk * tanh (optimization_options_hbar_over_kBT * mag) + mag * (2.0 * clock_value * options_relaxation * lambda_y - hbar * (lambda_z + k1/2))) / (options_relaxation * hbar * mag);
-		   k3 = options_time_step * (PEk * tanh (optimization_options_hbar_over_kBT * mag) + mag * (2.0 * clock_value * options_relaxation * lambda_y - hbar * (lambda_z + k2/2))) / (options_relaxation * hbar * mag);
-		   k4 = options_time_step * (PEk * tanh (optimization_options_hbar_over_kBT * mag) + mag * (2.0 * clock_value * options_relaxation * lambda_y - hbar * (lambda_z + k3))) / (options_relaxation * hbar * mag);
-		   next_lambda_z = lambda_z + k1/6 + k2/3 + k3/3 + k4/6;
-		}
-		else if (EULER_METHOD == options_algorithm)
-		   next_lambda_z = lambda_z + k1;
-		else
-		   next_lambda_z = 0;
-
+		k2 = options_time_step * (PEk * tanh (optimization_options_hbar_over_kBT * mag) + mag * (2.0 * clock_value * options_relaxation * lambda_y - hbar * (lambda_z + k1/2))) / (options_relaxation * hbar * mag);
+		k3 = options_time_step * (PEk * tanh (optimization_options_hbar_over_kBT * mag) + mag * (2.0 * clock_value * options_relaxation * lambda_y - hbar * (lambda_z + k2/2))) / (options_relaxation * hbar * mag);
+		k4 = options_time_step * (PEk * tanh (optimization_options_hbar_over_kBT * mag) + mag * (2.0 * clock_value * options_relaxation * lambda_y - hbar * (lambda_z + k3))) / (options_relaxation * hbar * mag);
+		
+		d_lambda_z[th_index] = lambda_z + k1/6 + k2/3 + k3/3 + k4/6;
+		
 		//-----------------------------------------------------------------------------------------
-
-      d_lambda_x[th_index] = next_lambda_x;
-      d_lambda_y[th_index] = next_lambda_y;
-      d_lambda_z[th_index] = next_lambda_z;
-      
-   }
+     
+	}
 }
+
 
 
 /**
@@ -270,48 +304,49 @@ void launch_coherence_vector_simulation
 	#ifdef DEBUG_ON
 	FILE *fp;
 	#endif
-   int i, j, k, l;
-   unsigned int cells_number;
-   unsigned int max_neighbours_number;
-   unsigned int index;
+   	int i, j, k, l;
+   	unsigned int cells_number;
+   	unsigned int max_neighbours_number;
+   	unsigned int index;
 	BUS_LAYOUT_ITER bli ;
   	double dPolarization = 2.0 ;
   	int idxMasterBitOrder = -1.0 ;
-   double total_clock_shift = (optimization_options->clock_shift) + options->clock_shift;
+   	double total_clock_shift = (optimization_options->clock_shift) + options->clock_shift;
 
 	// Compute the number of cells, the max neighbours count and set the cuda_id field of each cell
-   cells_number = 0;
-   max_neighbours_number = 0;
-   index = 0;
-   for (i = 0; i < number_of_cell_layers; i++)
-   {
-      for (j = 0; j < number_of_cells_in_layer[i]; j++)
-      {
+   	cells_number = 0;
+   	max_neighbours_number = 0;
+   	index = 0;
+   	for (i = 0; i < number_of_cell_layers; i++)
+   	{
+      		for (j = 0; j < number_of_cells_in_layer[i]; j++)
+      		{
 	 		if (((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours > max_neighbours_number)
 	    		max_neighbours_number = ((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours;
    
-         sorted_cells[i][j]->cuda_id = index;
+         		sorted_cells[i][j]->cuda_id = index;
 
-         index++;
-      }
-      cells_number += number_of_cells_in_layer[i];
-   }
+         		index++;
+      		}
+      		
+		cells_number += number_of_cells_in_layer[i];
+   	}
 
   	// Set GPU Parameters
-   dim3 threads (BLOCK_DIM);
-   dim3 grid (ceil ((double)cells_number/BLOCK_DIM));
+   	dim3 threads (BLOCK_DIM);
+   	dim3 grid (ceil ((double)cells_number/BLOCK_DIM));
 
-   // Set Devices
-   cudaSetDevice (cutGetMaxGflopsDeviceId());
+   	// Set Devices
+   	cudaSetDevice (cutGetMaxGflopsDeviceId());
 
-   // Allocate CUDA-Compatible Structures
-   h_polarization =	(double*) malloc (sizeof(double)*cells_number);
-   h_clock =			(unsigned int*) malloc (sizeof(unsigned int)*cells_number);
-   h_lambda_x =		(double*) malloc (sizeof(double)*cells_number);
-   h_lambda_y =		(double*) malloc (sizeof(double)*cells_number);
-   h_lambda_z =		(double*) malloc (sizeof(double)*cells_number);
-   h_Ek =				(double*) malloc (sizeof(double)*cells_number*max_neighbours_number);
-   h_neighbours =		(int*) malloc (sizeof(int)*cells_number*max_neighbours_number);
+   	// Allocate CUDA-Compatible Structures
+   	h_polarization =	(double*) malloc (sizeof(double)*cells_number);
+   	h_clock =		(unsigned int*) malloc (sizeof(unsigned int)*cells_number);
+   	h_lambda_x =		(double*) malloc (sizeof(double)*cells_number);
+   	h_lambda_y =		(double*) malloc (sizeof(double)*cells_number);
+   	h_lambda_z =		(double*) malloc (sizeof(double)*cells_number);
+   	h_Ek =			(double*) malloc (sizeof(double)*cells_number*max_neighbours_number);
+   	h_neighbours =		(int*) malloc (sizeof(int)*cells_number*max_neighbours_number);
 
 	// Fill CUDA-Compatible Structures 
 	index = 0;
@@ -323,29 +358,29 @@ void launch_coherence_vector_simulation
 		for (j = 0; j < number_of_cells_in_layer[i]; j++)
   		{
 			h_polarization[index] = qcad_cell_calculate_polarization(sorted_cells[i][j]);
-		   h_lambda_x[index] = ((coherence_model *)sorted_cells[i][j]->cell_model)->lambda_x;
-		   h_lambda_y[index] = ((coherence_model *)sorted_cells[i][j]->cell_model)->lambda_y;
-		   h_lambda_z[index] = ((coherence_model *)sorted_cells[i][j]->cell_model)->lambda_z;
+		   	h_lambda_x[index] = ((coherence_model *)sorted_cells[i][j]->cell_model)->lambda_x;
+		   	h_lambda_y[index] = ((coherence_model *)sorted_cells[i][j]->cell_model)->lambda_y;
+		   	h_lambda_z[index] = ((coherence_model *)sorted_cells[i][j]->cell_model)->lambda_z;
 			h_clock[index] = (sorted_cells[i][j]->cell_options).clock;
 			#ifdef DEBUG_ON
 			fprintf (fp, "Cell: %d, Initial Polarization: %g\n\tNeighbours (Ek):\n", index, h_polarization[index]);
 			#endif
 			for (k = 0; k < max_neighbours_number; k++)
-	   	{
-	   		if (k < ((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours)
-      		{
-         		h_Ek[index*max_neighbours_number+k] = ((coherence_model *)sorted_cells[i][j]->cell_model)->Ek[k];
-         		h_neighbours[index*max_neighbours_number+k] = (((coherence_model *)sorted_cells[i][j]->cell_model)->neighbours[k])->cuda_id;
-      		}
-      		else
-      		{
-         		h_Ek[index*max_neighbours_number+k] = -1;
-         		h_neighbours[index*max_neighbours_number+k] = -1;
-      		}
-      		#ifdef DEBUG_ON
+	   		{
+	   			if (k < ((coherence_model *)sorted_cells[i][j]->cell_model)->number_of_neighbours)
+      				{
+         				h_Ek[index*max_neighbours_number+k] = ((coherence_model *)sorted_cells[i][j]->cell_model)->Ek[k];
+         				h_neighbours[index*max_neighbours_number+k] = (((coherence_model *)sorted_cells[i][j]->cell_model)->neighbours[k])->cuda_id;
+      				}
+      				else
+      				{
+         				h_Ek[index*max_neighbours_number+k] = -1;
+         				h_neighbours[index*max_neighbours_number+k] = -1;
+      				}
+      				#ifdef DEBUG_ON
 				fprintf (fp, "\t\t%d(%g)\n", h_neighbours[index*max_neighbours_number+k], h_Ek[index*max_neighbours_number+k]);
 				#endif
-	   	}	
+	   		}	
 			index++;
 			#ifdef DEBUG_ON
 			fprintf (fp, "\n");
@@ -356,14 +391,14 @@ void launch_coherence_vector_simulation
 	fclose (fp);
 	#endif
 
-   // Initialize Device Memory
-   cutilSafeCall (cudaMalloc (&d_polarization, cells_number*sizeof(double)));
-   cutilSafeCall (cudaMalloc (&d_clock, cells_number*sizeof(unsigned int)));
-   cutilSafeCall (cudaMalloc (&d_lambda_x, cells_number*sizeof(double)));
-   cutilSafeCall (cudaMalloc (&d_lambda_y, cells_number*sizeof(double)));
-   cutilSafeCall (cudaMalloc (&d_lambda_z, cells_number*sizeof(double)));
-   cutilSafeCall (cudaMalloc (&d_Ek, sizeof(double)*max_neighbours_number*cells_number));
-   cutilSafeCall (cudaMalloc (&d_neighbours, sizeof(unsigned int)*max_neighbours_number*cells_number));
+   	// Initialize Device Memory
+   	cutilSafeCall (cudaMalloc (&d_polarization, cells_number*sizeof(double)));
+   	cutilSafeCall (cudaMalloc (&d_clock, cells_number*sizeof(unsigned int)));
+   	cutilSafeCall (cudaMalloc (&d_lambda_x, cells_number*sizeof(double)));
+   	cutilSafeCall (cudaMalloc (&d_lambda_y, cells_number*sizeof(double)));
+   	cutilSafeCall (cudaMalloc (&d_lambda_z, cells_number*sizeof(double)));
+   	cutilSafeCall (cudaMalloc (&d_Ek, sizeof(double)*max_neighbours_number*cells_number));
+   	cutilSafeCall (cudaMalloc (&d_neighbours, sizeof(unsigned int)*max_neighbours_number*cells_number));
 
 	// Set Device Memory
 	cutilSafeCall (cudaMemcpy (d_polarization, h_polarization, cells_number*sizeof(double), cudaMemcpyHostToDevice));
@@ -375,38 +410,37 @@ void launch_coherence_vector_simulation
 	cutilSafeCall (cudaMemcpy (d_neighbours, h_neighbours, sizeof(int)*max_neighbours_number*cells_number, cudaMemcpyHostToDevice));
 
 	// Set Constants
-   cutilSafeCall (cudaMemcpyToSymbol("optimization_options_clock_prefactor", &(optimization_options->clock_prefactor), sizeof(double), 0, cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpyToSymbol("optimization_options_clock_shift", &(optimization_options->clock_shift), sizeof(double), 0, cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpyToSymbol("optimization_options_four_pi_over_number_samples", &(optimization_options->four_pi_over_number_samples), sizeof(double), 0, cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpyToSymbol("optimization_options_two_pi_over_number_samples", &(optimization_options->two_pi_over_number_samples), sizeof(double), 0, cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpyToSymbol("optimization_options_hbar_over_kBT", &(optimization_options->hbar_over_kBT), sizeof(double), 0, cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpyToSymbol("options_clock_low", &(options->clock_low), sizeof(double), 0, cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpyToSymbol("options_clock_high", &(options->clock_high), sizeof(double), 0, cudaMemcpyHostToDevice));  
-   cutilSafeCall (cudaMemcpyToSymbol("options_clock_shift", &(options->clock_shift), sizeof(double), 0, cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpyToSymbol("options_relaxation", &(options->relaxation), sizeof(double), 0, cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpyToSymbol("options_time_step", &(options->time_step), sizeof(double), 0, cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpyToSymbol("options_algorithm", &(options->algorithm), sizeof(int), 0, cudaMemcpyHostToDevice));
-   cutilSafeCall (cudaMemcpyToSymbol("clock_total_shift", &(total_clock_shift), sizeof(double), 0, cudaMemcpyHostToDevice));
+   	cutilSafeCall (cudaMemcpyToSymbol("optimization_options_clock_prefactor", &(optimization_options->clock_prefactor), sizeof(double), 0, cudaMemcpyHostToDevice));
+   	cutilSafeCall (cudaMemcpyToSymbol("optimization_options_clock_shift", &(optimization_options->clock_shift), sizeof(double), 0, cudaMemcpyHostToDevice));
+   	cutilSafeCall (cudaMemcpyToSymbol("optimization_options_four_pi_over_number_samples", &(optimization_options->four_pi_over_number_samples), sizeof(double), 0, cudaMemcpyHostToDevice));
+   	cutilSafeCall (cudaMemcpyToSymbol("optimization_options_two_pi_over_number_samples", &(optimization_options->two_pi_over_number_samples), sizeof(double), 0, cudaMemcpyHostToDevice));
+   	cutilSafeCall (cudaMemcpyToSymbol("optimization_options_hbar_over_kBT", &(optimization_options->hbar_over_kBT), sizeof(double), 0, cudaMemcpyHostToDevice));
+   	cutilSafeCall (cudaMemcpyToSymbol("options_clock_low", &(options->clock_low), sizeof(double), 0, cudaMemcpyHostToDevice));
+   	cutilSafeCall (cudaMemcpyToSymbol("options_clock_high", &(options->clock_high), sizeof(double), 0, cudaMemcpyHostToDevice));  
+   	cutilSafeCall (cudaMemcpyToSymbol("options_clock_shift", &(options->clock_shift), sizeof(double), 0, cudaMemcpyHostToDevice));
+   	cutilSafeCall (cudaMemcpyToSymbol("options_relaxation", &(options->relaxation), sizeof(double), 0, cudaMemcpyHostToDevice));
+   	cutilSafeCall (cudaMemcpyToSymbol("options_time_step", &(options->time_step), sizeof(double), 0, cudaMemcpyHostToDevice));   
+   	cutilSafeCall (cudaMemcpyToSymbol("clock_total_shift", &(total_clock_shift), sizeof(double), 0, cudaMemcpyHostToDevice));
 
 	// perform the iterations over all samples //
   	for (j = 0; j < num_samples; j++)
-   {
-   	if (0 == j % 10000)
-      {
-   	   // Update the progress bar
+   	{
+   		if (0 == j % 10000)
+      		{
+   	   		// Update the progress bar
 			printf ("Percentage: %g\n", (float) j / (float) num_samples);
-      }
+      		}
 
-    	//if (EXHAUSTIVE_VERIFICATION == SIMULATION_TYPE)
-      	for (idxMasterBitOrder = 0, design_bus_layout_iter_first (design->bus_layout, &bli, QCAD_CELL_INPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i), idxMasterBitOrder++)
+    		//if (EXHAUSTIVE_VERIFICATION == SIMULATION_TYPE)
+      		for (idxMasterBitOrder = 0, design_bus_layout_iter_first (design->bus_layout, &bli, QCAD_CELL_INPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i), idxMasterBitOrder++)
         	{
 				dPolarization = -sin (((double) (1 << idxMasterBitOrder)) * (double) j * optimization_options->four_pi_over_number_samples) > 0 ? 1 : -1;
 				index = exp_array_index_1d (design->bus_layout->inputs, BUS_LAYOUT_CELL, i).cell->cuda_id;
 				h_polarization[index] = dPolarization;
-        		if (0 == j % record_interval)
-          		sim_data->trace[i].data[j/record_interval] = dPolarization;
-        }
-    	/*else
+        			if (0 == j % record_interval)
+          			sim_data->trace[i].data[j/record_interval] = dPolarization;
+        	}
+    		/*else
 			// DA SISTEMARE...
       	for (design_bus_layout_iter_first (design->bus_layout, &bli, QCAD_CELL_INPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i))
         		if (exp_array_index_1d (pvt->inputs, VT_INPUT, i).active_flag)
@@ -418,12 +452,12 @@ void launch_coherence_vector_simulation
             		sim_data->trace[i].data[j/record_interval] = dPolarization ;
           } */
 
-    	if (0 == j % record_interval)
-      {
-      	for (design_bus_layout_iter_first (design->bus_layout, &bli, QCAD_CELL_INPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i))
+    		if (0 == j % record_interval)
+      		{
+      			for (design_bus_layout_iter_first (design->bus_layout, &bli, QCAD_CELL_INPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i))
 			{
 				index = exp_array_index_1d (design->bus_layout->inputs, BUS_LAYOUT_CELL, i).cell->cuda_id;
-         	sim_data->trace[i].data[j/record_interval] = h_polarization[index];
+         			sim_data->trace[i].data[j/record_interval] = h_polarization[index];
 			}		
 		}
 
@@ -431,20 +465,27 @@ void launch_coherence_vector_simulation
 
 		// Launch Kernel
 
-      //printf ("Iteration# %d...", j); 
-	//cudaPrintfInit();
+      		//cudaPrintfInit();
 
-	kernelIterationParallel<<< grid, threads >>> (d_polarization, d_lambda_x, d_lambda_y, d_lambda_z, d_Ek, d_clock, d_neighbours, cells_number, max_neighbours_number, j, design->bus_layout->inputs->icUsed);
+		if (options->algorithm == EULER_METHOD)
+		{
+			kernelIterationParallelEuler<<< grid, threads >>> (d_polarization, d_lambda_x, d_lambda_y, d_lambda_z, d_Ek, d_clock, d_neighbours, cells_number, max_neighbours_number, j, design->bus_layout->inputs->icUsed);
+			cudaThreadSynchronize ();
+		}
+		else if (options->algorithm == RUNGE_KUTTA)
+		{
+			kernelIterationParallelKutta<<< grid, threads >>> (d_polarization, d_lambda_x, d_lambda_y, d_lambda_z, d_Ek, d_clock, d_neighbours, cells_number, max_neighbours_number, j, design->bus_layout->inputs->icUsed);
+			cudaThreadSynchronize ();
+		else
+		{
+			printf ("Error: Method not supported\n");
+			return;
+		}
+      		
 
-      // Wait Device
-      cudaThreadSynchronize ();
-		
 
-//cudaPrintfDisplay(stdout, true);
-
- 
-
-//cudaPrintfEnd();
+		//cudaPrintfDisplay(stdout, true);
+		//cudaPrintfEnd();
 
 		//printf("Complete!\n");
 
