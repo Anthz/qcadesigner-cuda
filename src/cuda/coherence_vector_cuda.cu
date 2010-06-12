@@ -183,9 +183,9 @@ __global__ void kernelIterationParallelKutta
    	int i;
    	double clock_value;
    	double PEk;
-   	double lambda_x, next_lambda_x;
-   	double lambda_y, next_lambda_y;
-   	double lambda_z, next_lambda_z;
+   	double lambda_x;
+   	double lambda_y;
+   	double lambda_z;
 	double k1, k2, k3, k4;
 	double mag;
 
@@ -476,6 +476,7 @@ void launch_coherence_vector_simulation
 		{
 			kernelIterationParallelKutta<<< grid, threads >>> (d_polarization, d_lambda_x, d_lambda_y, d_lambda_z, d_Ek, d_clock, d_neighbours, cells_number, max_neighbours_number, j, design->bus_layout->inputs->icUsed);
 			cudaThreadSynchronize ();
+			}
 		else
 		{
 			printf ("Error: Method not supported\n");
