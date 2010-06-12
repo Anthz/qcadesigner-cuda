@@ -83,7 +83,7 @@ __global__ void bistable_kernel (
 		int color
 		)
 {
-	extern	__shared__ int shm_array[];
+	extern	__shared__ int shm_output_indexes[];
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
 	int nb_idx;   // Neighbour index
 	int q,j;
@@ -93,7 +93,6 @@ __global__ void bistable_kernel (
 	double clock_value;
 	int output_idx;
 	int stable;
-	int *shm_output_indexes = shm_array;
 	
 	if (threadIdx.x < d_output_number)
 	{
@@ -249,27 +248,17 @@ void launch_bistable_simulation(
 
 	fprintf(stderr,"Allocating memory on device...\n");
 	// Initialize Memory
-	fprintf(stderr,"output_number %d\n",output_number);
 	cutilSafeCall (cudaMalloc ((void**)&d_output_data, output_number * sizeof(double)));
-	fprintf(stderr,"cells_number %d\n",cells_number);
 	/*cutilSafeCall (cudaMalloc ((void**)&d_next_polarization, cells_number * sizeof(double)));*/
 	cutilSafeCall (cudaMalloc ((void**)&d_polarization, cells_number * sizeof(double))); 
-	fprintf(stderr,"neighbours_number*cells_number %d\n",neighbours_number*cells_number);
 	cutilSafeCall (cudaMalloc ((void**)&d_Ek, sizeof(double)*neighbours_number*cells_number));
-	fprintf(stderr,"cells_number %d\n",cells_number);
 	cutilSafeCall (cudaMalloc ((void**)&d_cell_clock, cells_number * sizeof(int)));
-	fprintf(stderr,"neighbours_number*cells_number %d\n",neighbours_number*cells_number);
 	cutilSafeCall (cudaMalloc ((void**)&d_neighbours, sizeof(int)*neighbours_number*cells_number));
-	fprintf(stderr,"input_number %d\n",input_number);
 	cutilSafeCall (cudaMalloc ((void**)&d_input_indexes, sizeof(int)*input_number));
-	fprintf(stderr,"output_number %d\n",output_number);
 	cutilSafeCall (cudaMalloc ((void**)&d_output_indexes, sizeof(int)*output_number));
-	fprintf(stderr,"cells_number %d\n",cells_number);
 	cutilSafeCall (cudaMalloc ((void**)&d_stability, sizeof(int)*cells_number));
-	fprintf(stderr,"cells_number %d\n",cells_number);
 	cutilSafeCall (cudaMalloc ((void**)&d_cells_colors, sizeof(int)*cells_number));
 	
-	fprintf(stderr,"CudaMalloc done!\n");
 	// Set Memory
 
 	/*cutilSafeCall (cudaMemcpy (d_next_polarization, h_polarization, cells_number * sizeof(double), cudaMemcpyHostToDevice));*/
@@ -280,8 +269,6 @@ void launch_bistable_simulation(
 	cutilSafeCall (cudaMemcpy (d_input_indexes, input_indexes, sizeof(int)*input_number, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpy (d_output_indexes, output_indexes, sizeof(int)*output_number, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpy (d_cells_colors, h_cells_colors, sizeof(int)*cells_number, cudaMemcpyHostToDevice));
-
-	fprintf(stderr, "CudaMemcpy done!\n");
 
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_prefactor", &(clock_prefactor), sizeof(double), 0, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_shift", &(clock_shift), sizeof(double), 0, cudaMemcpyHostToDevice));
@@ -294,7 +281,6 @@ void launch_bistable_simulation(
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_high", &(clock_high), sizeof(double), 0, cudaMemcpyHostToDevice));
 	
 	fprintf(stderr,"...memory allocated!\nSimulation started...\n");
-
 	for (j = 0; j < number_of_samples; j++)
 	{
 
