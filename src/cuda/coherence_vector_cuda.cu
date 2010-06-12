@@ -428,7 +428,7 @@ void launch_coherence_vector_simulation
    		if (0 == j % 10000)
       		{
    	   		// Update the progress bar
-			sprintf (stdout,"Percentage: %g\n", (float) j / (float) num_samples);
+			fprintf (stdout,"Percentage: %g\n", (float) j / (float) num_samples);
 			fflush(stdout);
       		}
 
