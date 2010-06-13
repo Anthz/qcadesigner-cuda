@@ -65,6 +65,8 @@ static inline void bistable_refresh_all_Ek (int number_of_cell_layers, int *numb
 //-------------------------------------------------------------------//
 simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, bistable_OP *options, VectorTable *pvt)
   {
+  
+  options->number_of_samples = options->number_of_samples != -1 ? options->number_of_samples : 2000*(1<<design->bus_layout->inputs->icUsed);
   int i, j, k, l, total_cells = 0 ;
   int icLayers, icCellsInLayer;
   time_t start_time, end_time;
@@ -166,8 +168,8 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   // -- Initialize the simualtion data structure -- //
   sim_data = g_malloc0 (sizeof(simulation_data));
   sim_data->number_of_traces = design->bus_layout->inputs->icUsed + design->bus_layout->outputs->icUsed;
-  //sim_data->number_samples = options->number_of_samples;
-  sim_data->number_samples = options->number_of_samples != -1 ? options->number_of_samples : 2000*(1<<design->bus_layout->inputs->icUsed); //modified by MIGLIE
+  sim_data->number_samples = options->number_of_samples;
+ // sim_data->number_samples = options->number_of_samples != -1 ? options->number_of_samples : 2000*(1<<design->bus_layout->inputs->icUsed); //modified by MIGLIE
   sim_data->trace = g_malloc0 (sizeof (struct TRACEDATA) * sim_data->number_of_traces);
 
   
@@ -200,6 +202,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
     sim_data->clock_data[i].trace_function = QCAD_CELL_FIXED; // Abusing the notation here
 
     sim_data->clock_data[i].data = g_malloc0 (sizeof (double) * sim_data->number_samples);
+
 
     if (SIMULATION_TYPE == EXHAUSTIVE_VERIFICATION)
       for (j = 0; j < sim_data->number_samples; j++)
@@ -327,13 +330,17 @@ fprintf(stderr,"...eseguita!\n");
 #else //if not CUDA
   for (j = 0; j < sim_data_number_samples ; j++)
   {
-		new_percentage = j*100/sim_data_number_samples;
-		if( new_percentage != old_percentage) 
-		{
-			fprintf(stderr,"\r#Simulating on CPU: %d%%",new_percentage);
-			fflush(stderr);
-		}
-		old_percentage = new_percentage;
+	/*for(k=0;k<4;k++)
+		printf("i:%d clock:%e",k,sim_data->clock_data[k].data[j]);
+		printf("j:%d\n",j);*/
+		
+	new_percentage = j*100/sim_data_number_samples;
+	if( new_percentage != old_percentage) 
+	{
+		fprintf(stderr,"\r#Simulating on CPU: %d%%",new_percentage);
+		fflush(stderr);
+	}
+	old_percentage = new_percentage;
     // if (j % 10 == 0)
       // {
       // // write the completion percentage to the command history window //
@@ -434,7 +441,7 @@ fprintf(stderr,"...eseguita!\n");
 					old_polarization = current_cell_model->polarization;
 					polarization_math = 0;
 					
-
+						
 					for (q = 0; q < current_cell_model->number_of_neighbours; q++)
 						polarization_math += (current_cell_model->Ek[q] * ((bistable_model *)current_cell_model->neighbours[q]->cell_model)->polarization) ;
 

@@ -1090,7 +1090,7 @@ static void serialize_trace_cuda (FILE *pfile, struct TRACEDATA *trace, int icSa
         else
           break ;
       if (sample_idx < icSamples - 1)
-        fprintf (pfile, "\n") ;
+        fprintf (pfile, "\n");
       }
     fprintf (pfile, "%e\n", trace->data[icSamples - 1]) ;
     fprintf (pfile, "#[#TRACE_DATA]\n") ;
