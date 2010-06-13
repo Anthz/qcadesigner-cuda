@@ -1,0 +1,31 @@
+now=$(date +%s)
+echo These files will be used for testing:
+echo $1
+if [ ! -f ../data/circuits/$1 ]
+then
+	echo "Usage: $0 file.qca"
+	echo "file.qca must exist in ../data/circuits"
+else	
+	echo Simulating $1...
+	../bin/qcadesigner-cuda -f ../data/circuits/$1 -o ../scripts/coherence_options.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/coherence/$1-$now > ../data/sim_outputs/coherence/$1-$now-cuda.log
+	echo Done simulating $1.
+	cd ../data
+	@rm gnuplot/circuit
+	mv -T sim_outputs/coherence/$1-$now-cuda.out gnuplot/circuit
+	cd gnuplot
+	gnuplot script_plot.gpi
+	mv -T circuit.png $1-$now-cuda.png
+	rm circuit
+	
+	for mail in $@
+	do
+		echo Emailing data to: $mail
+		echo Subject: $1-$now-cuda - Simulation done.
+		echo Body: $(cat ../sim_outputs/coherence/$1-$now-cuda.log)
+		echo Attachment: $1-$now-cuda.png
+		cat ../sim_outputs/coherence/$1-$now-cuda.log | mutt -s "$1-$now-cuda - Simulation done." -a $1-$now-cuda.png -- $mail
+		#mail -s "$1-$now-cuda - Simulation done." $mail < sim_outputs/coherence/$1-$now-cuda.log
+	done
+	cd ../../scripts
+fi
+echo All done.
