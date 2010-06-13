@@ -47,9 +47,8 @@ __device__ __constant__ double d_clock_high;
 __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int sample)
 {
 	extern	__shared__ int shm_array[];
-	int i=0,j=d_input_number-1,input_idx = -1;
+	int i=0,j=d_input_number-1,input_idx;
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;
-	int mid;
 	
 	if (threadIdx.x < d_input_number)
 	{
@@ -62,12 +61,12 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	{		
 		while (i <= j)
 		{
-			mid = (i + j) / 2;
-			if (shm_array[mid] == thr_idx) input_idx = mid;
-			else if (shm_array[mid] > thr_idx) j = mid - 1;
-			else i = mid + 1;
+			input_idx = (i + j) / 2;
+			if (shm_array[input_idx] == thr_idx) break;
+			else if (shm_array[input_idx] > thr_idx) j = input_idx - 1;
+			else i = input_idx + 1;
 		}
-		if (input_idx != -1)
+		if (i <= j)
 			d_polarization[thr_idx]=(-1 * __sinf(((double)( 1 << input_idx)) * __fdividef((double)sample * 4.0 * PI ,(double) d_number_of_samples)) > 0) ? 1: -1;
 	}
 }
@@ -96,8 +95,7 @@ __global__ void bistable_kernel (
 	double new_polarization;
 	double polarization_math;
 	double clock_value;
-	int output_idx = -1;
-	int mid;
+	int output_idx;
 	int stable;
 
 	
@@ -161,12 +159,12 @@ __global__ void bistable_kernel (
 			j=d_output_number-1;
 			while (q <= j)
 			{
-				mid = (q + j) / 2;
-				if (shm_output_indexes[mid ] == thr_idx) output_idx = mid;
-				else if (shm_output_indexes[mid ] > thr_idx) j = mid  - 1;
-				else q = mid  + 1;
+				output_idx = (q + j) / 2;
+				if (shm_output_indexes[output_idx ] == thr_idx) break;
+				else if (shm_output_indexes[output_idx] > thr_idx) j = output_idx  - 1;
+				else q = output_idx  + 1;
 			}
-			if (output_idx != -1)
+			if (q <= j)
 				d_output_data[output_idx] = new_polarization;
 		}
 		/*else
