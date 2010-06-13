@@ -327,7 +327,7 @@ fprintf(stderr,"...eseguita!\n");
 #else //if not CUDA
   for (j = 0; j < sim_data_number_samples ; j++)
   {
-		new_percentage = j*100/number_of_samples;
+		new_percentage = j*100/sim_data_number_samples;
 		if( new_percentage != old_percentage) 
 		{
 			fprintf(stderr,"\r#Simulating on CPU: %d%%",new_percentage);
