@@ -6,7 +6,8 @@ then
 	echo "Usage: $0 file.qca {email_1 ... email_n}"
 	echo "file.qca must exist in ../data/circuits"
 else	
-	echo Simulating $1...
+	echo Simulating $i...
+	echo > ../sim_outputs/coherence/$i-$now-cpu.log
 	../bin/qcadesigner-cuda -f ../data/circuits/$1 -o ../scripts/coherence_options_$1.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/coherence/$1-$now | tee ../sim_outputs/coherence/$1-$now-cuda.log
 	echo Done simulating $1.
 	cd ../data

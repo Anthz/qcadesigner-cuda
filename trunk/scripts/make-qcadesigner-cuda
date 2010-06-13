@@ -1,9 +1,4 @@
 cd ../src
 make clean
-if [ -n $1 ] # $1 not null
-then
-	make qcadesigner-cuda GPU_ARCH=$1
-else
-	make qcadesigner-cuda GPU_ARCH=sm_13
-fi
+make qcadesigner-cuda GPU_ARCH=sm_13
 
