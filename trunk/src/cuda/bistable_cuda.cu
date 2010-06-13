@@ -47,8 +47,9 @@ __device__ __constant__ double d_clock_high;
 __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int sample)
 {
 	extern	__shared__ int shm_array[];
-	int i=0,j=d_input_number-1,input_idx;
+	int i=0,j=d_input_number-1,input_idx = -1;
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;
+	int mid;
 	
 	if (threadIdx.x < d_input_number)
 	{
@@ -59,12 +60,12 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	//find input index and update it
 	while (i <= j)
 	{
-		input_idx = (i + j) / 2;
-		if (shm_array[input_idx] == thr_idx) break;
-		else if (shm_array[input_idx] > thr_idx) j = input_idx - 1;
-		else i = input_idx + 1;
+		mid = (i + j) / 2;
+		if (shm_array[mid] == thr_idx) input_idx = mid;
+		else if (shm_array[mid] > thr_idx) j = mid - 1;
+		else i = mid + 1;
 	}
-	if (i<=j)
+	if (input_idx != -1)
 		d_polarization[thr_idx]=(-1 * __sinf(((double)( 1 << input_idx)) * __fdividef((double)sample * 4.0 * PI ,(double) d_number_of_samples)) > 0) ? 1: -1;
 }
 
@@ -92,8 +93,10 @@ __global__ void bistable_kernel (
 	double new_polarization;
 	double polarization_math;
 	double clock_value;
-	int output_idx;
+	int output_idx = -1;
+	int mid;
 	int stable;
+
 	
 	if (threadIdx.x < d_output_number)
 	{
@@ -155,12 +158,12 @@ __global__ void bistable_kernel (
 			j=d_output_number-1;
 			while (q <= j)
 			{
-				output_idx = (q + j) / 2;
-				if (shm_output_indexes[output_idx] == thr_idx) break;
-				else if (shm_output_indexes[output_idx] > thr_idx) j = output_idx - 1;
-				else q = output_idx + 1;
+				mid = (q + j) / 2;
+				if (shm_output_indexes[mid ] == thr_idx) output_idx = mid;
+				else if (shm_output_indexes[mid ] > thr_idx) j = mid  - 1;
+				else q = mid  + 1;
 			}
-			if (q<=j)
+			if (output_idx != -1)
 				d_output_data[output_idx] = new_polarization;
 		}
 		/*else
@@ -170,12 +173,12 @@ __global__ void bistable_kernel (
 	}
 }
 
-__host__ void swap_arrays(double **array_1, double **array_2)
+/*__host__ void swap_arrays(double **array_1, double **array_2)
 {
 	double *temp = *array_1;
 	*array_1 = *array_2;
 	*array_2 = temp;
-}
+}*/
    
 extern "C"
 void launch_bistable_simulation(
