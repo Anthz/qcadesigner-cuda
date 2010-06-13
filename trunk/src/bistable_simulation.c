@@ -26,12 +26,12 @@
 //////////////////////////////////////////////////////////
 
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <stdio.h>
 #include <string.h>
-#include "cuda/conversion.h"
 #include <time.h>
+#include "cuda/conversion.h"
 
 /*#ifdef GTK_GUI*/
 /*  #include "callback_helpers.h"*/
@@ -82,7 +82,8 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   int idxMasterBitOrder = -1 ;
   int max_iterations_per_sample = ((bistable_OP *)options)->max_iterations_per_sample;
   BUS_LAYOUT_ITER bli ;
-  timespec startTime, endTime;
+  struct timespec startTime, endTime;
+  struct timespec temp;
 /*#ifdef REDUCE_DEREF*/
 /*  // For dereference reduction*/
 /*  int sim_data_number_samples = 0, pvt_vectors_icUsed = 0,*/
@@ -107,7 +108,6 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   bistable_model *current_cell_model = NULL ;
   QCADCell *cell;
   int new_percentage, old_percentage=-1;
-  timespec temp;
   double sim_time;
   STOP_SIMULATION = FALSE;
   int total_iterations = 0;
@@ -518,7 +518,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 		temp.tv_nsec = endTime.tv_nsec-startTime.tv_nsec;
 	}
 	sim_time = (double)temp.tv_sec + (double)temp.tv_nsec/1000000000;
-	printf("Core simulation time = %f seconds (%f+0.%f?)\n",sim_time, (double)temp.tv_sec,(double)temp.tv_nsec);
+	printf("Core simulation time = %f seconds\n",sim_time);
 
 
 

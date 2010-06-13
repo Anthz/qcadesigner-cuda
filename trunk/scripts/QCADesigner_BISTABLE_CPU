@@ -1,1 +1,1 @@
-../bin/qcadesigner-cpu -f ../data/circuits/Circuit.qca -o bistable_options.txt -n 1 -t 0.001 -e BISTABLE
+../bin/qcadesigner-cpu -f ../data/circuits/CircuitAND_8000.qca -o bistable_options.txt -n 1 -t 0.001 -e BISTABLE
