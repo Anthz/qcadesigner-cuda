@@ -229,11 +229,12 @@ void launch_bistable_simulation(
 	
 	//coloring
 	
-	fprintf(stderr,"Coloring...\n");
+	fprintf(stderr,"Coloring...");
+	fflush(stderr);
 	color_graph(h_neighbours, cells_number, neighbours_number, &h_cells_colors, &num_colors);
-	fprintf(stderr,"...colored!\n");
+	fprintf(stderr," done!\n");
 	
-	printf("Number of samples:%d\nNumber of colors:%d\n",number_of_samples, num_colors);
+	printf("Number of colors = %d\n", num_colors);
 	
 	// Set GPU Parameters
 	
@@ -248,11 +249,10 @@ void launch_bistable_simulation(
 	cudaPrintfInit ();
 #endif
 
-	//starting timer
-	timespec startTime, endTime;
-	clock_gettime(CLOCK_REALTIME, &startTime);
+	
 
-	fprintf(stderr,"Allocating memory on device...\n");
+	fprintf(stderr,"Allocating memory on device...");
+	fflush(stderr);
 	// Initialize Memory
 	cutilSafeCall (cudaMalloc ((void**)&d_output_data, output_number * sizeof(double)));
 	/*cutilSafeCall (cudaMalloc ((void**)&d_next_polarization, cells_number * sizeof(double)));*/
@@ -286,7 +286,7 @@ void launch_bistable_simulation(
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_low", &(clock_low), sizeof(double), 0, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_high", &(clock_high), sizeof(double), 0, cudaMemcpyHostToDevice));
 	
-	fprintf(stderr,"...memory allocated!\n");
+	fprintf(stderr," done!\n");
 	for (j = 0; j < number_of_samples; j++)
 	{
 		new_percentage = j*100/number_of_samples;
@@ -360,7 +360,7 @@ void launch_bistable_simulation(
 
 	}
 	
-	printf("Iterations per sample: %f\n", (double)total_iterations/number_of_samples);
+	printf("Iterations per sample = %f\n", (double)total_iterations/number_of_samples);
 	
 	fprintf(stderr,"\r#Simulating on CUDA: 100%%!\n");
 #ifdef CUPRINTF_B
@@ -384,22 +384,6 @@ void launch_bistable_simulation(
 	
 	//cudaThreadExit();
 
-	//get time result	
-	clock_gettime(CLOCK_REALTIME, &endTime);
-		timespec temp;
-	if ((endTime.tv_nsec-startTime.tv_nsec)<0)
-	{
-		temp.tv_sec = endTime.tv_sec-startTime.tv_sec-1;
-		temp.tv_nsec = 1000000000+endTime.tv_nsec-startTime.tv_nsec;
-	} 
-	else
-	{
-		temp.tv_sec = endTime.tv_sec-startTime.tv_sec;
-		temp.tv_nsec = endTime.tv_nsec-startTime.tv_nsec;
-	}
-
-	fprintf(stdout, "\tProcessing time1: %f (s)\n", (double)temp.tv_sec);
-
-	fprintf(stdout, "\tProcessing time2: %f (ns)\n", (double)temp.tv_nsec);
+	
 }
 #undef CUPRINTF_B
