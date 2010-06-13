@@ -5,7 +5,7 @@ echo $circuit_ls
 for i in $circuit_ls
 do
 	echo Simulating $i...
-	../bin/qcadesigner-cuda -f ../data/circuits/$i -o ../scripts/coherence_options.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/coherence/$i-$now #> ../data/sim_outputs/coherence/$i-$now-cuda.log
+	../bin/qcadesigner-cuda -f ../data/circuits/$i -o ../scripts/coherence_options.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/coherence/$i-$now > ../data/sim_outputs/coherence/$i-$now-cuda.log
 	echo Done simulating $i.
 	cd ../data
 	@rm gnuplot/circuit

@@ -1,4 +1,8 @@
-circuit_ls+="CircuitAND_8000.qca "
+circuit_ls+="CircuitAND.qca " #pay attention to last space!
+circuit_ls+="CircuitNAND_8000.qca "
+circuit_ls+="CircuitNOR_8000.qca "
+circuit_ls+="CircuitXNOR_8000.qca "
+circuit_ls+="CircuitXOR_8000.qca "
 now=$(date +%s)
 echo These files will be used for testing:
 echo $circuit_ls
