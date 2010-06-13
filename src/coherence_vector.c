@@ -328,7 +328,7 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
       // -- set_progress_bar_fraction ((float) j / (float) number_samples) ;
       
    	   		// Update the progress bar
-			fprintf (stdout,"Percentage: %g\n", (float) j / (float) num_samples);
+			fprintf (stdout,"Percentage: %g\n", (float) j / (float) number_samples);
 			fflush(stdout);
 
       }
