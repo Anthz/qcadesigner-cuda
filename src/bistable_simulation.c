@@ -102,6 +102,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   double polarization_math;
   bistable_model *current_cell_model = NULL ;
   QCADCell *cell;
+  int new_percentage, old_percentage=-1;
 
   STOP_SIMULATION = FALSE;
   
@@ -220,7 +221,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   
   
 
-/*
+
  
   // randomize the cells in the design so as to minimize any numerical problems associated //
   // with having cells simulated in some predefined order. //
@@ -242,7 +243,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   if((end_time = time (NULL)) < 0)
      fprintf(stderr, "Could not get end time\n");
 
-*/
+
 	 
 /*  command_history_message("Total initialization time: %g s\n", (double)(end_time - start_time));*/
 
@@ -284,11 +285,11 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   //Fill array structures
 printf("design_bus_layout_inputs_icUsed = %d\n", design_bus_layout_inputs_icUsed);
 
-fprintf(stderr,"\nconversione...\n");
+fprintf(stderr,"Conversione strutture...\n");
 	sorted_cells_to_CUDA_Structures_array(sorted_cells, &h_polarization,&h_cell_clock, &h_Ek, 
 		&h_neighbours, number_of_cell_layers, number_of_cells_in_layer, &max_neighbours, &input_indexes, 
 		&input_number,&output_indexes, &output_number);
-fprintf(stderr,"\n...eseguita!\n");
+fprintf(stderr,"...eseguita!\n");
 
     output_traces = (double **)malloc(output_number * sizeof(double *));
 
@@ -324,12 +325,15 @@ fprintf(stderr,"\n...eseguita!\n");
 		sim_data->trace[design_bus_layout_inputs_icUsed + k].data[j] = output_traces[k][j];
 	
 #else //if not CUDA
-  printf("inizio simulazione\n");
   for (j = 0; j < sim_data_number_samples ; j++)
   {
-   if(j%100 ==0){
-    printf("Simulating: %d%\n",j*100/sim_data_number_samples);
-    }
+		new_percentage = j*100/number_of_samples;
+		if( new_percentage != old_percentage) 
+		{
+			fprintf(stderr,"\r#Simulating on CPU: %d%%",new_percentage);
+			fflush(stderr);
+		}
+		old_percentage = new_percentage;
     // if (j % 10 == 0)
       // {
       // // write the completion percentage to the command history window //
