@@ -17,7 +17,7 @@ NVCFLAGS := \
 	-I /usr/lib/glib-2.0/include
 
 CFLAGS_LIBRARIES := \
-	-L$(CUDAROOT)/lib\
+	-L$(CUDAROOT)/lib64\
 	-L$(CUDASDKROOT)/C/lib \
 	-Lusr/lib64\
 	-lcuda \
