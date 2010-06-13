@@ -58,15 +58,18 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	__syncthreads();
 	
 	//find input index and update it
-	while (i <= j)
-	{
-		mid = (i + j) / 2;
-		if (shm_array[mid] == thr_idx) input_idx = mid;
-		else if (shm_array[mid] > thr_idx) j = mid - 1;
-		else i = mid + 1;
+	if (thr_idx < d_cells_number)
+	{		
+		while (i <= j)
+		{
+			mid = (i + j) / 2;
+			if (shm_array[mid] == thr_idx) input_idx = mid;
+			else if (shm_array[mid] > thr_idx) j = mid - 1;
+			else i = mid + 1;
+		}
+		if (input_idx != -1)
+			d_polarization[thr_idx]=(-1 * __sinf(((double)( 1 << input_idx)) * __fdividef((double)sample * 4.0 * PI ,(double) d_number_of_samples)) > 0) ? 1: -1;
 	}
-	if (input_idx != -1)
-		d_polarization[thr_idx]=(-1 * __sinf(((double)( 1 << input_idx)) * __fdividef((double)sample * 4.0 * PI ,(double) d_number_of_samples)) > 0) ? 1: -1;
 }
 
 
@@ -213,7 +216,7 @@ void launch_bistable_simulation(
 	int k;
 	double *d_output_data;
 	double *h_output_data;
-	int old_percentage = 0, new_percentage;
+	int old_percentage = -1, new_percentage;
 	int input_indexes_bytes = sizeof(int)*input_number;
 	int output_indexes_bytes = sizeof(int)*output_number;
 	int total_iterations = 0;
@@ -285,9 +288,17 @@ void launch_bistable_simulation(
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_low", &(clock_low), sizeof(double), 0, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_high", &(clock_high), sizeof(double), 0, cudaMemcpyHostToDevice));
 	
-	fprintf(stderr,"...memory allocated!\nSimulation started...\n");
+	fprintf(stderr,"...memory allocated!\n");
 	for (j = 0; j < number_of_samples; j++)
 	{
+		new_percentage = j*100/number_of_samples;
+		if( new_percentage != old_percentage) 
+		{
+			fprintf(stderr,"\r#Simulating on CUDA: %d%%",new_percentage);
+			fflush(stderr);
+		}
+		old_percentage = new_percentage;
+
 
 		stable = 0;
 		
@@ -349,13 +360,6 @@ void launch_bistable_simulation(
 			(*output_traces)[k][j] = h_output_data[k];
 		}
 
-		new_percentage = j*100/number_of_samples;
-		if( new_percentage != old_percentage) 
-		{
-			fprintf(stderr,"\r#Simulating: %d%%",new_percentage);
-			fflush(stderr);
-		}
-		old_percentage = new_percentage;
 	}
 	
 	printf("Iterations per sample: %f\n", (double)total_iterations/number_of_samples);
