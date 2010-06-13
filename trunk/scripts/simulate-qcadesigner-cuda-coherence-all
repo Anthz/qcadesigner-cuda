@@ -2,13 +2,13 @@ circuit_ls=`ls ../data/circuits/`
 now=$(date +%s)
 echo These files will be used for simulation:
 echo $circuit_ls
-ffor i in $circuit_ls
+for i in $circuit_ls
 do
 	echo Simulating $i...
 	../bin/qcadesigner-cuda -f ../data/circuits/$i -o ../scripts/coherence_options_$i.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/coherence/$i-$now > ../data/sim_outputs/coherence/$i-$now-cuda.log
 	echo Done simulating $i.
 	cd ../data
-	@rm gnuplot/circuit
+	rm gnuplot/circuit
 	mv -T sim_outputs/coherence/$i-$now-cuda.out gnuplot/circuit
 	cd gnuplot
 	gnuplot script_plot.gpi
