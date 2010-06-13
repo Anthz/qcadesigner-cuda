@@ -19,7 +19,7 @@
 #include "cuPrintf.cu"
 #endif //CUPRINTF_B
 
-#include <time.h>
+
 extern "C"{
 #include "../coloring/coloring.h"
 }
