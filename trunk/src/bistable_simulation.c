@@ -477,7 +477,7 @@ fprintf(stderr,"...eseguita!\n");
 
     // -- collect all the output data from the simulation -- //
     for (design_bus_layout_iter_first (design_bus_layout, &bli, QCAD_CELL_OUTPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i))
-      fprintf(stderr,"out:%e\n",sim_data->trace[design_bus_layout_inputs_icUsed + i].data[j] = ((bistable_model *)exp_array_index_1d (design_bus_layout_outputs, BUS_LAYOUT_CELL, i).cell->cell_model)->polarization);
+      sim_data->trace[design_bus_layout_inputs_icUsed + i].data[j] = ((bistable_model *)exp_array_index_1d (design_bus_layout_outputs, BUS_LAYOUT_CELL, i).cell->cell_model)->polarization;
 
     // -- if the user wants to stop the simulation then exit. -- //
     if(TRUE == STOP_SIMULATION)
