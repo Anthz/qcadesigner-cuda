@@ -364,7 +364,7 @@ void launch_bistable_simulation(
 	
 	printf("Iterations per sample: %f\n", (double)total_iterations/number_of_samples);
 	
-	fprintf(stderr,"\r#Simulating: 100%%!\n");
+	fprintf(stderr,"\r#Simulating on CUDA: 100%%!\n");
 #ifdef CUPRINTF_B
 	cudaPrintfDisplay(stdout, true);
 	cudaPrintfEnd();

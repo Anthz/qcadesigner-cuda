@@ -222,7 +222,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   
 
 
- /*
+ 
   // randomize the cells in the design so as to minimize any numerical problems associated //
   // with having cells simulated in some predefined order. //
   // randomize the order in which the cells are simulated //
@@ -242,7 +242,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
   // -- get and print the total initialization time -- //
   if((end_time = time (NULL)) < 0)
      fprintf(stderr, "Could not get end time\n");
-*/
+
 
 	 
 /*  command_history_message("Total initialization time: %g s\n", (double)(end_time - start_time));*/
@@ -433,6 +433,7 @@ fprintf(stderr,"...eseguita!\n");
 					current_cell_model = ((bistable_model *)cell->cell_model) ;
 					old_polarization = current_cell_model->polarization;
 					polarization_math = 0;
+					
 
 					for (q = 0; q < current_cell_model->number_of_neighbours; q++)
 						polarization_math += (current_cell_model->Ek[q] * ((bistable_model *)current_cell_model->neighbours[q]->cell_model)->polarization) ;
@@ -459,10 +460,13 @@ fprintf(stderr,"...eseguita!\n");
 					// 			====> "&& stable" added by Miglie
 					//
 					stable = (fabs (new_polarization - old_polarization) <= tolerance) && stable ;
+					
+					fprintf(stderr,"new: %e, old:%e\n",new_polarization, old_polarization);
 				}
 			}
 		}
 	}//WHILE !STABLE
+	getchar();
 
 
 
@@ -481,7 +485,7 @@ fprintf(stderr,"...eseguita!\n");
       j = sim_data_number_samples ;
     }//for number of samples
 
-	fprintf(stderr,"\r#Simulating: 100%%!\n");
+	fprintf(stderr,"\r#Simulating on CPU: 100%%!\n");
 	
 #endif //CUDA
 
