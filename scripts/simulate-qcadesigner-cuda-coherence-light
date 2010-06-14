@@ -1,4 +1,4 @@
-circuit_ls+="CircuitAND.qca " #pay attention to last space!
+circuit_ls+="CircuitAND_8000.qca " #pay attention to last space!
 circuit_ls+="CircuitNAND_8000.qca "
 circuit_ls+="CircuitNOR_8000.qca "
 circuit_ls+="CircuitXNOR_8000.qca "
