@@ -1,7 +1,7 @@
 [COHERENCE_OPTIONS]
 T=1.000000
 relaxation=1.000000e-15
-time_step=1.000000e-19
+time_step=1.000000e-16
 duration=7.000000e-11
 clock_high=9.800000e-22
 clock_low=3.800000e-23
