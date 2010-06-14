@@ -1,4 +1,4 @@
-circuit_ls+="CircuitXNOR_8000.qca "
+circuit_ls+="CircuitBig_64000.qca "
 now=$(date +%s)
 echo These files will be used for testing:
 echo $circuit_ls
