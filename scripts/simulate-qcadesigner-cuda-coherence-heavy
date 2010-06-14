@@ -4,7 +4,7 @@ circuit_ls+="CircuitMUX83_4096000.qca "
 circuit_ls+="CircuitMIG.qca "
 circuit_ls+="CircuitVERYBIG_512000.qca "
 now=$(date +%s)
-echo These files will be used for testing:
+echo These files will be used for simulation:
 echo $circuit_ls
 for i in $circuit_ls
 do
