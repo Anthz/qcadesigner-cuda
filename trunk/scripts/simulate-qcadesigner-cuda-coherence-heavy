@@ -10,7 +10,7 @@ for i in $circuit_ls
 do
 	echo Simulating $i...
 	touch ../data/sim_outputs/coherence/$i-$now-cpu.log
-	../bin/qcadesigner-cuda -f ../data/circuits/$i -o ../scripts/coherence_options_$i.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/coherence/$i-$now | tee ../sim_outputs/coherence/$i-$now-cuda.log
+	../bin/qcadesigner-cuda -f ../data/circuits/$i -o ../scripts/coherence_options_$i.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/coherence/$i-$now | tee ../data/sim_outputs/coherence/$i-$now-cuda.log
 	echo Done simulating $i.
 	cd ../data
 	rm gnuplot/circuit
