@@ -29,11 +29,11 @@ LBITS := $(shell getconf LONG_BIT)
 ifeq ($(LBITS),64)
 	CFLAGS_LIBRARIES += -L$(CUDAROOT)/lib64 
 else
-	CFLAGS_LIBRARIES += -lcutil
+	CFLAGS_LIBRARIES += -lcutil_x86_64
 endif
 
 ifeq ($(LBITS),64)
-	CFLAGS_LIBRARIES += -lcutil
+	CFLAGS_LIBRARIES += -lcutil_x86_64
 endif
 
 NVCFLAGS += -DCUDA
