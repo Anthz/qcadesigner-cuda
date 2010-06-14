@@ -17,7 +17,7 @@ do
 	mv -T sim_outputs/coherence/$i-$now-cuda.out gnuplot/circuit
 	cd gnuplot
 	gnuplot script_plot.gpi
-	mv -T circuit.png $i-$now-cuda.png
+	mv -T circuit.png ../sim_outputs/coherence/$i-$now-cuda.png
 	rm circuit
 	
 	for mail in $@
