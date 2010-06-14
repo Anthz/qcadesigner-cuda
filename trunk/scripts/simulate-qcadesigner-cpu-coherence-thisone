@@ -15,7 +15,7 @@ else
 	mv -T sim_outputs/coherence/$1-$now-cpu.out gnuplot/circuit
 	cd gnuplot
 	gnuplot script_plot.gpi
-	mv -T circuit.png $1-$now-cpu.png
+	mv -T circuit.png ../sim_outputs/coherence/$1-$now-cpu.png
 	rm circuit
 	
 	for mail in $@
