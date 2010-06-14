@@ -12,10 +12,10 @@ else
 	echo Done simulating $1.
 	cd ../data
 	rm gnuplot/circuit
-	mv -T sim_outputs/coherence/$1-$now-cuda.out gnuplot/circuit
+	cp -T sim_outputs/coherence/$1-$now-cuda.out gnuplot/circuit
 	cd gnuplot
 	gnuplot script_plot.gpi
-	mv -T circuit.png $1-$now-cuda.png
+	mv -T circuit.png ../sim_outputs/coherence/$1-$now-cuda.png
 	rm circuit
 	
 	for mail in $@

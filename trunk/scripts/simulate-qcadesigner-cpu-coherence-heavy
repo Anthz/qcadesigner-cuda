@@ -3,7 +3,6 @@ circuit_ls+="CircuitBig_64000.qca "
 circuit_ls+="CircuitMIG.qca "
 circuit_ls+="CircuitVERYBIG_512000.qca "
 circuit_ls+="CircuitMUX83_4096000.qca "
-
 now=$(date +%s)
 echo These files will be used for testing:
 echo $circuit_ls
@@ -15,7 +14,7 @@ do
 	echo Done simulating $i.
 	cd ../data
 	rm gnuplot/circuit
-	mv -T sim_outputs/coherence/$i-$now-cpu.out gnuplot/circuit
+	cp -T sim_outputs/coherence/$i-$now-cpu.out gnuplot/circuit
 	cd gnuplot
 	gnuplot script_plot.gpi
 	mv -T circuit.png ../sim_outputs/coherence/$i-$now-cpu.png
