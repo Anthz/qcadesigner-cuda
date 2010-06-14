@@ -24,8 +24,8 @@ do
 		echo Subject: $i-$now-cpu - Simulation done.
 		echo Body: $(cat ../sim_outputs/bistable/$i-$now-cpu.log)
 		echo Attachment: $i-$now-cpu.png
-		cat ../sim_outputs/bistable/$i-$now-cpu.log | mutt -s "$i-$now-cpu - Simulation done." -a $i-$now-cpu.png -- $mail
-		#mail -s "$i-$now-cpu - Simulation done." $mail < sim_outputs/bistable/$i-$now-cpu.log
+		cat ../sim_outputs/bistable/$i-$now-cpu.log | mutt -s "$i-$now-cpu - Simulation done." -a ../sim_outputs/bistable/$i-$now-cpu.png -- $mail
+		#mail -s "$i-$now-cpu - Simulation done." $mail < ../sim_outputs/bistable/$i-$now-cpu.log
 	done
 	cd ../../scripts
 done
