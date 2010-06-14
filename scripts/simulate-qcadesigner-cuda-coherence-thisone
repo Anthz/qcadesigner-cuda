@@ -11,8 +11,11 @@ else
 	../bin/qcadesigner-cuda -f ../data/circuits/$1 -o ../scripts/coherence_options_$1.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/coherence/$1-$now | tee ../data/sim_outputs/coherence/$1-$now-cuda.log
 	echo Done simulating $1.
 	cd ../data
-	rm gnuplot/circuit
-	cp -T sim_outputs/coherence/$1-$now-cuda.out gnuplot/circuit
+	if [ -e gnuplot/circuit ]
+	then
+		rm gnuplot/circuit
+	fi
+	cp sim_outputs/coherence/$1-$now-cuda.out gnuplot/circuit
 	cd gnuplot
 	gnuplot script_plot.gpi
 	mv -T circuit.png ../sim_outputs/coherence/$1-$now-cuda.png
