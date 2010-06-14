@@ -93,8 +93,7 @@ simulation_data *run_coherence_simulation (int SIMULATION_TYPE, DESIGN *design, 
   int total_number_of_inputs = design->bus_layout->inputs->icUsed;
   unsigned long int number_samples;
   //number of points to record in simulation results //
-  //simulations can have millions of points and there is no need to plot them all //
-  unsigned long int number_recorded_samples = 3000;
+  unsigned long int number_recorded_samples = pow(2, total_number_of_inputs + 1) * 20 ;
   unsigned long int record_interval;
   double PEk = 0;
   gboolean stable;
