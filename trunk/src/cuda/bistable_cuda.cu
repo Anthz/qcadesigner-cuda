@@ -346,7 +346,6 @@ void launch_bistable_simulation(
 
 			
 		}
-		
 		total_iterations += i;
 		
 		// Get desidered iteration results from GPU
