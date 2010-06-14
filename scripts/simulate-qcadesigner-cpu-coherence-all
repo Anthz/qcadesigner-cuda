@@ -18,16 +18,16 @@ do
 	gnuplot script_plot.gpi
 	mv -T circuit.png ../sim_outputs/coherence/$i-$now-cpu.png
 	rm circuit
+	cd ../sim_outputs/coherence
 	
 	for mail in $@
 	do
 		echo Emailing data to: $mail
 		echo Subject: $i-$now-cpu - Simulation done.
-		echo Body: $(cat ../sim_outputs/coherence/$i-$now-cpu.log)
+		echo Body: $(cat $i-$now-cpu.log)
 		echo Attachment: $i-$now-cpu.png
-		cat ../sim_outputs/coherence/$i-$now-cpu.log | mutt -s "$i-$now-cpu - Simulation done." -a $i-$now-cpu.png -- $mail
-		#mail -s "$i-$now-cpu - Simulation done." $mail < sim_outputs/coherence/$i-$now-cpu.log
+		cat $i-$now-cpu.log | mutt -s "$i-$now-cpu - Simulation done." -a $i-$now-cpu.png -- $mail
 	done
-	cd ../../scripts
+	cd ../../../scripts
 done
 echo All done.

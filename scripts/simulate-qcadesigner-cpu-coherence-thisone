@@ -21,19 +21,19 @@ else
 	gnuplot script_plot.gpi
 	mv -T circuit.png ../sim_outputs/coherence/$1-$now-cpu.png
 	rm circuit
+	cd ../sim_outputs/coherence
 	
 	for mail in $@
 	do
-		if [ ! -f ../data/circuits/$mail ]
+		if [ ! -f ../../data/circuits/$mail ]
 		then
 			echo Emailing data to: $mail
 			echo Subject: $1-$now-cpu - Simulation done.
-			echo Body: $(cat ../sim_outputs/coherence/$1-$now-cpu.log)
+			echo Body: $(cat $1-$now-cpu.log)
 			echo Attachment: $1-$now-cpu.png
-			cat ../sim_outputs/coherence/$1-$now-cpu.log | mutt -s "$1-$now-cpu - Simulation done." -a $1-$now-cpu.png -- $mail
-			#mail -s "$1-$now-cpu - Simulation done." $mail < sim_outputs/coherence/$1-$now-cpu.log
+			cat $1-$now-cpu.log | mutt -s "$1-$now-cpu - Simulation done." -a $1-$now-cpu.png -- $mail
 		fi
 	done
-	cd ../../scripts
+	cd ../../../scripts
 fi
 echo All done.
