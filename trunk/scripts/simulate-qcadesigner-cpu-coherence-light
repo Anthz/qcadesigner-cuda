@@ -13,8 +13,11 @@ do
 	../bin/qcadesigner-cpu -f ../data/circuits/$i -o ../scripts/coherence_options_$i.txt -n 1 -t 0.001 -e COHERENCE_VECTOR -s ../data/sim_outputs/coherence/$i-$now | tee ../data/sim_outputs/coherence/$i-$now-cpu.log
 	echo Done simulating $i.
 	cd ../data
-	rm gnuplot/circuit
-	cp -T sim_outputs/coherence/$i-$now-cpu.out gnuplot/circuit
+	if [ -e gnuplot/circuit ]
+	then
+		rm gnuplot/circuit
+	fi
+	cp sim_outputs/coherence/$i-$now-cpu.out gnuplot/circuit
 	cd gnuplot
 	gnuplot script_plot.gpi
 	mv -T circuit.png ../sim_outputs/coherence/$i-$now-cpu.png
