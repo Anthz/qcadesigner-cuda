@@ -1,0 +1,79 @@
+Running 1 simulations with a radial tolerance of 0.001000
+Running simulation 0
+About to start the coherence vector simulation with 700000 samples
+3000 samples will be recorded for graphing.
+Coherence vector simulation: 0.0Simulation found 2 inputs 1 outputs
+It took 9 iterations to converge the initial steady state polarization
+Percentage: 0
+Percentage: 0.0142857
+Percentage: 0.0285714
+Percentage: 0.0428571
+Percentage: 0.0571429
+Percentage: 0.0714286
+Percentage: 0.0857143
+Percentage: 0.1
+Percentage: 0.114286
+Percentage: 0.128571
+Percentage: 0.142857
+Percentage: 0.157143
+Percentage: 0.171429
+Percentage: 0.185714
+Percentage: 0.2
+Percentage: 0.214286
+Percentage: 0.228571
+Percentage: 0.242857
+Percentage: 0.257143
+Percentage: 0.271429
+Percentage: 0.285714
+Percentage: 0.3
+Percentage: 0.314286
+Percentage: 0.328571
+Percentage: 0.342857
+Percentage: 0.357143
+Percentage: 0.371429
+Percentage: 0.385714
+Percentage: 0.4
+Percentage: 0.414286
+Percentage: 0.428571
+Percentage: 0.442857
+Percentage: 0.457143
+Percentage: 0.471429
+Percentage: 0.485714
+Percentage: 0.5
+Percentage: 0.514286
+Percentage: 0.528571
+Percentage: 0.542857
+Percentage: 0.557143
+Percentage: 0.571429
+Percentage: 0.585714
+Percentage: 0.6
+Percentage: 0.614286
+Percentage: 0.628571
+Percentage: 0.642857
+Percentage: 0.657143
+Percentage: 0.671429
+Percentage: 0.685714
+Percentage: 0.7
+Percentage: 0.714286
+Percentage: 0.728571
+Percentage: 0.742857
+Percentage: 0.757143
+Percentage: 0.771429
+Percentage: 0.785714
+Percentage: 0.8
+Percentage: 0.814286
+Percentage: 0.828571
+Percentage: 0.842857
+Percentage: 0.857143
+Percentage: 0.871429
+Percentage: 0.885714
+Percentage: 0.9
+Percentage: 0.914286
+Percentage: 0.928571
+Percentage: 0.942857
+Percentage: 0.957143
+Percentage: 0.971429
+Percentage: 0.985714
+Total simulation time: 18 s
+
+Simulation Time: 18 seconds
