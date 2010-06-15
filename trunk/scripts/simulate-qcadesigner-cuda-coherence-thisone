@@ -25,7 +25,7 @@ else
 	
 	for mail in $@
 	do
-		if [ ! -f ../../data/circuits/$mail ]
+		if [ ! -f ../../circuits/$mail ]
 		then
 			echo Emailing data to: $mail
 			echo Subject: $1-$now-cuda - Simulation done.
