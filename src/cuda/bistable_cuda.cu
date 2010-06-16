@@ -178,12 +178,12 @@ __global__ void bistable_kernel (
 	}
 }
 
-/*__host__ void swap_arrays(double **array_1, double **array_2)
+__host__ void swap_arrays(double **array_1, double **array_2)
 {
 	double *temp = *array_1;
 	*array_1 = *array_2;
 	*array_2 = temp;
-}*/
+}
    
    
 #ifdef FLOAT_PRECISION
