@@ -394,7 +394,7 @@ void launch_bistable_simulation(
 			}		
 */	
 		// In each sample...
-		for (i = 0; i < 2/*max_iterations && !stable*/; i++)
+		for (i = 0; i < max_iterations && !stable; i++)
 		{
 				
 			// Launch Kernel
