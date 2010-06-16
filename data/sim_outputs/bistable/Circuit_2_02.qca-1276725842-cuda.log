@@ -1,14 +1,4 @@
-Initialization... done!
-Running 1 simulations with a radial tolerance of 0.001000
-Running simulation 0
-Number of cells = 152
-Number of samples = 8000
-Number of inputs = 2
-Converting to CUDA structures... done!
-Coloring... done!
-Number of colors = 12
-Allocating memory on device... done!
-#Simulating on CUDA: 0%i:0, col:1, cell:0	0.000000e+00
+i:0, col:1, cell:0	0.000000e+00
 i:0, col:1, cell:1	0.000000e+00
 i:0, col:1, cell:2	0.000000e+00
 i:0, col:1, cell:3	0.000000e+00
@@ -3656,8 +3646,3 @@ i:1, col:12, cell:148	-9.873105e-01
 i:1, col:12, cell:149	-9.870263e-01
 i:1, col:12, cell:150	-1.000000e+00
 i:1, col:12, cell:151	-1.000000e+00
-#Simulating on CUDA: 100%!
-
-Iterations per sample = 0.000250
-Core simulation time = 1.447336 seconds
-Total simulation time = 1.475795 seconds
