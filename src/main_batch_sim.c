@@ -62,7 +62,6 @@ int main (int argc, char **argv)
 
   int sim_engine = BISTABLE ;
   int Nix, Nix1, Nix2 ;
-  time_t t_start, t_end;
   
   DESIGN *design = NULL, *working_design = NULL ;
   simulation_data *sim_data = NULL ;
@@ -79,9 +78,12 @@ int main (int argc, char **argv)
   char *pszFileSaveBin=(char*)malloc(1000*sizeof(char));
   long int lTime = 0;
   char *sTime=(char*)malloc(100*sizeof(char));
+  struct timespec temp, startTime, endTime;
 
   //intial time for simulation.
-  time(&t_start);
+  clock_gettime(CLOCK_REALTIME, &startTimeSpec);
+  fprintf(stderr,"Initialization...");
+  fflush(srderr);
 
   parse_cmdline (argc, argv, &sim_engine, &pszSimOptsFName, &pszFName, &number_of_sims, &dTolerance, &pszFileSaveOut) ;
 
@@ -138,6 +140,7 @@ int main (int argc, char **argv)
     memcpy (&coherence_options, co, sizeof (coherence_OP)) ;
     }
 
+  fprintf (stderr, " done!\n") ;
   printf ("Running %d simulations with a radial tolerance of %lf\n", number_of_sims, dTolerance) ;
 
 
@@ -150,10 +153,10 @@ int main (int argc, char **argv)
   exp_array_insert_vals (icSuccesses, NULL, icOutputBuses, 1, 0) ;
   for (Nix = 0 ; Nix < icSuccesses->icUsed ; Nix++)
     exp_array_index_1d (icSuccesses, int, Nix) = 0 ;
-
-
+	
 	for (Nix = 0 ; Nix < number_of_sims ; Nix++)
 	{
+		
 		fprintf (stdout, "Running simulation %d\n", Nix) ;
 		if (NULL != (working_design = design_copy (design)))
 		{
@@ -163,8 +166,19 @@ int main (int argc, char **argv)
 		   if (NULL != (sim_data = run_simulation (sim_engine, EXHAUSTIVE_VERIFICATION, working_design, NULL)))
 			{
 				//final time for simulation.
-				time(&t_end);
-				printf("\nSimulation Time: %d seconds\n", (int) (t_end-t_start));
+				clock_gettime(CLOCK_REALTIME, &endTime);
+				if ((endTime.tv_nsec-startTime.tv_nsec)<0)
+				{
+					temp.tv_sec = endTime.tv_sec-startTime.tv_sec-1;
+					temp.tv_nsec = 1000000000+endTime.tv_nsec-startTime.tv_nsec;
+				} 
+				else
+				{
+					temp.tv_sec = endTime.tv_sec-startTime.tv_sec;
+					temp.tv_nsec = endTime.tv_nsec-startTime.tv_nsec;
+				}
+				sim_time = (double)temp.tv_sec + (double)temp.tv_nsec/1000000000;
+				printf("Total simulation time = %f seconds\n",sim_time);
 
 				// saving data
 				SIMULATION_OUTPUT sim_output;

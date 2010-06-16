@@ -25,7 +25,7 @@
 //                                                      //
 //////////////////////////////////////////////////////////
 
-//#include <unistd.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -151,7 +151,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
       }
     }
     
-
+	printf("Number of cells = %d\n",total_cells);
 
   // if we are performing a vector table simulation we consider only the activated inputs //
   if(SIMULATION_TYPE == VECTOR_TABLE)
@@ -328,7 +328,8 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 		options->clock_low,
 		options->clock_high,
 		tolerance,
-		&output_traces
+		&output_traces,
+		options->randomize_cells
 		);
   
   	for(k=0; k < output_number; k++)
@@ -347,6 +348,8 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 	{
 		fprintf(stderr,"\r#Simulating on CPU: %d%%",new_percentage);
 		fflush(stderr);
+		fprintf(stdout,"\r#Simulating on CPU: %d%%",new_percentage);
+		fflush(stdout);
 	}
 	old_percentage = new_percentage;
 		// if (j % 10 == 0)
@@ -500,6 +503,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
     }//for number of samples
 
 	fprintf(stderr,"\r#Simulating on CPU: 100%%!\n");
+	fprintf(stdout,"\r#Simulating on CPU: 100%%!\n");
 	printf("Iterations per sample = %f\n", (double)total_iterations/sim_data_number_samples);
 	
 #endif //CUDA
