@@ -251,7 +251,7 @@ void launch_bistable_simulation(
 	double clock_high = (double) clock_high_d; 
 	double tolerance = (double) tolerance_d;
 
-	printf("%e, %e, %e, %e, %e , %d, %d, %d, %d, %d, %d, %d\n",
+	/*printf("%e, %e, %e, %e, %e , %d, %d, %d, %d, %d, %d, %d\n",
 	clock_prefactor,clock_shift,clock_low,clock_high,tolerance,cells_number,
 	neighbours_number,number_of_samples,max_iterations,input_number,output_number,
 	randomize_cells);
@@ -271,7 +271,7 @@ void launch_bistable_simulation(
 			printf("%d ", h_neighbours[i+j*cells_number]);
 		}
 		printf("\n");
-	}
+	}*/
 
 
 
@@ -356,7 +356,7 @@ void launch_bistable_simulation(
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_high", &(clock_high), sizeof(double), 0, cudaMemcpyHostToDevice));
 	
 	fprintf(stdout," done!\n");
-	for (j = 0; j < number_of_samples; j++)
+	for (j = 0; j < 1/*number_of_samples*/; j++)
 	{
 		new_percentage = j*100/number_of_samples;
 		if( new_percentage != old_percentage) 
@@ -394,14 +394,14 @@ void launch_bistable_simulation(
 			}		
 */	
 		// In each sample...
-		for (i = 0; i < max_iterations && !stable; i++)
+		for (i = 0; i < 2/*max_iterations && !stable*/; i++)
 		{
 				
 			// Launch Kernel
 			for(color = 1; color <= num_colors; color++)
 			{
-				/*cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
-				for (k=0;k<cells_number;k++) printf("i:%d, col:%d, cell:%d\t%e\n",i,color,k,h_polarization[k]);*/
+				cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
+				for (k=0;k<cells_number;k++) printf("i:%d, col:%d, cell:%d\t%e\n",i,color,k,h_polarization[k]);
 				
 				bistable_kernel<<< grid, threads, output_indexes_bytes >>> (d_polarization, /*d_next_polarization,*/ d_cell_clock, d_Ek, d_neighbours, 
 					j, d_output_indexes, d_stability, tolerance, d_output_data, d_cells_colors, color);
