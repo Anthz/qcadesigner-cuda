@@ -11,7 +11,7 @@
 					*/
 /* ========================================================================== */
 //#define CUPRINTF_B
-#define FLOAT_PRECISION
+//#define FLOAT_PRECISION
 
 
 #include <cutil_inline.h>
