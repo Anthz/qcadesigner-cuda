@@ -346,7 +346,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 	new_percentage = j*100/sim_data_number_samples;
 	if( new_percentage != old_percentage) 
 	{
-		fprintf(stdout,"#Simulating on CPU: %d%%\n",new_percentage);
+		fprintf(stdout,"\r#Simulating on CPU: %d%%",new_percentage);
 		fflush(stdout);
 	}
 	old_percentage = new_percentage;
@@ -376,18 +376,18 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 		// }
 
 		// -- for each of the (VECTOR_TABLE => active?) inputs -- //
-		printf("sample: %d ",j);
+		//printf("sample: %d ",j);
 		if (EXHAUSTIVE_VERIFICATION == SIMULATION_TYPE)
 		for (idxMasterBitOrder = 0, design_bus_layout_iter_first (design_bus_layout, &bli, QCAD_CELL_INPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i), idxMasterBitOrder++)
 		((bistable_model *)exp_array_index_1d (design_bus_layout_inputs, BUS_LAYOUT_CELL, i).cell->cell_model)->polarization =
-		  printf("%e\t",sim_data->trace[i].data[j] = (-1 * sin (((double)(1 << idxMasterBitOrder)) * (double)j * FOUR_PI / (double)sim_data_number_samples) > 0) ? 1 : -1);
+			sim_data->trace[i].data[j] = (-1 * sin (((double)(1 << idxMasterBitOrder)) * (double)j * FOUR_PI / (double)sim_data_number_samples) > 0) ? 1 : -1;
 		else
 		//    if (VECTOR_TABLE == SIMULATION_TYPE)
 		for (design_bus_layout_iter_first (design_bus_layout, &bli, QCAD_CELL_INPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i))
 		if (exp_array_index_1d (pvt_inputs, VT_INPUT, i).active_flag)
 		  ((bistable_model *)exp_array_index_1d (pvt_inputs, VT_INPUT, i).input->cell_model)->polarization =
 			sim_data->trace[i].data[j] = exp_array_index_2d (pvt_vectors, gboolean, (j * pvt_vectors_icUsed) / sim_data_number_samples, i) ? 1 : -1 ;
-		printf("\n");
+		//printf("\n");
 			
 
 
@@ -501,7 +501,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 		j = sim_data_number_samples ;
     }//for number of samples
 
-	fprintf(stdout,"#Simulating on CPU: 100%%!\n\n");
+	fprintf(stdout,"\r#Simulating on CPU: 100%%!\n\n");
 	printf("Iterations per sample = %f\n", (double)total_iterations/sim_data_number_samples);
 	
 #endif //CUDA

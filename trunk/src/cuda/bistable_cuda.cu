@@ -343,7 +343,7 @@ void launch_bistable_simulation(
 		new_percentage = j*100/number_of_samples;
 		if( new_percentage != old_percentage) 
 		{
-			fprintf(stdout,"#Simulating on CUDA: %d%%\n",new_percentage);
+			fprintf(stdout,"\r#Simulating on CUDA: %d%%",new_percentage);
 			fflush(stdout);
 		}
 		old_percentage = new_percentage;
@@ -354,11 +354,11 @@ void launch_bistable_simulation(
 		update_inputs<<< grid, threads,input_indexes_bytes>>> (d_polarization, d_input_indexes, j);
 		cudaThreadSynchronize ();
 		
-		printf("sample: %d ",j);
+		/*printf("sample: %d ",j);
 		cutilSafeCall (cudaMemcpy (h_polarization, d_polarization, cells_number*sizeof(double), cudaMemcpyDeviceToHost));
 		for (i=0;i<input_number;i++)
 			printf("%e\t", h_polarization[input_indexes[i]]);
-		printf("\n");
+		printf("\n");*/
 		
 		// randomize the order in which the cells are simulated to try and minimize numerical errors
 		// associated with the imposed simulation order.
@@ -429,7 +429,7 @@ void launch_bistable_simulation(
 
 	}
 	
-	fprintf(stdout,"#Simulating on CUDA: 100%%!\n\n");
+	fprintf(stdout,"\r#Simulating on CUDA: 100%%!\n\n");
 	printf("Iterations per sample = %f\n", (double)total_iterations/number_of_samples);
 #ifdef CUPRINTF_B
 	cudaPrintfDisplay(stdout, true);
