@@ -837,6 +837,9 @@ static coherence_OP *open_coherence_options_file_fp (FILE *pfile)
     else
     if (!strncmp (pszLine, "animate_simulation", sizeof ("animate_simulation") - 1))
       coherence_options->animate_simulation = !strncmp (pszValue, "TRUE", sizeof ("TRUE") - 1) ? TRUE : FALSE ;
+    else
+    if (!strncmp (pszLine, "delay", sizeof ("delay") - 1))
+      coherence_options->delay = atof (pszValue) ;
 
     g_free (pszLine) ;
     g_free (ReadLine (pfile, '\0', FALSE)) ;
