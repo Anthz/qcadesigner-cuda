@@ -280,7 +280,7 @@ void launch_bistable_simulation(
 
 
 	h_output_data = (double *) malloc(sizeof(double) * output_number);
-	h_stability = (int *)calloc(sizeof(int)*cells_number);
+	h_stability = (int *)calloc(cells_number,sizeof(int));
 	
 	//coloring
 	
@@ -336,7 +336,7 @@ void launch_bistable_simulation(
 	
 	// Set Memory
 
-	cutilSafeCall (cudaMemcpy (d_stability, h_stability, cells_number * sizeof(int), cudaMemcpyHostToDevice));*/
+	cutilSafeCall (cudaMemcpy (d_stability, h_stability, cells_number * sizeof(int), cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpy (d_polarization, h_polarization, cells_number * sizeof(double), cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpy (d_Ek, (double *)h_Ek, sizeof(double) * neighbours_number * cells_number, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpy (d_cell_clock, h_cell_clock, cells_number * sizeof(int), cudaMemcpyHostToDevice));
