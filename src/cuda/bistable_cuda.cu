@@ -11,7 +11,7 @@
 					*/
 /* ========================================================================== */
 //#define CUPRINTF_B
-#define FLOAT_PRECISION
+//#define FLOAT_PRECISION
 
 
 #include <cutil_inline.h>
@@ -263,12 +263,12 @@ void launch_bistable_simulation(
 	{
 		for (j=0;j<neighbours_number;j++)
 		{
-			printf("%e \t",h_Ek[i+j*neighbours_number]);
+			printf("%e \t",h_Ek[i+j*cells_number]);
 		}
 		printf("\t");
 		for (j=0;j<neighbours_number;j++)
 		{
-			printf("%d ", h_neighbours[i+j*neighbours_number]);
+			printf("%d ", h_neighbours[i+j*cells_number]);
 		}
 		printf("\n");
 	}
