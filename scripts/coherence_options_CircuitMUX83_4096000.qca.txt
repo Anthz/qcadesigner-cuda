@@ -13,4 +13,5 @@ layer_separation=11.500000
 algorithm=2
 randomize_cells=FALSE
 animate_simulation=false
+delay = 0
 [#COHERENCE_OPTIONS]
