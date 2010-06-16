@@ -36,7 +36,7 @@ ifeq ($(LBITS),64)
 	CFLAGS_LIBRARIES += -lcutil_x86_64
 endif
 
-NVCFLAGS += -DCUDA
+NVCFLAGS += -DCUDA 
 
 CFLAGS += -DCUDA
 

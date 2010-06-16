@@ -28,6 +28,8 @@
 //                                                      //
 //////////////////////////////////////////////////////////
 
+
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -43,6 +45,7 @@
 //#include "graph_dialog_widget_data.h"
 #include "bistable_simulation.h"
 
+extern bistable_OP bistable_options ;
 extern bistable_OP bistable_options ;
 extern coherence_OP coherence_options ;
 //
@@ -136,6 +139,7 @@ int main (int argc, char **argv)
     }
 
   printf ("Running %d simulations with a radial tolerance of %lf\n", number_of_sims, dTolerance) ;
+
 
   rnd = g_rand_new () ;
 
