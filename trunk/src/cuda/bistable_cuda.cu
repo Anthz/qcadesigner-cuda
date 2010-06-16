@@ -280,7 +280,9 @@ void launch_bistable_simulation(
 
 
 	h_output_data = (double *) malloc(sizeof(double) * output_number);
-	h_stability = (int *)calloc(cells_number,sizeof(int));
+	h_stability = (int *)malloc(cells_number*sizeof(int));
+	
+	for(i=0;i<cells_number;i++) h_stability[i]=1;
 	
 	//coloring
 	
