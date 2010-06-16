@@ -376,6 +376,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 		// }
 
 		// -- for each of the (VECTOR_TABLE => active?) inputs -- //
+		printf("sample: %d ",j);
 		if (EXHAUSTIVE_VERIFICATION == SIMULATION_TYPE)
 		for (idxMasterBitOrder = 0, design_bus_layout_iter_first (design_bus_layout, &bli, QCAD_CELL_INPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i), idxMasterBitOrder++)
 		((bistable_model *)exp_array_index_1d (design_bus_layout_inputs, BUS_LAYOUT_CELL, i).cell->cell_model)->polarization =
