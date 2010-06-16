@@ -6,7 +6,7 @@ for i in $circuit_ls
 do
 	echo Simulating $i...
 	touch ../data/sim_outputs/bistable/$i-$now-cpu.log
-	../bin/qcadesigner-cpu -f ../data/circuits/bistable/$i -o ../scripts/bistable_options.txt -n 1 -t 0.001 -e BISTABLE -s ../data/sim_outputs/bistable/$i-$now > ../data/sim_outputs/bistable/$i-$now-cpu.log
+	../bin/qcadesigner-cpu -f ../data/circuits/bistable/$i -o ../scripts/bistable_options.txt -n 1 -t 0.001 -e BISTABLE -s ../data/sim_outputs/bistable/$i-$now 2>&1 | tee ../data/sim_outputs/bistable/$i-$now-cpu.log
 	echo Done simulating $i.
 	cd ../data/
 	if [ -e gnuplot/circuit ]
