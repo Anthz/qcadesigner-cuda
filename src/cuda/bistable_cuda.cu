@@ -212,7 +212,7 @@ void launch_bistable_simulation(
 	double clock_high_d, 
 	double tolerance_d,
 	double ***output_traces,
-	int randomize_cells;
+	int randomize_cells
 	)
 {
 	#ifdef FLOAT_PRECISION
@@ -250,7 +250,7 @@ void launch_bistable_simulation(
 	int total_iterations = 0;
 
 	//casting double variables to float if float precision
-	double clock_prefactor = (double clock_prefactor_d;
+	double clock_prefactor = (double) clock_prefactor_d;
 	double clock_shift = (double) clock_shift_d;
 	double clock_low = (double) clock_low_d;
 	double clock_high = (double) clock_high_d; 
@@ -334,8 +334,7 @@ void launch_bistable_simulation(
 		{
 			fprintf(stderr,"\r#Simulating on CUDA: %d%%",new_percentage);
 			fflush(stderr);
-			fprintf(stdout,"\r#Simulating on CUDA: %d%%",new_percentage);
-			fflush(stdout);
+			fprintf(stdout,"#Simulating on CUDA: %d%%\n",new_percentage);
 		}
 		old_percentage = new_percentage;
 
@@ -347,19 +346,19 @@ void launch_bistable_simulation(
 		
 		// randomize the order in which the cells are simulated to try and minimize numerical errors
 		// associated with the imposed simulation order.
+/*
 		if(randomize_cells)
 			for (i = 0 ; i < cells_number ; i++)
 			{
 			  idxCell1 = rand () % number_of_cells_in_layer[i] ;
 			  idxCell2 = rand () % number_of_cells_in_layer[i] ;
-			//#endif//
 
 			  swap = sorted_cells[Nix][idxCell1] ;
 			  sorted_cells[Nix][idxCell1] = sorted_cells[Nix][idxCell2] ;
 			  sorted_cells[Nix][idxCell2] = swap ;
 			  }
 			}		
-	
+*/	
 		// In each sample...
 		for (i = 0; i < max_iterations && !stable; i++)
 		{
