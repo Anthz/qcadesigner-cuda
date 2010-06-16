@@ -79,7 +79,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	{		
 		input_idx = find(thr_idx, shm_array,d_input_number);
 		if (input_idx != -1)
-			d_polarization[thr_idx]=(-1 * __sinf(((double)( 1 << input_idx)) * __fdividef((double)sample * 4.0 * PI ,(double) d_number_of_samples)) > 0) ? 1: -1;
+			d_polarization[thr_idx]=(-1 * __sinf(((double)( 1 << input_idx)) * __fdividef((double)sample * FOUR_PI ,(double) d_number_of_samples)) > 0) ? 1: -1;
 	}
 }
 
