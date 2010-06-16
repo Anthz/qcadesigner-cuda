@@ -86,7 +86,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 
 __global__ void bistable_kernel (
 		double *d_polarization,
-		/*double *d_next_polarization,*/
+		double *d_next_polarization,
 		int *d_cell_clock,
 		double *d_Ek,
 		int *d_neighbours,
