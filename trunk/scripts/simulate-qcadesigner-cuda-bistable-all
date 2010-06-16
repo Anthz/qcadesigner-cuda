@@ -1,11 +1,12 @@
-circuit_ls=`ls ../data/circuits/`
+circuit_ls=`ls ../data/circuits/bistable`
 now=$(date +%s)
 echo These files will be used for simulation:
 echo $circuit_ls
 for i in $circuit_ls
 do
 	echo Simulating $i...
-	../bin/qcadesigner-cuda -f ../data/circuits/$i -o ../scripts/bistable_options.txt -n 1 -t 0.001 -e BISTABLE -s ../data/sim_outputs/bistable/$i-$now > ../data/sim_outputs/bistable/$i-$now-cuda.log
+	touch ../data/sim_outputs/bistable/$i-$now-cuda.log
+	../bin/qcadesigner-cuda -f ../data/circuits/bistable/$i -o ../scripts/bistable_options.txt -n 1 -t 0.001 -e BISTABLE -s ../data/sim_outputs/bistable/$i-$now | tee ../data/sim_outputs/bistable/$i-$now-cuda.log
 	echo Done simulating $i.
 	cd ../data/
 	if [ -e gnuplot/circuit ]
@@ -17,15 +18,15 @@ do
 	gnuplot script_plot.gpi
 	mv -T circuit.png ../sim_outputs/bistable/$i-$now-cuda.png
 	rm circuit
+	cd ../sim_outpus/bistable
 	
 	for mail in $@
 	do
 		echo Emailing data to: $mail
 		echo Subject: $i-$now-cuda - Simulation done.
-		echo Body: $(cat ../sim_outputs/bistable/$i-$now-cuda.log)
+		echo Body: $(cat $i-$now-cuda.log)
 		echo Attachment: $i-$now-cuda.png
-		cat ../sim_outputs/bistable/$i-$now-cuda.log | mutt -s "$i-$now-cuda - Simulation done." -a ../sim_outputs/bistable/$i-$now-cuda.png -- $mail
-		#mail -s "$i-$now-cuda - Simulation done." $mail < ../sim_outputs/bistable/$i-$now-cuda.log
+		cat $i-$now-cuda.log | mutt -s "$i-$now-cuda - Simulation done." -a $i-$now-cuda.png -- $mail
 	done
 	cd ../../scripts
 done
