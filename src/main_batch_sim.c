@@ -83,8 +83,8 @@ int main (int argc, char **argv)
 
   //intial time for simulation.
   clock_gettime(CLOCK_REALTIME, &startTime);
-  fprintf(stderr,"Initialization...");
-  fflush(stderr);
+  fprintf(stdout,"Initialization...");
+  fflush(stdout);
 
   parse_cmdline (argc, argv, &sim_engine, &pszSimOptsFName, &pszFName, &number_of_sims, &dTolerance, &pszFileSaveOut) ;
 
@@ -141,7 +141,7 @@ int main (int argc, char **argv)
     memcpy (&coherence_options, co, sizeof (coherence_OP)) ;
     }
 
-  fprintf (stderr, " done!\n") ;
+  fprintf (stdout, " done!\n") ;
   printf ("Running %d simulations with a radial tolerance of %lf\n", number_of_sims, dTolerance) ;
 
 

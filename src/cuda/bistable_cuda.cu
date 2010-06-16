@@ -50,6 +50,7 @@ __device__ __constant__ int d_number_of_samples;
 __device__ __constant__ double d_clock_low;
 __device__ __constant__ double d_clock_high;
 
+__device__ 
 
 __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int sample)
 {
@@ -269,10 +270,10 @@ void launch_bistable_simulation(
 	
 	//coloring
 	
-	fprintf(stderr,"Coloring...");
-	fflush(stderr);
+	fprintf(stdout,"Coloring...");
+	fflush(stdout);
 	color_graph(h_neighbours, cells_number, neighbours_number, &h_cells_colors, &num_colors);
-	fprintf(stderr," done!\n");
+	fprintf(stdout," done!\n");
 	
 	printf("Number of colors = %d\n", num_colors);
 	
@@ -291,8 +292,8 @@ void launch_bistable_simulation(
 
 	
 
-	fprintf(stderr,"Allocating memory on device...");
-	fflush(stderr);
+	fprintf(stdout,"Allocating memory on device...");
+	fflush(stdout);
 	// Initialize Memory
 	cutilSafeCall (cudaMalloc ((void**)&d_output_data, output_number * sizeof(double)));
 	/*cutilSafeCall (cudaMalloc ((void**)&d_next_polarization, cells_number * sizeof(double)));*/
@@ -326,15 +327,14 @@ void launch_bistable_simulation(
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_low", &(clock_low), sizeof(double), 0, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_high", &(clock_high), sizeof(double), 0, cudaMemcpyHostToDevice));
 	
-	fprintf(stderr," done!\n");
+	fprintf(stdout," done!\n");
 	for (j = 0; j < number_of_samples; j++)
 	{
 		new_percentage = j*100/number_of_samples;
 		if( new_percentage != old_percentage) 
 		{
-			fprintf(stderr,"\r#Simulating on CUDA: %d%%",new_percentage);
-			fflush(stderr);
-			fprintf(stdout,"#Simulating on CUDA: %d%%\n",new_percentage);
+			fprintf(stdout,"\r#Simulating on CUDA: %d%%",new_percentage);
+			fflush(stdout);
 		}
 		old_percentage = new_percentage;
 
@@ -413,10 +413,8 @@ void launch_bistable_simulation(
 
 	}
 	
-	printf("Iterations per sample = %f\n", (double)total_iterations/number_of_samples);
-	
-	fprintf(stderr,"\r#Simulating on CUDA: 100%%!\n");
 	fprintf(stdout,"\r#Simulating on CUDA: 100%%!\n");
+	printf("Iterations per sample = %f\n", (double)total_iterations/number_of_samples);
 #ifdef CUPRINTF_B
 	cudaPrintfDisplay(stdout, true);
 	cudaPrintfEnd();
