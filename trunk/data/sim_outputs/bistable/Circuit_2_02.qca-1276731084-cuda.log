@@ -1,0 +1,167 @@
+Initialization... done!
+Running 1 simulations with a radial tolerance of 0.001000
+Running simulation 0
+Number of cells = 152
+Number of samples = 8000
+Number of inputs = 2
+Converting to CUDA structures... done!
+Coloring... done!
+Number of colors = 12
+Allocating memory on device... done!
+#Simulating on CUDA: 0%#Simulating on CUDA: 1%i:0, cell:0	9.158859e-01
+i:0, cell:1	9.947654e-01
+i:0, cell:2	9.835660e-01
+i:0, cell:3	9.880253e-01
+i:0, cell:4	9.882409e-01
+i:0, cell:5	9.879236e-01
+i:0, cell:6	9.835093e-01
+i:0, cell:7	9.948358e-01
+i:0, cell:8	9.154155e-01
+i:0, cell:9	-9.776011e-01
+i:0, cell:10	-9.604486e-01
+i:0, cell:11	-4.780606e-04
+i:0, cell:12	-2.996712e-03
+i:0, cell:13	-1.751806e-02
+i:0, cell:14	-1.098500e-01
+i:0, cell:15	-8.867841e-01
+i:0, cell:16	-8.926375e-01
+i:0, cell:17	-8.877506e-01
+i:0, cell:18	-8.937610e-01
+i:0, cell:19	-9.963126e-01
+i:0, cell:20	-9.818738e-01
+i:0, cell:21	-9.875743e-01
+i:0, cell:22	-9.887296e-01
+i:0, cell:23	-9.878058e-01
+i:0, cell:24	-9.880215e-01
+i:0, cell:25	-9.879776e-01
+i:0, cell:26	-9.876769e-01
+i:0, cell:27	-9.814109e-01
+i:0, cell:28	-9.964907e-01
+i:0, cell:29	-8.889831e-01
+i:0, cell:30	-9.137301e-01
+i:0, cell:31	7.974318e-01
+i:0, cell:32	-9.808640e-01
+i:0, cell:33	-1.134509e-01
+i:0, cell:34	9.999997e-01
+i:0, cell:35	1.130096e-03
+i:0, cell:36	-9.812389e-01
+i:0, cell:37	1.744397e-03
+i:0, cell:38	-1.804638e-02
+i:0, cell:39	-5.192801e-03
+i:0, cell:40	-1.855746e-02
+i:0, cell:41	-1.134822e-01
+i:0, cell:42	-9.102391e-01
+i:0, cell:43	-9.965755e-01
+i:0, cell:44	-9.098637e-01
+i:0, cell:45	-1.128035e-01
+i:0, cell:46	-1.759680e-02
+i:0, cell:47	-3.040977e-03
+i:0, cell:48	-3.617702e-03
+i:0, cell:49	1.070121e-03
+i:0, cell:50	-9.813504e-01
+i:0, cell:51	1.113247e-03
+i:0, cell:52	-9.822228e-06
+i:0, cell:53	-3.817420e-03
+i:0, cell:54	4.415640e-04
+i:0, cell:55	3.144773e-04
+i:0, cell:56	-9.999997e-01
+i:0, cell:57	-1.542446e-03
+i:0, cell:58	5.586085e-05
+i:0, cell:59	1.717211e-05
+i:0, cell:60	1.758600e-04
+i:0, cell:61	1.059624e-03
+i:0, cell:62	2.068526e-03
+i:0, cell:63	-1.846051e-02
+i:0, cell:64	2.074186e-03
+i:0, cell:65	1.065008e-03
+i:0, cell:66	6.145604e-05
+i:0, cell:67	1.739618e-05
+i:0, cell:68	3.959560e-05
+i:0, cell:69	1.281535e-03
+i:0, cell:70	2.094052e-05
+i:0, cell:71	2.745213e-05
+i:0, cell:72	3.165935e-04
+i:0, cell:73	-1.227069e-01
+i:0, cell:74	-7.420214e-04
+i:0, cell:75	5.683474e-04
+i:0, cell:76	-5.547735e-04
+i:0, cell:77	2.756905e-03
+i:0, cell:78	-9.999997e-01
+i:0, cell:79	-3.792722e-03
+i:0, cell:80	3.586189e-03
+i:0, cell:81	-3.283564e-03
+i:0, cell:82	1.901464e-02
+i:0, cell:83	-1.925649e-02
+i:0, cell:84	1.976552e-02
+i:0, cell:85	-1.915719e-02
+i:0, cell:86	1.222125e-01
+i:0, cell:87	-1.220749e-01
+i:0, cell:88	1.203083e-01
+i:0, cell:89	-1.222312e-01
+i:0, cell:90	9.630504e-01
+i:0, cell:91	-9.626811e-01
+i:0, cell:92	9.350830e-01
+i:0, cell:93	-9.630504e-01
+i:0, cell:94	9.873109e-01
+i:0, cell:95	-9.872642e-01
+i:0, cell:96	9.945270e-01
+i:0, cell:97	-9.873198e-01
+i:0, cell:98	9.879117e-01
+i:0, cell:99	-9.875335e-01
+i:0, cell:100	9.190245e-01
+i:0, cell:101	-9.876141e-01
+i:0, cell:102	9.879644e-01
+i:0, cell:103	-9.812547e-01
+i:0, cell:104	-8.799586e-01
+i:0, cell:105	-9.814035e-01
+i:0, cell:106	9.879749e-01
+i:0, cell:107	-8.880645e-01
+i:0, cell:108	-9.964707e-01
+i:0, cell:109	-9.814161e-01
+i:0, cell:110	-9.877362e-01
+i:0, cell:111	-9.874989e-01
+i:0, cell:112	-9.877589e-01
+i:0, cell:113	-9.816928e-01
+i:0, cell:114	-9.966932e-01
+i:0, cell:115	-9.809320e-01
+i:0, cell:116	-9.807396e-01
+i:0, cell:117	-9.964909e-01
+i:0, cell:118	-8.877329e-01
+i:0, cell:119	9.876702e-01
+i:0, cell:120	-8.857145e-01
+i:0, cell:121	-9.808562e-01
+i:0, cell:122	-8.892361e-01
+i:0, cell:123	9.813979e-01
+i:0, cell:124	8.552551e-01
+i:0, cell:125	7.371842e-01
+i:0, cell:126	-9.875847e-01
+i:0, cell:127	8.879157e-01
+i:0, cell:128	9.964861e-01
+i:0, cell:129	9.814596e-01
+i:0, cell:130	9.876243e-01
+i:0, cell:131	9.881034e-01
+i:0, cell:132	9.879857e-01
+i:0, cell:133	9.880525e-01
+i:0, cell:134	9.875875e-01
+i:0, cell:135	9.875344e-01
+i:0, cell:136	9.774220e-01
+i:0, cell:137	9.974252e-01
+i:0, cell:138	8.198058e-01
+i:0, cell:139	-9.876421e-01
+i:0, cell:140	8.866792e-01
+i:0, cell:141	-8.109139e-01
+i:0, cell:142	7.150660e-01
+i:0, cell:143	-9.879720e-01
+i:0, cell:144	-9.849893e-01
+i:0, cell:145	-9.880202e-01
+i:0, cell:146	-9.877221e-01
+i:0, cell:147	-9.879243e-01
+i:0, cell:148	-9.877058e-01
+i:0, cell:149	-9.877175e-01
+i:0, cell:150	-1.000000e+00
+i:0, cell:151	-1.000000e+00
+#Simulating on CUDA: 2%#Simulating on CUDA: 3%#Simulating on CUDA: 4%#Simulating on CUDA: 5%#Simulating on CUDA: 6%#Simulating on CUDA: 7%#Simulating on CUDA: 8%#Simulating on CUDA: 9%#Simulating on CUDA: 10%#Simulating on CUDA: 11%#Simulating on CUDA: 12%#Simulating on CUDA: 13%#Simulating on CUDA: 14%#Simulating on CUDA: 15%#Simulating on CUDA: 16%#Simulating on CUDA: 17%#Simulating on CUDA: 18%#Simulating on CUDA: 19%#Simulating on CUDA: 20%#Simulating on CUDA: 21%#Simulating on CUDA: 22%#Simulating on CUDA: 23%#Simulating on CUDA: 24%#Simulating on CUDA: 25%#Simulating on CUDA: 26%#Simulating on CUDA: 27%#Simulating on CUDA: 28%#Simulating on CUDA: 29%#Simulating on CUDA: 30%#Simulating on CUDA: 31%#Simulating on CUDA: 32%#Simulating on CUDA: 33%#Simulating on CUDA: 34%#Simulating on CUDA: 35%#Simulating on CUDA: 36%#Simulating on CUDA: 37%#Simulating on CUDA: 38%#Simulating on CUDA: 39%#Simulating on CUDA: 40%#Simulating on CUDA: 41%#Simulating on CUDA: 42%#Simulating on CUDA: 43%#Simulating on CUDA: 44%#Simulating on CUDA: 45%#Simulating on CUDA: 46%#Simulating on CUDA: 47%#Simulating on CUDA: 48%#Simulating on CUDA: 49%#Simulating on CUDA: 50%#Simulating on CUDA: 51%#Simulating on CUDA: 52%#Simulating on CUDA: 53%#Simulating on CUDA: 54%#Simulating on CUDA: 55%#Simulating on CUDA: 56%#Simulating on CUDA: 57%#Simulating on CUDA: 58%#Simulating on CUDA: 59%#Simulating on CUDA: 60%#Simulating on CUDA: 61%#Simulating on CUDA: 62%#Simulating on CUDA: 63%#Simulating on CUDA: 64%#Simulating on CUDA: 65%#Simulating on CUDA: 66%#Simulating on CUDA: 67%#Simulating on CUDA: 68%#Simulating on CUDA: 69%#Simulating on CUDA: 70%#Simulating on CUDA: 71%#Simulating on CUDA: 72%#Simulating on CUDA: 73%#Simulating on CUDA: 74%#Simulating on CUDA: 75%#Simulating on CUDA: 76%#Simulating on CUDA: 77%#Simulating on CUDA: 78%#Simulating on CUDA: 79%#Simulating on CUDA: 80%#Simulating on CUDA: 81%#Simulating on CUDA: 82%#Simulating on CUDA: 83%#Simulating on CUDA: 84%#Simulating on CUDA: 85%#Simulating on CUDA: 86%#Simulating on CUDA: 87%#Simulating on CUDA: 88%#Simulating on CUDA: 89%#Simulating on CUDA: 90%#Simulating on CUDA: 91%#Simulating on CUDA: 92%#Simulating on CUDA: 93%#Simulating on CUDA: 94%#Simulating on CUDA: 95%#Simulating on CUDA: 96%#Simulating on CUDA: 97%#Simulating on CUDA: 98%#Simulating on CUDA: 99%#Simulating on CUDA: 100%!
+
+Iterations per sample = 3.111750
+Core simulation time = 18.757522 seconds
+Total simulation time = 18.786409 seconds
