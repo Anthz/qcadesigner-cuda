@@ -270,12 +270,12 @@ void launch_bistable_simulation(
 	fprintf(stdout,"Coloring...");
 	fflush(stdout);
 	color_graph(h_neighbours, cells_number, neighbours_number, &h_cells_colors, &num_colors);
-	int coloring_failed = FALSE;
+	int coloring_failed = 0;
 	for (i=0;i<cells_number;i++)
 	{
 		for (j=0;j<neighbours_number;j++)
 		{
-			if (h_neighbours[i+cells_number*j] != -1 && h_cells_colors[i]==h_cells_colors(h_neighbours[i+j*cells_number])) coloring_failed = TRUE;
+			if (h_neighbours[i+cells_number*j] != -1 && h_cells_colors[i]==h_cells_colors(h_neighbours[i+j*cells_number])) coloring_failed = 1;
 		}
 	}
 	if (coloring_failed) fprintf(stdout," failed!\n");
