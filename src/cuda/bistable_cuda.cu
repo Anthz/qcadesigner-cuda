@@ -399,10 +399,10 @@ void launch_bistable_simulation(
 		for (i = 0; i < max_iterations && !stable; i++)
 		{
 			
-			if (j==100)
+			if (j>250 && j<350)
 			{
 				cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
-				for (k=0;k<cells_number;k++) printf("i:%d, cell:%d\t%e\n",i,k,h_polarization[k]);
+				for (k=0;k<cells_number;k++) printf("j:%d,i:%d, cell:%d\t%e\n",j,i,k,h_polarization[k]);
 			}
 	
 			// Launch Kernel
