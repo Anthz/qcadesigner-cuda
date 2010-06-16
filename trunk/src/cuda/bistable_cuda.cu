@@ -275,7 +275,11 @@ void launch_bistable_simulation(
 	{
 		for (j=0;j<neighbours_number;j++)
 		{
-			if (h_neighbours[i+cells_number*j] != -1 && h_cells_colors[i]==h_cells_colors[h_neighbours[i+j*cells_number]]) coloring_failed = 1;
+			if (h_neighbours[i+cells_number*j] != -1 && h_cells_colors[i]==h_cells_colors[h_neighbours[i+j*cells_number]] && h_neighbours[h_neighbours[i+j*cells_number]] != -1)
+			{
+				coloring_failed = 1;
+				fprintf(stderr,"Cell:%d,ithNb:%d,idxNb:%d,cellCol:%d,nbCol:%d\n",i,j,h_neighbours[i+cells_number*j],h_cells_colors[i],h_cells_colors[h_neighbours[i+j*cells_number]]);
+			}
 		}
 	}
 	if (coloring_failed) fprintf(stdout," failed!\n");
