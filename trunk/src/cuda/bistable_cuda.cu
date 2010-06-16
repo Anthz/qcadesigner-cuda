@@ -79,7 +79,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	{		
 		input_idx = find(thr_idx, shm_array,d_input_number);
 		if (input_idx != -1)
-			d_polarization[thr_idx]=(-1 * __sinf(((double)( 1 << input_idx)) * __fdividef((double)sample * FOUR_PI ,(double) d_number_of_samples)) > 0) ? 1: -1;
+			d_polarization[thr_idx]=(-1 * sin(((double)( 1 << input_idx)) * (double)sample * FOUR_PI /(double) d_number_of_samples) > 0) ? 1: -1;
 	}
 }
 
@@ -144,9 +144,9 @@ __global__ void bistable_kernel (
 			}
 
 			//math = math / 2 * gamma
-			clock_value = d_clock_prefactor * __cosf (((double)(1 << d_input_number)) * __fdividef((double)sample * 4.0 * PI , (double)d_number_of_samples) - __fdividef(PI * current_cell_clock , 2)) + d_clock_shift;
+			clock_value = d_clock_prefactor * cos (((double)(1 << d_input_number)) * (double)sample * 4.0 * PI / (double)d_number_of_samples - PI * current_cell_clock / 2) + d_clock_shift;
 			clock_value = CLAMP(clock_value,d_clock_low,d_clock_high);
-			polarization_math = __fdividef(polarization_math,(2.0 * clock_value));
+			polarization_math /= 2.0 * clock_value;
 			 
 			// -- calculate the new cell polarization -- //
 			// if math < 0.05 then math/sqrt(1+math^2) ~= math with error <= 4e-5
@@ -155,7 +155,7 @@ __global__ void bistable_kernel (
 			(polarization_math        >  1000.0)   ?  1                 :
 			(polarization_math        < -1000.0)   ? -1                 :
 			(fabs (polarization_math) <     0.001) ?  polarization_math :
-			__fdividef(polarization_math , sqrt (1 + polarization_math * polarization_math)) ;
+			polarization_math / sqrt (1 + polarization_math * polarization_math) ;
 			
 			stable = (fabs (new_polarization - d_polarization[thr_idx]) <= tolerance);
 			d_stability[thr_idx] = stable;
@@ -402,8 +402,11 @@ void launch_bistable_simulation(
 			// Launch Kernel
 			for(color = 1; color <= num_colors; color++)
 			{
-				/*cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
-				for (k=0;k<cells_number;k++) printf("i:%d, col:%d, cell:%d\t%e\n",i,color,k,h_polarization[k]);*/
+				/*if (j==100)
+				{
+					cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
+					for (k=0;k<cells_number;k++) printf("i:%d, col:%d, cell:%d\t%e\n",i,color,k,h_polarization[k]);
+				}*/
 				
 				bistable_kernel<<< grid, threads, output_indexes_bytes >>> (d_polarization, /*d_next_polarization,*/ d_cell_clock, d_Ek, d_neighbours, 
 					j, d_output_indexes, d_stability, tolerance, d_output_data, d_cells_colors, color);
@@ -417,7 +420,12 @@ void launch_bistable_simulation(
 			}
 			//	for (count = 0; count<cells_number; count++) printf("%d",h_stability[count]);
 			//	printf("\n");
-
+			
+			if (j==100)
+			{
+				cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
+				for (k=0;k<cells_number;k++) printf("i:%d, cell:%d\t%e\n",i,k,h_polarization[k]);
+			}
 			
 			
 			cutilSafeCall (cudaMemcpy (h_stability, d_stability, cells_number*sizeof(int), cudaMemcpyDeviceToHost));
