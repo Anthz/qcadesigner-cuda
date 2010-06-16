@@ -348,8 +348,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 	{
 		fprintf(stderr,"\r#Simulating on CPU: %d%%",new_percentage);
 		fflush(stderr);
-		fprintf(stdout,"\r#Simulating on CPU: %d%%",new_percentage);
-		fflush(stdout);
+		fprintf(stdout,"#Simulating on CPU: %d%%\n",new_percentage);
 	}
 	old_percentage = new_percentage;
 		// if (j % 10 == 0)
@@ -503,7 +502,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
     }//for number of samples
 
 	fprintf(stderr,"\r#Simulating on CPU: 100%%!\n");
-	fprintf(stdout,"\r#Simulating on CPU: 100%%!\n");
+	fprintf(stdout,"#Simulating on CPU: 100%%!\n");
 	printf("Iterations per sample = %f\n", (double)total_iterations/sim_data_number_samples);
 	
 #endif //CUDA

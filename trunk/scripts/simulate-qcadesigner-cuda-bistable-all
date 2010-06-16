@@ -6,7 +6,7 @@ for i in $circuit_ls
 do
 	echo Simulating $i...
 	touch ../data/sim_outputs/bistable/$i-$now-cuda.log
-	../bin/qcadesigner-cuda -f ../data/circuits/bistable/$i -o ../scripts/bistable_options.txt -n 1 -t 0.001 -e BISTABLE -s ../data/sim_outputs/bistable/$i-$now | tee ../data/sim_outputs/bistable/$i-$now-cuda.log
+	../bin/qcadesigner-cuda -f ../data/circuits/bistable/$i -o ../scripts/bistable_options.txt -n 1 -t 0.001 -e BISTABLE -s ../data/sim_outputs/bistable/$i-$now > ../data/sim_outputs/bistable/$i-$now-cuda.log
 	echo Done simulating $i.
 	cd ../data/
 	if [ -e gnuplot/circuit ]
@@ -18,7 +18,7 @@ do
 	gnuplot script_plot.gpi
 	mv -T circuit.png ../sim_outputs/bistable/$i-$now-cuda.png
 	rm circuit
-	cd ../sim_outpus/bistable
+	cd ../sim_outputs/bistable
 	
 	for mail in $@
 	do
@@ -28,6 +28,6 @@ do
 		echo Attachment: $i-$now-cuda.png
 		cat $i-$now-cuda.log | mutt -s "$i-$now-cuda - Simulation done." -a $i-$now-cuda.png -- $mail
 	done
-	cd ../../scripts
+	cd ../../../scripts
 done
 echo All done.

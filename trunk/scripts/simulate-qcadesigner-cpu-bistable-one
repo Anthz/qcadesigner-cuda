@@ -1,4 +1,4 @@
-circuit_ls+="CircuitBig_64000.qca "
+circuit_ls+="Circuit_2_01.qca "
 now=$(date +%s)
 echo These files will be used for testing:
 echo $circuit_ls
@@ -6,7 +6,7 @@ for i in $circuit_ls
 do
 	echo Simulating $i...
 	touch ../data/sim_outputs/bistable/$i-$now-cpu.log
-	../bin/qcadesigner-cpu -f ../data/circuits/bistable/$i -o ../scripts/bistable_options.txt -n 1 -t 0.001 -e BISTABLE -s ../data/sim_outputs/bistable/$i-$now | tee ../data/sim_outputs/bistable/$i-$now-cpu.log
+	../bin/qcadesigner-cpu -f ../data/circuits/bistable/$i -o ../scripts/bistable_options.txt -n 1 -t 0.001 -e BISTABLE -s ../data/sim_outputs/bistable/$i-$now > ../data/sim_outputs/bistable/$i-$now-cpu.log
 	echo Done simulating $i.
 	cd ../data/
 	if [ -e gnuplot/circuit ]
@@ -18,7 +18,7 @@ do
 	gnuplot script_plot.gpi
 	mv -T circuit.png ../sim_outputs/bistable/$i-$now-cpu.png
 	rm circuit
-	cd ../sim_outpus/bistable
+	cd ../sim_outputs/bistable
 	
 	for mail in $@
 	do
@@ -28,7 +28,7 @@ do
 		echo Attachment: $i-$now-cpu.png
 		cat $i-$now-cpu.log | mutt -s "$i-$now-cpu - Simulation done." -a $i-$now-cpu.png -- $mail
 	done
-	cd ../../scripts
+	cd ../../../scripts
 done
 echo All done.
 

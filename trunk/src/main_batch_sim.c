@@ -79,11 +79,12 @@ int main (int argc, char **argv)
   long int lTime = 0;
   char *sTime=(char*)malloc(100*sizeof(char));
   struct timespec temp, startTime, endTime;
+  double sim_time;
 
   //intial time for simulation.
-  clock_gettime(CLOCK_REALTIME, &startTimeSpec);
+  clock_gettime(CLOCK_REALTIME, &startTime);
   fprintf(stderr,"Initialization...");
-  fflush(srderr);
+  fflush(stderr);
 
   parse_cmdline (argc, argv, &sim_engine, &pszSimOptsFName, &pszFName, &number_of_sims, &dTolerance, &pszFileSaveOut) ;
 
