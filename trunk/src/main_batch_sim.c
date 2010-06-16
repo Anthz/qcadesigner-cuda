@@ -201,7 +201,15 @@ int main (int argc, char **argv)
 					printf("Output file doesn't exist.\n");
 					return -1;
 				}
-				create_simulation_output_file_fp_cuda (file_out, &sim_output, bistable_options.delay); 
+				if (COHERENCE_VECTOR == sim_engine)
+    			{
+					create_simulation_output_file_fp_cuda (file_out, &sim_output, coherence_options.delay); 
+				}
+				if (BISTABLE == sim_engine)
+    			{
+					create_simulation_output_file_fp_cuda (file_out, &sim_output, coherence_options.delay); 
+				}
+					
 				fclose(file_out);
 				
 				FILE *file_bin;
@@ -217,8 +225,16 @@ int main (int argc, char **argv)
 				{
 					printf("Output file doesn't exist.\n");
 					return -1;
+				}				
+				if (COHERENCE_VECTOR == sim_engine)
+    			{
+					create_simulation_output_binary_cuda (file_bin, &sim_output,coherence_options.delay);
 				}
-				create_simulation_output_binary_cuda (file_bin, &sim_output,bistable_options.delay);
+				if (BISTABLE == sim_engine)
+    			{
+					create_simulation_output_binary_cuda (file_bin, &sim_output,bistable_options.delay);
+				}
+
 				fclose(file_bin);
 
 				sim_data = simulation_data_destroy (sim_data) ;
