@@ -50,12 +50,23 @@ __device__ __constant__ int d_number_of_samples;
 __device__ __constant__ double d_clock_low;
 __device__ __constant__ double d_clock_high;
 
-__device__ 
+__device__ inline int find(int x, int *array, int length)
+{
+	int l = 0, r = length - 1, mid;
+	while (l <= r)
+	{
+		mid = (l + r) / 2;
+		if (array[mid] == x) return mid;
+		else if (array[mid] > x) r = mid - 1;
+		else l = mid + 1;
+	}
+	return -1;
+}
 
 __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int sample)
 {
 	extern	__shared__ int shm_array[];
-	int i=0,j=d_input_number-1,input_idx;
+	int input_idx;
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;
 	
 	if (threadIdx.x < d_input_number)
@@ -67,14 +78,8 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	//find input index and update it
 	if (thr_idx < d_cells_number)
 	{		
-		while (i <= j)
-		{
-			input_idx = (i + j) / 2;
-			if (shm_array[input_idx] == thr_idx) break;
-			else if (shm_array[input_idx] > thr_idx) j = input_idx - 1;
-			else i = input_idx + 1;
-		}
-		if (i <= j)
+		input_idx = find(thr_idx, shm_array,d_input_number);
+		if (input_idx != -1)
 			d_polarization[thr_idx]=(-1 * __sinf(((double)( 1 << input_idx)) * __fdividef((double)sample * 4.0 * PI ,(double) d_number_of_samples)) > 0) ? 1: -1;
 	}
 }
@@ -98,7 +103,7 @@ __global__ void bistable_kernel (
 	extern	__shared__ int shm_output_indexes[];
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;   // Thread index
 	int nb_idx;   // Neighbour index
-	int q,j;
+	int q;
 	int current_cell_clock;   //could be 0, 1, 2 or 3
 	double new_polarization;
 	double polarization_math;
@@ -163,16 +168,8 @@ __global__ void bistable_kernel (
 			// If any cells polarization has changed beyond this threshold
 			// then the entire circuit is assumed to have not converged.
 			
-			q=0;
-			j=d_output_number-1;
-			while (q <= j)
-			{
-				output_idx = (q + j) / 2;
-				if (shm_output_indexes[output_idx ] == thr_idx) break;
-				else if (shm_output_indexes[output_idx] > thr_idx) j = output_idx  - 1;
-				else q = output_idx  + 1;
-			}
-			if (q <= j)
+			output_idx = find(thr_idx,shm_output_indexes,d_output_number);
+			if (output_idx != -1)
 				d_output_data[output_idx] = new_polarization;
 		}
 		/*else
