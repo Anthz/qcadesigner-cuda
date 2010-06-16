@@ -59,6 +59,7 @@ typedef struct
 	double epsilonR;
 	double layer_separation;
 	int algorithm;
+	double delay;
 	gboolean randomize_cells;
 	gboolean animate_simulation;
   } coherence_OP;
