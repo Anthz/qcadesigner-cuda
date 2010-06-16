@@ -27,18 +27,17 @@ extern "C"{
 #include "../coloring/coloring.h"
 }
 
+#ifdef FLOAT_PRECISION
+#define double float
+#endif
 
 #define BLOCK_DIM 256
 #undef CLAMP
 #define CLAMP(value,low,high) ((value > high) ? high : ((value < low) ? low : value))
 #undef PI
-#define PI  3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196  
+#define PI (double)(3.1415926535897932384626433832795)
 #undef FOUR_PI
-#define FOUR_PI 12.566370614359172953850573533118
-
-#ifdef FLOAT_PRECISION
-#define double float
-#endif
+#define FOUR_PI 12.56637061
 
 __device__ __constant__ double d_clock_prefactor;
 __device__ __constant__ double d_clock_shift;
@@ -355,6 +354,7 @@ void launch_bistable_simulation(
 		update_inputs<<< grid, threads,input_indexes_bytes>>> (d_polarization, d_input_indexes, j);
 		cudaThreadSynchronize ();
 		
+		printf("sample: %d ",j);
 		cutilSafeCall (cudaMemcpy (h_polarization, d_polarization, cells_number*sizeof(double), cudaMemcpyDeviceToHost));
 		for (i=0;i<input_number;i++)
 			printf("%e\t", h_polarization[input_indexes[i]]);
