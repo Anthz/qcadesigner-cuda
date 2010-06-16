@@ -390,7 +390,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 			
 
 
-
+/*
 		// randomize the order in which the cells are simulated to try and minimize numerical errors
 		// associated with the imposed simulation order.
 		if(options->randomize_cells)
@@ -418,7 +418,7 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 			  sorted_cells[Nix][idxCell2] = swap ;
 			  }
 			}
-
+*/
 
 		// -- run the iteration with the given clock value -- //
 		// -- iterate until the entire design has stabalized -- //
