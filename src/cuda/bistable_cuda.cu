@@ -275,7 +275,7 @@ void launch_bistable_simulation(
 	{
 		for (j=0;j<neighbours_number;j++)
 		{
-			if (h_neighbours[i+cells_number*j] != -1 && h_cells_colors[i]==h_cells_colors(h_neighbours[i+j*cells_number])) coloring_failed = 1;
+			if (h_neighbours[i+cells_number*j] != -1 && h_cells_colors[i]==h_cells_colors[h_neighbours[i+j*cells_number]]) coloring_failed = 1;
 		}
 	}
 	if (coloring_failed) fprintf(stdout," failed!\n");
