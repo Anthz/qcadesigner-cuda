@@ -398,7 +398,13 @@ void launch_bistable_simulation(
 		// In each sample...
 		for (i = 0; i < max_iterations && !stable; i++)
 		{
-				
+			
+			if (j==100)
+			{
+				cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
+				for (k=0;k<cells_number;k++) printf("i:%d, cell:%d\t%e\n",i,k,h_polarization[k]);
+			}
+	
 			// Launch Kernel
 			for(color = 1; color <= num_colors; color++)
 			{
@@ -421,11 +427,7 @@ void launch_bistable_simulation(
 			//	for (count = 0; count<cells_number; count++) printf("%d",h_stability[count]);
 			//	printf("\n");
 			
-			if (j==100)
-			{
-				cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
-				for (k=0;k<cells_number;k++) printf("i:%d, cell:%d\t%e\n",i,k,h_polarization[k]);
-			}
+			
 			
 			
 			cutilSafeCall (cudaMemcpy (h_stability, d_stability, cells_number*sizeof(int), cudaMemcpyDeviceToHost));
