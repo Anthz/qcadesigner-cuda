@@ -217,19 +217,18 @@ void launch_bistable_simulation(
 	#endif
 	double *h_polarization;
 	double *h_Ek;
-        double *d_polarization, *d_Ek;
-        int *d_neighbours, *d_cell_clock, *d_input_indexes, *d_output_indexes;
-        int i,j,stable,color, num_colors;
-        int *d_stability, *h_stability, *h_cells_colors, *d_cells_colors;
-        int count;
-        int k;
-        double *d_output_data;
-        double *h_output_data;
-        int old_percentage = -1, new_percentage;
-        int input_indexes_bytes = sizeof(int)*input_number;
-        int output_indexes_bytes = sizeof(int)*output_number;
-        int total_iterations = 0;
-
+	double *d_polarization, *d_Ek;
+	int *d_neighbours, *d_cell_clock, *d_input_indexes, *d_output_indexes;
+	int i,j,stable,color, num_colors;
+	int *d_stability, *h_stability, *h_cells_colors, *d_cells_colors;
+	int count;
+	int k;
+	double *d_output_data;
+	double *h_output_data;
+	int old_percentage = -1, new_percentage;
+	int input_indexes_bytes = sizeof(int)*input_number;
+	int output_indexes_bytes = sizeof(int)*output_number;
+	int total_iterations = 0;
 
 	#ifdef FLOAT_PRECISION
 	h_polarization = (float *)malloc(sizeof(float)*cells_number);
@@ -252,7 +251,27 @@ void launch_bistable_simulation(
 	double clock_high = (double) clock_high_d; 
 	double tolerance = (double) tolerance_d;
 
-	
+	printf("%e, %e, %e, %e, %e , %d, %d, %d, %d, %d, %d, %d\n",
+	clock_prefactor,clock_shift,clock_low,clock_high,tolerance,cells_number,
+	neighbours_number,number_of_samples,max_iterations,input_number,output_number,
+	randomize_cells);
+	for (i=0;i<cells_number;i++)
+	{
+		printf("%e \t%d\n",h_polarization[i],h_cell_clock[i]);
+	}
+	for (i=0;i<cells_number;i++)
+	{
+		for (j=0;j<neighbours_number;j++)
+		{
+			printf("%e \t",h_Ek[i+j*neighbours_number]);
+		}
+		printf("\t");
+		for (j=0;j<neighbours_number;j++)
+		{
+			printf("%d ", h_neighbours[i+j*neighbours_number]);
+		}
+		printf("\n");
+	}
 
 
 
