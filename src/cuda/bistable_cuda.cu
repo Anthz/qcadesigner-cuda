@@ -11,7 +11,7 @@
 					*/
 /* ========================================================================== */
 //#define CUPRINTF_B
-//#define FLOAT_PRECISION
+#define FLOAT_PRECISION
 
 
 #include <cutil_inline.h>
@@ -217,10 +217,23 @@ void launch_bistable_simulation(
 	#endif
 	double *h_polarization;
 	double *h_Ek;
+        double *d_polarization, *d_Ek;
+        int *d_neighbours, *d_cell_clock, *d_input_indexes, *d_output_indexes;
+        int i,j,stable,color, num_colors;
+        int *d_stability, *h_stability, *h_cells_colors, *d_cells_colors;
+        int count;
+        int k;
+        double *d_output_data;
+        double *h_output_data;
+        int old_percentage = -1, new_percentage;
+        int input_indexes_bytes = sizeof(int)*input_number;
+        int output_indexes_bytes = sizeof(int)*output_number;
+        int total_iterations = 0;
+
 
 	#ifdef FLOAT_PRECISION
-	*h_polarization = (float *)malloc(sizeof(float)*cells_number);
-	*h_Ek = (float *)malloc(sizeof(float)*cells_number*neighbours_number);
+	h_polarization = (float *)malloc(sizeof(float)*cells_number);
+	h_Ek = (float *)malloc(sizeof(float)*cells_number*neighbours_number);
 	for(i=0; i < cells_number*neighbours_number; i++)
 		{
 			
@@ -231,20 +244,6 @@ void launch_bistable_simulation(
 	h_polarization = h_polarization_d;
 	h_Ek=h_Ek_d;
 	#endif //FLOAT PRECISION
-
-	// Variables
-	double /**d_next_polarization,*/ *d_polarization, *d_Ek;
-	int *d_neighbours, *d_cell_clock, *d_input_indexes, *d_output_indexes;
-	int i,j,stable,color, num_colors;
-	int *d_stability, *h_stability, *h_cells_colors, *d_cells_colors;
-	int count;
-	int k;
-	double *d_output_data;
-	double *h_output_data;
-	int old_percentage = -1, new_percentage;
-	int input_indexes_bytes = sizeof(int)*input_number;
-	int output_indexes_bytes = sizeof(int)*output_number;
-	int total_iterations = 0;
 
 	//casting double variables to float if float precision
 	double clock_prefactor = (double) clock_prefactor_d;
