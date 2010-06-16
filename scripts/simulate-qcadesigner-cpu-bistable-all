@@ -15,7 +15,7 @@ do
 	cp sim_outputs/bistable/$i-$now-cpu.out gnuplot/circuit
 	cd gnuplot
 	gnuplot script_plot.gpi
-	mv -T circuit.png $i-$now-cpu.png
+	mv -T circuit.png ../data/sim_outputs/bistable/$i-$now-cpu.png
 	rm circuit
 	
 	for mail in $@

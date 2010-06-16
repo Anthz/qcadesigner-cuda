@@ -25,7 +25,7 @@
 //                                                      //
 //////////////////////////////////////////////////////////
 
-
+//#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -44,7 +44,6 @@
 #include "bistable_simulation.h"
 /*#include "custom_widgets.h"*/
 #include "global_consts.h"
-
 
 //#define REDUCE_DEREF
 
