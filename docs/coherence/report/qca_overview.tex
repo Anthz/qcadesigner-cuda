@@ -1,24 +1,36 @@
-\section{Qca Overview}\label{sec:i}
+\chapter{Qca Overview}\label{sec:qca}
+
 Quantum Dot Cellular Automata (QCA) are a quantum extension to the classical notion of Cellular Automata. 
 
-In computability theory, we identify a Cellular Automata (CA) as a Turing-complete abstract machine model consisting of a grid of cells each of which can be in any of a finite number of states. For every cell in the grid, moreover, we define its neighborhood, which is the set of "near enough" cells. The evolution of this automaton is defined by the transition of the state of the cells, which is a function of both the status of the cell and the status of its neighborhood.
+In computability theory, we identify a Cellular Automata (CA) as a Turing-complete abstract machine model consisting of a grid of \textsl{cells} each of which can be in any of a finite number of \textsl{states}. For every cell in the grid, moreover, we define its \textsl{neighborhood}, which is the set of "near enough" cells. The \textsl{evolution} of this automaton is defined by the transition of the state of the cells, which is a function of both the status of the cell and the status of its neighborhood.
 
-What makes a QCA different from a classical CA is that its physical implementation is regulated by the quantum laws of physics instead of the classical ones. Let's take a closer look to a QCA. As you can see in \figurename~\ref{fig:qca} a QCA is made of three main components: electron wells, crystalline substrate and electrons themselves. Here we depict the charge of the electrons on the wells/dots by blurred blue clouds instead of the more common (and classical) representation of small, crisply defined points. This is accurate because the Quantum Mechanics says that at this near atomic scale, charge (on electrons and protons) does not come in sharp little balls, but instead is correctly representable only in a probabilistic way via the wave function (Schrödinger equation).
+What makes a QCA different from a classical CA is that its physical implementation is regulated by the quantum laws of physics instead of the classical ones. Let's take a closer look to a QCA. As you can see in \figurename~\ref{fig:qca} a QCA is made of three main components: electron wells, crystalline substrate and electrons. Here we depict the charge of the electrons on the wells/dots by blurred blue clouds instead of the more classical representation of small, crisply defined points. This is accurate because the Quantum Mechanics says that at this near atomic scale, charge (on electrons and protons) does not come in sharp little balls, but instead is correctly representable only in a probabilistic way via the wave function (Schr\"{o}dinger equation).
 
 \begin{figure}[h!bt]
-	\centerline{\includegraphics[width=\textwidth]{img/qca.png}}
+	\centerline{\includegraphics[width=0.9\textwidth]{img/qca.png}}
 	\caption{A single Quantum Dot Cellular Automata (QCA) cell. In green the crystalline (SiGe - Silicon Germanium) substrate, where are clearly visible, in squared position, the four wells meant for accomodating that many electrons. Even though different configurations of the dots are possible, this is by far the most commonly studied structure. The blue cloud represents the amplitude of probability of finding an electron in that position.}
 	\label{fig:qca}
 \end{figure}
 
-Charges of the same type (positive or negative) still repel one another so our two clouds of charge will move as far from one another as possible by running to opposite corners of the QCA. As you can see in Figure \ref{fig:qcaevo}, vs tunnel effect vs clock phase) ...... (tunnel effect, quantum mechanics)
+Charges of the same type (positive or negative) still repel one another so our two clouds of charge will move as far from the another as possible by moving to opposite corners of the QCA (this allows for the largest distance to be set between the clouds). In \figurename~\ref{fig:qcaevo} is represented the typical evolution of a QCA cell. What is the phenomenon that allows a charge to move from a well to the other? This is called ''tunnel effect'', a well known phenomenon in quantum physics that predicts that, under certain hypothesis, waves (in our case: the cloud) are enabled to move trespassing thin layers of obstructing materials (in our case: the walls of the wells). This is the main distinguishing reason why these cells are not simply cellular automata but quantum ones. This must not lead the reader to think that these devices, just \textsl{per se}, allow for quantum computing to take place. In fact, these devices, as for have been described, always behave in a deterministic manner, being polarized in one or the other proposed configurations. Quantum computing by means of QCA cells exploitation has been demonstrated feasible from a mathemathical point of view, but no real world implementations, to date, have publicily been demonstrated.  
+
+The only (from a theorethical point of view) remaining feature that is required to enable the transmission of data troughut a circuit of adjacent QCA cells is the concept of ''clock''. Clocks are areas of conductive material under the circuit's lattice, modulating the electron tunneling barriers in the QCA cells above it. This way it possible to "strengthen" the barriers disallowing charges to flow (even under those conditions where they would naturally do it) or, as opposite, to "weaken" them to favour movements.
 
 \begin{figure}[h!bt]
-	\centerline{\includegraphics[width=8cm]{img/qcaevo.png}}
+	\centerline{\includegraphics[width=0.9\textwidth]{img/qcaevo.png}}
 	\caption{The evolution of the state of a QCA cell. From left to right, from top to bottom: the lower of the two wires (on the left in every image) is polarized, inducing (second image) the lower left electron to flow to the righest side of the QCA (and precisely inside the corresponding well). This, in turn, induces the upper right electron to move farthest from it, inside the upper left well (third and fourth image).}
 	\label{fig:qcaevo}
+\end{figure}
+
+As an example of a QCA cells based circuit it is reported in Figure \ref{fig:qcamaj}. The conjunction of adjacent electrical fields of the three input drivers results into the polarization
+
+\begin{figure}[h!bt]
+	\centerline{\includegraphics{img/qcamaj.png}}
+	\caption{The majority gate drives the output cell's state to be equal to that of the majority of the inputs.}
+	\label{fig:qcamaj}
 \end{figure}
 
 Apart from the possibility of using QCA for building quantum computing, which is something quite not at hand yet, QCAs can be seen as a powerful alternatives to silicon-based devices to represent data. Depending on the fabrication technique employed, in fact, QCAs are theorethically able to switch at an order of magnitude around the Thz, to be packaged at very high density levels and to disspate very small amounts of power. This, along with the existance of demo systems already proven working, justifies their current and future development as an attractive way of improving nowadays computing performance bottlenecks.
 
 One of the universities interested and involved into the development of this technology, among the others, is the University of Columbia, and in particular its Microsystems and Nanotechnology Group (MiNa Group). The foundation of our work is their implementation of a simulator (both logical and physical) of QCA based cicuits and is the subject of the next section.
+
