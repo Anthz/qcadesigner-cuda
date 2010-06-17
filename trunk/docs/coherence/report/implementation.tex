@@ -1,12 +1,12 @@
-\section{Implementation}\label{sec:i}
-\subsection {The original tool}
+\chapter{Implementation}\label{sec:implementation}
+\section {The original tool}
 The original tool
 qcadesigner: gtk, graphical ide, graphical animation of the evolution, possibility of choosing two engines and their parameters, output.
-\subsection {The bottlenecks of the original implementation}
+\section {The bottlenecks of the original implementation}
 even though the evolution of any cell is independent of the evolution of the others  in the very same instant  (it actually depends only on the previous one) the basic implementation introduces some error (which is distributed over all cells randomizing the order they are simulated) due to an overlapping of time instants + for that reason every cell in the same iteration could be evolved  independently  of the state of their neighbour in the same moment. Many Many hours for relatively small circuits -> unfeasible simulating entire processors. Complexity of the algorithm (i=num inputs, c=num cells) -> O(pol(c)*exp(i)) in time + O(pow(2,c)) in memory [we save at each iteration only the matrix of the previous polarization of the neighbors of every cell {pow(2,c)} + the polarization of the cells themselves {c} -> O(pow(2,c)+c) -> O(pow(2,c))]
-\subsection {Parallelization in CUDA}
+\section {Parallelization in CUDA}
 independent cells -> independent thread, from serial code to parallel, exploitation of SIMD principle, core elaboration (parallelizable) is the evolution of the polarization w.r.t. thw neighbours. No tile-problem (overlapping of adjacent concurrently simulated areas of circuit)
-\subsubsection{The big picture}
+\subsection{The big picture}
 Overview of the mechanism: bridge code <from theirs to ours and viceversa> + "photos"@instant t and t+1, evolution in GPU + IO of memory
-\subsubsection{Optimizations}
+\subsection{Optimizations}
 coalescent accesses to memory, memory usage (constant, texture), register usage <-> occupancy (small number of intermediate results explicitely saved), fast math, elimination of the branch where the integration method is computed, throughput of float vs double. Further improvements (in fermi architecture): caching of global memory,...
