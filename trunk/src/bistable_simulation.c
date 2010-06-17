@@ -297,9 +297,9 @@ simulation_data *run_bistable_simulation (int SIMULATION_TYPE, DESIGN *design, b
 
 	fprintf(stdout,"Converting to CUDA structures...");
 	fflush(stdout);
-		sorted_cells_to_CUDA_Structures_array(sorted_cells, &h_polarization,&h_cell_clock, &h_Ek, 
-			&h_neighbours, number_of_cell_layers, number_of_cells_in_layer, &max_neighbours, &input_indexes, 
-			&input_number,&output_indexes, &output_number);
+	sorted_cells_to_CUDA_Structures_array(sorted_cells, &h_polarization,&h_cell_clock, &h_Ek, 
+		&h_neighbours, number_of_cell_layers, number_of_cells_in_layer, &max_neighbours, &input_indexes, 
+		&input_number,&output_indexes, &output_number,design);
 	fprintf(stdout," done!\n");
 
     output_traces = (double **)malloc(output_number * sizeof(double *));
