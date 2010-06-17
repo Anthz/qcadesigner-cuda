@@ -19,7 +19,8 @@ void sorted_cells_to_CUDA_Structures_array(
 	int** input_indexes,
 	int* input_number,
 	int** output_indexes,
-	int* output_number
+	int* output_number,
+	DESIGN *design
 	);
 
 
