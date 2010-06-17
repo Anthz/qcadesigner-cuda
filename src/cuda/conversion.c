@@ -125,10 +125,10 @@ for (idxMasterBitOrder = 0, design_bus_layout_iter_first (design_bus_layout, &bl
 			if(sorted_cells[iLayer][iCell]==exp_array_index_1d (design_bus_layout_inputs, BUS_LAYOUT_CELL, i).cell)
 			{
 				(*input_indexes)[idxMasterBitOrder] = counter;
+				printf("IdxM:%d,inputidx:%d\n",idxMasterBitOrder,counter);
 			}
 		}
 	}
-	
 }
 
 
