@@ -2,6 +2,8 @@
 #include "../bistable_simulation.h"
 #include <stdlib.h>
 #define design_bus_layout design->bus_layout
+#define design_bus_layout_outputs design_bus_layout->outputs
+#define design_bus_layout_inputs design_bus_layout->inputs
 
  int *tmp;
 
@@ -29,7 +31,7 @@ void sorted_cells_to_CUDA_Structures_array(
 	int* input_number,
 	int** output_indexes,
 	int* output_number,
-	DESIGN design;
+	DESIGN *design
 	)
 {
   
