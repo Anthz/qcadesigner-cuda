@@ -1,0 +1,169 @@
+Initialization... done!
+Running 1 simulations with a radial tolerance of 0.001000
+Running simulation 0
+Number of cells = 152
+Number of samples = 8000
+Number of inputs = 2
+Converting to CUDA structures... done!
+Coloring... done!
+Number of colors = 12
+Allocating memory on device... done!
+#Simulating on CUDA: 0%pre update host: 151 150
+post update host: 151 150
+#Simulating on CUDA: 100%!
+
+Iterations per sample = 0.001375
+[0, 96]: inidx:-1,thr_idx:96,d[151 150],sh[151 150], inpnum:2
+[0, 97]: inidx:-1,thr_idx:97,d[151 150],sh[151 150], inpnum:2
+[0, 98]: inidx:-1,thr_idx:98,d[151 150],sh[151 150], inpnum:2
+[0, 99]: inidx:-1,thr_idx:99,d[151 150],sh[151 150], inpnum:2
+[0, 100]: inidx:-1,thr_idx:100,d[151 150],sh[151 150], inpnum:2
+[0, 101]: inidx:-1,thr_idx:101,d[151 150],sh[151 150], inpnum:2
+[0, 102]: inidx:-1,thr_idx:102,d[151 150],sh[151 150], inpnum:2
+[0, 103]: inidx:-1,thr_idx:103,d[151 150],sh[151 150], inpnum:2
+[0, 104]: inidx:-1,thr_idx:104,d[151 150],sh[151 150], inpnum:2
+[0, 105]: inidx:-1,thr_idx:105,d[151 150],sh[151 150], inpnum:2
+[0, 106]: inidx:-1,thr_idx:106,d[151 150],sh[151 150], inpnum:2
+[0, 107]: inidx:-1,thr_idx:107,d[151 150],sh[151 150], inpnum:2
+[0, 108]: inidx:-1,thr_idx:108,d[151 150],sh[151 150], inpnum:2
+[0, 109]: inidx:-1,thr_idx:109,d[151 150],sh[151 150], inpnum:2
+[0, 110]: inidx:-1,thr_idx:110,d[151 150],sh[151 150], inpnum:2
+[0, 111]: inidx:-1,thr_idx:111,d[151 150],sh[151 150], inpnum:2
+[0, 112]: inidx:-1,thr_idx:112,d[151 150],sh[151 150], inpnum:2
+[0, 113]: inidx:-1,thr_idx:113,d[151 150],sh[151 150], inpnum:2
+[0, 114]: inidx:-1,thr_idx:114,d[151 150],sh[151 150], inpnum:2
+[0, 115]: inidx:-1,thr_idx:115,d[151 150],sh[151 150], inpnum:2
+[0, 116]: inidx:-1,thr_idx:116,d[151 150],sh[151 150], inpnum:2
+[0, 117]: inidx:-1,thr_idx:117,d[151 150],sh[151 150], inpnum:2
+[0, 118]: inidx:-1,thr_idx:118,d[151 150],sh[151 150], inpnum:2
+[0, 119]: inidx:-1,thr_idx:119,d[151 150],sh[151 150], inpnum:2
+[0, 120]: inidx:-1,thr_idx:120,d[151 150],sh[151 150], inpnum:2
+[0, 121]: inidx:-1,thr_idx:121,d[151 150],sh[151 150], inpnum:2
+[0, 122]: inidx:-1,thr_idx:122,d[151 150],sh[151 150], inpnum:2
+[0, 123]: inidx:-1,thr_idx:123,d[151 150],sh[151 150], inpnum:2
+[0, 124]: inidx:-1,thr_idx:124,d[151 150],sh[151 150], inpnum:2
+[0, 125]: inidx:-1,thr_idx:125,d[151 150],sh[151 150], inpnum:2
+[0, 126]: inidx:-1,thr_idx:126,d[151 150],sh[151 150], inpnum:2
+[0, 127]: inidx:-1,thr_idx:127,d[151 150],sh[151 150], inpnum:2
+[0, 151]: inidx:0,thr_idx:151,d[151 150],sh[151 150], inpnum:2
+[0, 0]: inidx:-1,thr_idx:0,d[151 150],sh[151 150], inpnum:2
+[0, 1]: inidx:-1,thr_idx:1,d[151 150],sh[151 150], inpnum:2
+[0, 2]: inidx:-1,thr_idx:2,d[151 150],sh[151 150], inpnum:2
+[0, 3]: inidx:-1,thr_idx:3,d[151 150],sh[151 150], inpnum:2
+[0, 4]: inidx:-1,thr_idx:4,d[151 150],sh[151 150], inpnum:2
+[0, 5]: inidx:-1,thr_idx:5,d[151 150],sh[151 150], inpnum:2
+[0, 6]: inidx:-1,thr_idx:6,d[151 150],sh[151 150], inpnum:2
+[0, 7]: inidx:-1,thr_idx:7,d[151 150],sh[151 150], inpnum:2
+[0, 8]: inidx:-1,thr_idx:8,d[151 150],sh[151 150], inpnum:2
+[0, 9]: inidx:-1,thr_idx:9,d[151 150],sh[151 150], inpnum:2
+[0, 10]: inidx:-1,thr_idx:10,d[151 150],sh[151 150], inpnum:2
+[0, 11]: inidx:-1,thr_idx:11,d[151 150],sh[151 150], inpnum:2
+[0, 12]: inidx:-1,thr_idx:12,d[151 150],sh[151 150], inpnum:2
+[0, 13]: inidx:-1,thr_idx:13,d[151 150],sh[151 150], inpnum:2
+[0, 14]: inidx:-1,thr_idx:14,d[151 150],sh[151 150], inpnum:2
+[0, 15]: inidx:-1,thr_idx:15,d[151 150],sh[151 150], inpnum:2
+[0, 16]: inidx:-1,thr_idx:16,d[151 150],sh[151 150], inpnum:2
+[0, 17]: inidx:-1,thr_idx:17,d[151 150],sh[151 150], inpnum:2
+[0, 18]: inidx:-1,thr_idx:18,d[151 150],sh[151 150], inpnum:2
+[0, 19]: inidx:-1,thr_idx:19,d[151 150],sh[151 150], inpnum:2
+[0, 20]: inidx:-1,thr_idx:20,d[151 150],sh[151 150], inpnum:2
+[0, 21]: inidx:-1,thr_idx:21,d[151 150],sh[151 150], inpnum:2
+[0, 22]: inidx:-1,thr_idx:22,d[151 150],sh[151 150], inpnum:2
+[0, 23]: inidx:-1,thr_idx:23,d[151 150],sh[151 150], inpnum:2
+[0, 24]: inidx:-1,thr_idx:24,d[151 150],sh[151 150], inpnum:2
+[0, 25]: inidx:-1,thr_idx:25,d[151 150],sh[151 150], inpnum:2
+[0, 26]: inidx:-1,thr_idx:26,d[151 150],sh[151 150], inpnum:2
+[0, 27]: inidx:-1,thr_idx:27,d[151 150],sh[151 150], inpnum:2
+[0, 28]: inidx:-1,thr_idx:28,d[151 150],sh[151 150], inpnum:2
+[0, 29]: inidx:-1,thr_idx:29,d[151 150],sh[151 150], inpnum:2
+[0, 30]: inidx:-1,thr_idx:30,d[151 150],sh[151 150], inpnum:2
+[0, 31]: inidx:-1,thr_idx:31,d[151 150],sh[151 150], inpnum:2
+[0, 32]: inidx:-1,thr_idx:32,d[151 150],sh[151 150], inpnum:2
+[0, 33]: inidx:-1,thr_idx:33,d[151 150],sh[151 150], inpnum:2
+[0, 34]: inidx:-1,thr_idx:34,d[151 150],sh[151 150], inpnum:2
+[0, 35]: inidx:-1,thr_idx:35,d[151 150],sh[151 150], inpnum:2
+[0, 36]: inidx:-1,thr_idx:36,d[151 150],sh[151 150], inpnum:2
+[0, 37]: inidx:-1,thr_idx:37,d[151 150],sh[151 150], inpnum:2
+[0, 38]: inidx:-1,thr_idx:38,d[151 150],sh[151 150], inpnum:2
+[0, 39]: inidx:-1,thr_idx:39,d[151 150],sh[151 150], inpnum:2
+[0, 40]: inidx:-1,thr_idx:40,d[151 150],sh[151 150], inpnum:2
+[0, 41]: inidx:-1,thr_idx:41,d[151 150],sh[151 150], inpnum:2
+[0, 42]: inidx:-1,thr_idx:42,d[151 150],sh[151 150], inpnum:2
+[0, 43]: inidx:-1,thr_idx:43,d[151 150],sh[151 150], inpnum:2
+[0, 44]: inidx:-1,thr_idx:44,d[151 150],sh[151 150], inpnum:2
+[0, 45]: inidx:-1,thr_idx:45,d[151 150],sh[151 150], inpnum:2
+[0, 46]: inidx:-1,thr_idx:46,d[151 150],sh[151 150], inpnum:2
+[0, 47]: inidx:-1,thr_idx:47,d[151 150],sh[151 150], inpnum:2
+[0, 48]: inidx:-1,thr_idx:48,d[151 150],sh[151 150], inpnum:2
+[0, 49]: inidx:-1,thr_idx:49,d[151 150],sh[151 150], inpnum:2
+[0, 50]: inidx:-1,thr_idx:50,d[151 150],sh[151 150], inpnum:2
+[0, 51]: inidx:-1,thr_idx:51,d[151 150],sh[151 150], inpnum:2
+[0, 52]: inidx:-1,thr_idx:52,d[151 150],sh[151 150], inpnum:2
+[0, 53]: inidx:-1,thr_idx:53,d[151 150],sh[151 150], inpnum:2
+[0, 54]: inidx:-1,thr_idx:54,d[151 150],sh[151 150], inpnum:2
+[0, 55]: inidx:-1,thr_idx:55,d[151 150],sh[151 150], inpnum:2
+[0, 56]: inidx:-1,thr_idx:56,d[151 150],sh[151 150], inpnum:2
+[0, 57]: inidx:-1,thr_idx:57,d[151 150],sh[151 150], inpnum:2
+[0, 58]: inidx:-1,thr_idx:58,d[151 150],sh[151 150], inpnum:2
+[0, 59]: inidx:-1,thr_idx:59,d[151 150],sh[151 150], inpnum:2
+[0, 60]: inidx:-1,thr_idx:60,d[151 150],sh[151 150], inpnum:2
+[0, 61]: inidx:-1,thr_idx:61,d[151 150],sh[151 150], inpnum:2
+[0, 62]: inidx:-1,thr_idx:62,d[151 150],sh[151 150], inpnum:2
+[0, 63]: inidx:-1,thr_idx:63,d[151 150],sh[151 150], inpnum:2
+[0, 64]: inidx:-1,thr_idx:64,d[151 150],sh[151 150], inpnum:2
+[0, 65]: inidx:-1,thr_idx:65,d[151 150],sh[151 150], inpnum:2
+[0, 66]: inidx:-1,thr_idx:66,d[151 150],sh[151 150], inpnum:2
+[0, 67]: inidx:-1,thr_idx:67,d[151 150],sh[151 150], inpnum:2
+[0, 68]: inidx:-1,thr_idx:68,d[151 150],sh[151 150], inpnum:2
+[0, 69]: inidx:-1,thr_idx:69,d[151 150],sh[151 150], inpnum:2
+[0, 70]: inidx:-1,thr_idx:70,d[151 150],sh[151 150], inpnum:2
+[0, 71]: inidx:-1,thr_idx:71,d[151 150],sh[151 150], inpnum:2
+[0, 72]: inidx:-1,thr_idx:72,d[151 150],sh[151 150], inpnum:2
+[0, 73]: inidx:-1,thr_idx:73,d[151 150],sh[151 150], inpnum:2
+[0, 74]: inidx:-1,thr_idx:74,d[151 150],sh[151 150], inpnum:2
+[0, 75]: inidx:-1,thr_idx:75,d[151 150],sh[151 150], inpnum:2
+[0, 76]: inidx:-1,thr_idx:76,d[151 150],sh[151 150], inpnum:2
+[0, 77]: inidx:-1,thr_idx:77,d[151 150],sh[151 150], inpnum:2
+[0, 78]: inidx:-1,thr_idx:78,d[151 150],sh[151 150], inpnum:2
+[0, 79]: inidx:-1,thr_idx:79,d[151 150],sh[151 150], inpnum:2
+[0, 80]: inidx:-1,thr_idx:80,d[151 150],sh[151 150], inpnum:2
+[0, 81]: inidx:-1,thr_idx:81,d[151 150],sh[151 150], inpnum:2
+[0, 82]: inidx:-1,thr_idx:82,d[151 150],sh[151 150], inpnum:2
+[0, 83]: inidx:-1,thr_idx:83,d[151 150],sh[151 150], inpnum:2
+[0, 84]: inidx:-1,thr_idx:84,d[151 150],sh[151 150], inpnum:2
+[0, 85]: inidx:-1,thr_idx:85,d[151 150],sh[151 150], inpnum:2
+[0, 86]: inidx:-1,thr_idx:86,d[151 150],sh[151 150], inpnum:2
+[0, 87]: inidx:-1,thr_idx:87,d[151 150],sh[151 150], inpnum:2
+[0, 88]: inidx:-1,thr_idx:88,d[151 150],sh[151 150], inpnum:2
+[0, 89]: inidx:-1,thr_idx:89,d[151 150],sh[151 150], inpnum:2
+[0, 90]: inidx:-1,thr_idx:90,d[151 150],sh[151 150], inpnum:2
+[0, 91]: inidx:-1,thr_idx:91,d[151 150],sh[151 150], inpnum:2
+[0, 92]: inidx:-1,thr_idx:92,d[151 150],sh[151 150], inpnum:2
+[0, 93]: inidx:-1,thr_idx:93,d[151 150],sh[151 150], inpnum:2
+[0, 94]: inidx:-1,thr_idx:94,d[151 150],sh[151 150], inpnum:2
+[0, 95]: inidx:-1,thr_idx:95,d[151 150],sh[151 150], inpnum:2
+[0, 128]: inidx:-1,thr_idx:128,d[151 150],sh[151 150], inpnum:2
+[0, 129]: inidx:-1,thr_idx:129,d[151 150],sh[151 150], inpnum:2
+[0, 130]: inidx:-1,thr_idx:130,d[151 150],sh[151 150], inpnum:2
+[0, 131]: inidx:-1,thr_idx:131,d[151 150],sh[151 150], inpnum:2
+[0, 132]: inidx:-1,thr_idx:132,d[151 150],sh[151 150], inpnum:2
+[0, 133]: inidx:-1,thr_idx:133,d[151 150],sh[151 150], inpnum:2
+[0, 134]: inidx:-1,thr_idx:134,d[151 150],sh[151 150], inpnum:2
+[0, 135]: inidx:-1,thr_idx:135,d[151 150],sh[151 150], inpnum:2
+[0, 136]: inidx:-1,thr_idx:136,d[151 150],sh[151 150], inpnum:2
+[0, 137]: inidx:-1,thr_idx:137,d[151 150],sh[151 150], inpnum:2
+[0, 138]: inidx:-1,thr_idx:138,d[151 150],sh[151 150], inpnum:2
+[0, 139]: inidx:-1,thr_idx:139,d[151 150],sh[151 150], inpnum:2
+[0, 140]: inidx:-1,thr_idx:140,d[151 150],sh[151 150], inpnum:2
+[0, 141]: inidx:-1,thr_idx:141,d[151 150],sh[151 150], inpnum:2
+[0, 142]: inidx:-1,thr_idx:142,d[151 150],sh[151 150], inpnum:2
+[0, 143]: inidx:-1,thr_idx:143,d[151 150],sh[151 150], inpnum:2
+[0, 144]: inidx:-1,thr_idx:144,d[151 150],sh[151 150], inpnum:2
+[0, 145]: inidx:-1,thr_idx:145,d[151 150],sh[151 150], inpnum:2
+[0, 146]: inidx:-1,thr_idx:146,d[151 150],sh[151 150], inpnum:2
+[0, 147]: inidx:-1,thr_idx:147,d[151 150],sh[151 150], inpnum:2
+[0, 148]: inidx:-1,thr_idx:148,d[151 150],sh[151 150], inpnum:2
+[0, 149]: inidx:-1,thr_idx:149,d[151 150],sh[151 150], inpnum:2
+[0, 150]: inidx:-1,thr_idx:150,d[151 150],sh[151 150], inpnum:2
+Core simulation time = 1.447617 seconds
+Total simulation time = 1.477418 seconds
