@@ -78,7 +78,7 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 		/*cuPrintf("inidx:%d,thr_idx:%d,d[%d %d],sh[%d %d], inpnum:%d\n",input_idx,thr_idx,d_input_indexes[0],d_input_indexes[1],shm_array[0],
 			shm_array[1],d_input_number);*/
 		if (input_idx != -1)
-			d_polarization[thr_idx]=(-1 * sin(((double)( 1 << input_idx)) * (double)sample * FOUR_PI /(double) d_number_of_samples) > 0) ? 1: -1;
+			d_polarization[thr_idx]=(-1 * __sinf(((double)( 1 << input_idx)) * __fdividef((double)sample * FOUR_PI,(double) d_number_of_samples)) > 0) ? 1: -1;
 	}
 }
 
@@ -108,6 +108,7 @@ __global__ void bistable_kernel (
 	double clock_value;
 	int output_idx;
 	int stable;
+	double kink;
 
 	
 	if (threadIdx.x < d_output_number)
@@ -137,15 +138,15 @@ __global__ void bistable_kernel (
 				nb_idx = d_neighbours[thr_idx + q * d_cells_number];
 				if (nb_idx != -1) 
 				{
-					//kink = d_Ek[thr_idx + q*d_cells_number];
-					polarization_math += d_Ek[thr_idx + q*d_cells_number] * d_polarization[nb_idx];
+					kink = d_Ek[thr_idx + q*d_cells_number];
+					polarization_math += kink * d_polarization[nb_idx];
 				}
 			}
 
 			//math = math / 2 * gamma
-			clock_value = d_clock_prefactor * cos (((double)(1 << d_input_number)) * (double)sample * 4.0 * PI / (double)d_number_of_samples - PI * current_cell_clock / 2) + d_clock_shift;
+			clock_value = d_clock_prefactor * __cosf (__fdividef(((double)(1 << d_input_number)) * (double)sample * 4.0 * PI , (double)d_number_of_samples) - __fdividef(PI * current_cell_clock , 2)) + d_clock_shift;
 			clock_value = CLAMP(clock_value,d_clock_low,d_clock_high);
-			polarization_math /= 2.0 * clock_value;
+			polarization_math = __fdividef(polarization_math, 2.0 * clock_value);
 			 
 			// -- calculate the new cell polarization -- //
 			// if math < 0.05 then math/sqrt(1+math^2) ~= math with error <= 4e-5
@@ -154,7 +155,7 @@ __global__ void bistable_kernel (
 			(polarization_math        >  1000.0)   ?  1                 :
 			(polarization_math        < -1000.0)   ? -1                 :
 			(fabs (polarization_math) <     0.001) ?  polarization_math :
-			polarization_math / sqrt (1 + polarization_math * polarization_math) ;
+			__fdividef(polarization_math , sqrt (1 + polarization_math * polarization_math)) ;
 			
 			stable = (fabs (new_polarization - d_polarization[thr_idx]) <= tolerance);
 			d_stability[thr_idx] = stable;
