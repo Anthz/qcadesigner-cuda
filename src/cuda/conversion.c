@@ -1,6 +1,7 @@
 #include "../objects/QCADCell.h"
 #include "../bistable_simulation.h"
 #include <stdlib.h>
+#define design_bus_layout design->bus_layout
 
  int *tmp;
 
@@ -27,7 +28,8 @@ void sorted_cells_to_CUDA_Structures_array(
 	int** input_indexes,
 	int* input_number,
 	int** output_indexes,
-	int* output_number
+	int* output_number,
+	DESIGN design;
 	)
 {
   
@@ -39,6 +41,8 @@ void sorted_cells_to_CUDA_Structures_array(
  int output_counter = 0;
  int cells_number = 0;
  int j, ambros;
+ BUS_LAYOUT_ITER bli;
+ int idxMasterBitOrder;
 
 /*h_clock_data = (double *) malloc(number_of_samples * 4 * sizeof(double));
 
@@ -97,15 +101,42 @@ for( iLayer = 0; iLayer < number_of_cell_layers; iLayer++){
 *input_indexes = (int *)malloc(*input_number * sizeof(int));
 *output_indexes = (int *)malloc(*output_number * sizeof(int));
 
-
-counter =0;
-input_counter = 0;
-output_counter = 0;
-//init neighbours values to -1 and fill input_indexes
-	for( iLayer = 0; iLayer < number_of_cell_layers; iLayer++){
-		for (iCell = 0; iCell < number_of_cells_in_layer[iLayer];iCell++)
+for (design_bus_layout_iter_first (design_bus_layout, &bli, QCAD_CELL_OUTPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i))
+{
+	for( iLayer = 0,counter =0; iLayer < number_of_cell_layers; iLayer++){
+		for (iCell = 0; iCell < number_of_cells_in_layer[iLayer];iCell++,counter++)
 		{
-			if(sorted_cells[iLayer][iCell]->cell_function == QCAD_CELL_INPUT)
+			if(sorted_cells[iLayer][iCell]==exp_array_index_1d (design_bus_layout_outputs, BUS_LAYOUT_CELL, i).cell)
+			{
+				(*output_indexes)[i] = counter;
+			}
+		}
+	}
+	
+}
+
+for (idxMasterBitOrder = 0, design_bus_layout_iter_first (design_bus_layout, &bli, QCAD_CELL_INPUT, &i) ; i > -1 ; design_bus_layout_iter_next (&bli, &i), idxMasterBitOrder++)
+{
+	for( iLayer = 0,counter =0; iLayer < number_of_cell_layers; iLayer++){
+		for (iCell = 0; iCell < number_of_cells_in_layer[iLayer];iCell++,counter++)
+		{
+			if(sorted_cells[iLayer][iCell]==exp_array_index_1d (design_bus_layout_inputs, BUS_LAYOUT_CELL, i).cell)
+			{
+				(*input_indexes)[idxMasterBitOrder] = counter;
+			}
+		}
+	}
+	
+}
+
+
+//input_counter = 0;
+//output_counter = 0;
+//init neighbours values to -1 and fill input_indexes
+	for( iLayer = 0,counter =0; iLayer < number_of_cell_layers; iLayer++){
+		for (iCell = 0; iCell < number_of_cells_in_layer[iLayer];iCell++,counter++)
+		{
+			/*if(sorted_cells[iLayer][iCell]->cell_function == QCAD_CELL_INPUT)
 			{
 				(*input_indexes)[input_counter] = counter;
 				input_counter++;
@@ -114,13 +145,12 @@ output_counter = 0;
 			{
 				(*output_indexes)[output_counter] = counter;
 				output_counter++;
-			}
+			}*/
 			for(i=0;i<*neighbours_number;i++)
 			{
 				(*h_neighbours)[counter + i*cells_number] = -1;
 				(*h_Ek)[counter + i*cells_number] = 0.0;
 			}
-			counter++;
 		}
 	}
 
