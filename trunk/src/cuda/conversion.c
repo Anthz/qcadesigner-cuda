@@ -80,8 +80,8 @@ tmp = (int*)malloc(cells_number*sizeof(int));
 
 
 //fill tmp and count number of inputs
-for( iLayer = 0; iLayer < number_of_cell_layers; iLayer++){
-	for (iCell = 0; iCell < number_of_cells_in_layer[iLayer];iCell++)
+for( iLayer = 0, counter =0; iLayer < number_of_cell_layers; iLayer++){
+	for (iCell = 0; iCell < number_of_cells_in_layer[iLayer];iCell++,counter++)
 	{
 		tmp[counter] = sorted_cells[iLayer][iCell]->id;
 		if (sorted_cells[iLayer][iCell]->cell_function == QCAD_CELL_INPUT)
@@ -92,7 +92,6 @@ for( iLayer = 0; iLayer < number_of_cell_layers; iLayer++){
 		{
 			output_counter++;
 		}
-		counter++;
 	}
 }
 
@@ -125,7 +124,7 @@ for (idxMasterBitOrder = 0, design_bus_layout_iter_first (design_bus_layout, &bl
 			if(sorted_cells[iLayer][iCell]==exp_array_index_1d (design_bus_layout_inputs, BUS_LAYOUT_CELL, i).cell)
 			{
 				(*input_indexes)[idxMasterBitOrder] = counter;
-				printf("IdxM:%d,inputidx:%d\n",idxMasterBitOrder,counter);
+				//printf("IdxM:%d,inputidx:%d\n",idxMasterBitOrder,counter);
 			}
 		}
 	}

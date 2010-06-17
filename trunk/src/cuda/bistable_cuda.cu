@@ -5,7 +5,7 @@
 /*  1- valutare possibilità di unrollare il loop sui neighbours               */
 /*  (visto che ne stabiliamo il numero di iterazioni a priori)                */
 /*  2- il controllo sulle celle fixed crea una bella divergenza... proposte?  */
-/*  3- 19maggio: clock_data troooppo grande
+/*  3- 19maggio: clock_data troooppo grande					*/
 /*  --> meglio farsi una memcpy ogni sample di clock_data[4] e d_polarization
 	con i nuovi valori di polarizzazione degli input (ancora DA MODIFICARE!)
 					*/
@@ -51,15 +51,12 @@ __device__ __constant__ double d_clock_high;
 
 __device__ inline int find(int x, int *array, int length)
 {
-	int l = 0, r = length - 1, mid;
-	while (l <= r)
+	int idx=-1;
+	for (;length>0;length--)
 	{
-		mid = (l + r) / 2;
-		if (array[mid] == x) return mid;
-		else if (array[mid] > x) r = mid - 1;
-		else l = mid + 1;
+		if (array[length-1] == x) idx=length-1;
 	}
-	return -1;
+	return idx;
 }
 
 __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int sample)
@@ -78,6 +75,8 @@ __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int
 	if (thr_idx < d_cells_number)
 	{		
 		input_idx = find(thr_idx, shm_array,d_input_number);
+		/*cuPrintf("inidx:%d,thr_idx:%d,d[%d %d],sh[%d %d], inpnum:%d\n",input_idx,thr_idx,d_input_indexes[0],d_input_indexes[1],shm_array[0],
+			shm_array[1],d_input_number);*/
 		if (input_idx != -1)
 			d_polarization[thr_idx]=(-1 * sin(((double)( 1 << input_idx)) * (double)sample * FOUR_PI /(double) d_number_of_samples) > 0) ? 1: -1;
 	}
@@ -250,6 +249,12 @@ void launch_bistable_simulation(
 	double clock_low = (double) clock_low_d;
 	double clock_high = (double) clock_high_d; 
 	double tolerance = (double) tolerance_d;
+	
+	/*for (i=0;i<input_number;i++)printf("in_idx %d, ",input_indexes[i]);
+	printf("\n");
+	for (i=0;i<output_number;i++)printf("out_idx %d, ",output_indexes[i]);
+	printf("\n");*/
+
 
 	/*printf("%e, %e, %e, %e, %e , %d, %d, %d, %d, %d, %d, %d\n",
 	clock_prefactor,clock_shift,clock_low,clock_high,tolerance,cells_number,
@@ -368,12 +373,21 @@ void launch_bistable_simulation(
 		}
 		old_percentage = new_percentage;
 
-
-		stable = 0;
 		
+	//	printf("pre update host: %d %d\n",input_indexes[0],input_indexes[1]);
+
+		stable = 0;	
 		update_inputs<<< grid, threads,input_indexes_bytes>>> (d_polarization, d_input_indexes, j);
 		cudaThreadSynchronize ();
-		
+	/*	if (j==1)
+                                {
+                                        cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
+                                        //for (k=0;k<cells_number;k++) printf("i:%d, col:%d, cell:%d\t%e\n",i,color,k,h_polarization[k]);
+                                        printf("150:%e,151:%e\n",h_polarization[150],h_polarization[151]);
+                                }
+                cutilSafeCall(cudaMemcpy(input_indexes,d_input_indexes,2*sizeof(int),cudaMemcpyDeviceToHost));
+		printf("post update host: %d %d\n",input_indexes[0],input_indexes[1]);
+		*/
 		/*printf("sample: %d ",j);
 		cutilSafeCall (cudaMemcpy (h_polarization, d_polarization, cells_number*sizeof(double), cudaMemcpyDeviceToHost));
 		for (i=0;i<input_number;i++)
@@ -408,10 +422,11 @@ void launch_bistable_simulation(
 			// Launch Kernel
 			for(color = 1; color <= num_colors; color++)
 			{
-				/*if (j==100)
+				/*if (j>998 && j<1002)
 				{
 					cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
-					for (k=0;k<cells_number;k++) printf("i:%d, col:%d, cell:%d\t%e\n",i,color,k,h_polarization[k]);
+					//for (k=0;k<cells_number;k++) printf("i:%d, col:%d, cell:%d\t%e\n",i,color,k,h_polarization[k]);
+					printf("150:%e,151:%e\n",h_polarization[150],h_polarization[151]);
 				}*/
 				
 				bistable_kernel<<< grid, threads, output_indexes_bytes >>> (d_polarization, /*d_next_polarization,*/ d_cell_clock, d_Ek, d_neighbours, 
