@@ -1,0 +1,9 @@
+cd ../data/circuits/bistable
+file+=`ls`
+for i in $file
+do
+	sed 's/,/\./g' $i > tmp
+	cp tmp $i
+	rm tmp
+done
+cd -
