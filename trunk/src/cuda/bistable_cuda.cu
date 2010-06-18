@@ -221,7 +221,7 @@ void launch_bistable_simulation(
 	double *d_polarization, *d_Ek;
 	int *d_neighbours, *d_cell_clock, *d_input_indexes, *d_output_indexes;
 	int i,j,stable, num_colors, *colors_order;
-	int s*h_cells_colors, *d_cells_colors;
+	int *h_cells_colors, *d_cells_colors;
 	char *d_stability, *h_stability;
 	int count;
 	int k;
