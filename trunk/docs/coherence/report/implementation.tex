@@ -24,16 +24,37 @@ Our choice has been to follow the second approach, mainly because
 \begin{itemize}
 \item the "one cell-one thread" approach is easy both to figure out and to manage
 \item parallelizing with respect to the number of inputs would make the single kernel \textsl{very} complex, disallowing a number of possible optimizations (eg:occupancy improvement, branch divergence)  
-\item not the very same actions should be taken for every cell at any moment of the simulation of different inputs; this introduces a hurdle in terms of branch divergence that doesn't allow the gpu to sully exploit its potential
+\item not the very same actions should be taken for every cell at any moment of the simulation of different inputs; this introduces a hurdle in terms of branch divergence that doesn't allow the gpu to fully exploit its potential
 \item suppose to be simulating $k$ configurations of the inputs at a time. The spatial complexity of the algorithm becomes $O(k*n)$ ($k$ systems characterized by $n$ cells). In the second case only the current and the future states must be recorded ($O(2*n)$)
 \end{itemize} 
 
-Moreover, the second approach allows us to better exploit the SIMD principle proper of all CUDA enabled devices because inside the same iteration of the simulation the actions to be carried over any cell are quite the same (and those cells who are not complying with this general scheme don't induce particularly critic divergences in the kernel).
+Moreover, the second approach allows us to better exploit the SIMD principle proper of all CUDA enabled devices because inside the same iteration of the simulation the actions to be carried over any cells are quite the same (and those cells who are not complying with this general scheme don't induce particularly critic divergences in the kernel). This approach allows for the same instructions to be concurrently executed on different data. In our particular case, the code basically does the same actions of the original implementation, apart from the details regarding the proper distribution of the computation among the available resources.
 
-Last but not least, no \textsl{tile-problem} exist (the problem of overlapping adjacent concurrently simulated areas of circuit) because every single cell evolves independently of the effects of the neighbours at the same time $t$.
+Last but not least, no \textsl{tile-problem} exists (the problem of overlapping adjacent concurrently simulated areas of circuit) because every single cell evolves independently of the effects of the neighbours at the \textsl{same} time $t$.
 
 \subsection{The big picture}
 Now let's dive a little deeper into the implementation.
+
+\begin{figure}[h!]
+	\begin{center}$
+		\begin{array}{cc}
+			\includegraphics[width=0.5\textwidth]{img/impdetsisd.png} &
+			\includegraphics[width=0.5\textwidth]{img/impdetsimd}
+		\end{array}$
+	\end{center}
+	\caption{\label{fig:impdet}In the first approach (SISD) each cell is evolved into the new state \textsl{once at a time}. Observing that any cell inside the same iteration can be evolved \textsl{in parallel} allows us to exploit a SIMD architecture in order to replicate the same instructions over a large number of cells at a time.}
+\end{figure}
+
+After an initial phase of parsing the command line commands, the flow of the program goes into Bistable or Coherence Vector engine.
+
+In Coherence Vector mode, three different things happens: first, all the useful data structures are initialized (for the output, for the parameters of the solver, for the iteration over all the cells into the design, notably). Among the others, some structures we had to implement in order to ease the process of converting the orignal data to CUDA compatible ones. In particular, we extract the following data:
+\begin{itemize}
+\item \textsl{polariztion vector} the vector of the initial polarization of every cell  (size: $n$)
+\item \textsl{neighbour matrix} the unique index associated to every cell is found in this vector in position $i$ iif that cell is a neighbour of cell of uinique identifier $i$  (size: $n*b$)
+\item \textsl{clock value} a value between 0 to 3 representing the phase of the clock (size: $n$)
+\end{itemize}
+Second, a number of calls to the framework API are made in order to load all the necessary data to the GPU. During this phase the geometry of the 
+
 figura: stack di [........] con all'interno le verie fasi del programma: lettura parametri, caricamento e validazione circuito, scelta tipologia di simulazione, (coherence) stabilità iniziale del sistema, ciclo for numsamples, ... scrittura risulatati su file
 Overview of the mechanism: bridge code <from theirs to ours and viceversa> + "photos"@instant t and t+1, evolution in GPU + IO of memory
 \subsection{Optimizations}
