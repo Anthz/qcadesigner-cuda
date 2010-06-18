@@ -1,14 +1,9 @@
 /* ========================================================================== */
 /*                                                                            */
 /*  CUDA_bistable_iteration.cu                                                */
-/*    0- controllare che non vi siano scritte delle porcate da me medesimo*/
-/*  1- valutare possibilità di unrollare il loop sui neighbours               */
-/*  (visto che ne stabiliamo il numero di iterazioni a priori)                */
-/*  2- il controllo sulle celle fixed crea una bella divergenza... proposte?  */
-/*  3- 19maggio: clock_data troooppo grande					*/
-/*  --> meglio farsi una memcpy ogni sample di clock_data[4] e d_polarization
-	con i nuovi valori di polarizzazione degli input (ancora DA MODIFICARE!)
-					*/
+/*   NB: number of inputs and number of outputs is thought as less than 
+	BLOCK_DIM. If more, indexes copy to shared memory has to be modified
+																			*/
 /* ========================================================================== */
 //#define CUPRINTF_B
 //#define FLOAT_PRECISION
