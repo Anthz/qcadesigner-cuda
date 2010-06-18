@@ -97,7 +97,6 @@ __global__ void bistable_kernel (
 	double polarization_math;
 	double clock_value;
 	double kink;
-	int my_turn, fixed;
 
 	
 	if (threadIdx.x < d_output_number)
@@ -110,10 +109,8 @@ __global__ void bistable_kernel (
 	// Only useful threads must work
 	if (thr_idx < d_cells_number)
 	{		
-		my_turn	= (color == d_cells_colors[thr_idx]);
-		fixed = (d_neighbours[thr_idx] == -1);
 
-		if (!fixed && my_turn)
+		if (!d_neighbours[thr_idx]==-1 && color==d_cells_colors[thr_idx])
 		{
 			nb_idx = 0;
 			polarization_math = 0;
@@ -128,15 +125,6 @@ __global__ void bistable_kernel (
 					polarization_math += kink * d_polarization[nb_idx];
 				}
 			}
-		}
-	}
-	__syncthreads(); //recovering from divergence
-
-	if (thr_idx < d_cells_number)
-	{		
-
-		if (!fixed && my_turn)
-		{
 			//math = math / 2 * gamma
 			clock_value = d_clock_prefactor * __cosf (__fdividef(((double)(1 << d_input_number)) * (double)sample * 4.0 * PI , (double)d_number_of_samples) - __fdividef(PI * current_cell_clock , 2)) + d_clock_shift;
 			clock_value = CLAMP(clock_value,d_clock_low,d_clock_high);
@@ -370,8 +358,7 @@ void launch_bistable_simulation(
 
 		
 	//	printf("pre update host: %d %d\n",input_indexes[0],input_indexes[1]);
-
-		stable = 0;	
+		
 		update_inputs<<< grid, threads,input_indexes_bytes>>> (d_polarization, d_input_indexes, j);
 		cudaThreadSynchronize ();
 	/*	if (j==1)
@@ -404,6 +391,7 @@ void launch_bistable_simulation(
 			}		
 	
 		// In each sample...
+		stable = 0;	
 		for (i = 0; i < max_iterations && !stable; i++)
 		{
 			
