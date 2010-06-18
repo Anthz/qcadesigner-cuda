@@ -171,11 +171,11 @@ __global__ void bistable_kernel (
 			if (output_idx != -1)
 				d_output_data[output_idx] = new_polarization;
 		}
-		else
+		/*else
 		{
 			//d_next_polarization[thr_idx] = d_polarization[thr_idx];
 			d_stability[thr_idx] = 1;
-		}
+		}*/
 	}
 }
 
@@ -290,7 +290,7 @@ void launch_bistable_simulation(
 	h_output_data = (double *) malloc(sizeof(double) * output_number);
 	h_stability = (int *)malloc(cells_number*sizeof(int));
 	
-	//for(i=0;i<cells_number;i++) h_stability[i]=1; //do it in kernel beacuse of random
+	for(i=0;i<cells_number;i++) h_stability[i]=1;
 	
 	//coloring
 	
@@ -349,7 +349,7 @@ void launch_bistable_simulation(
 	
 	// Set Memory
 
-	//cutilSafeCall (cudaMemcpy (d_stability, h_stability, cells_number * sizeof(int), cudaMemcpyHostToDevice));
+	cutilSafeCall (cudaMemcpy (d_stability, h_stability, cells_number * sizeof(int), cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpy (d_polarization, h_polarization, cells_number * sizeof(double), cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpy (d_Ek, (double *)h_Ek, sizeof(double) * neighbours_number * cells_number, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpy (d_cell_clock, h_cell_clock, cells_number * sizeof(int), cudaMemcpyHostToDevice));
