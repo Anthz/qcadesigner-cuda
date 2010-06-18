@@ -1,5 +1,5 @@
 cd ../data/circuits/bistable
-file+=`ls`
+file+=`ls *.qca`
 for i in $file
 do
 	sed 's/,/\./g' $i > tmp
