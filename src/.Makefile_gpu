@@ -90,6 +90,10 @@ ifeq ($(EXTRA_PARAMS2), --fast-math)
       NVCFLAGS += --fast-math
 endif
 
+ifeq ($(EXTRA_PARAMS2), FLOAT)
+      NVCFLAGS += -DFLOAT_PRECISION
+endif
+
 qcadesigner-cuda: $(OBJECTS)
 	@echo "Using:"
 	@echo "NVCFLAGS: $(NVCFLAGS)"
