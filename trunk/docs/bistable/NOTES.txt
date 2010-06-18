@@ -1,4 +1,10 @@
+**ABSTRACT**
+2 righe sul lavoro, ->VENDITI BENE
+
 **THE TEAM**
+Miglie: analisi del codice di partenza, correzione e adattamento del codice per ottenere il batch simulator, controllo e creazione degli algoritmi per la correttezza dei risultati, debugging.
+Gibbo: analisi del codice, delle strutture dati necessarie e loro trasformazione in strutture ottimizzate per cuda, profiling iniziale del codice e individuazione del bottleneck.
+Marconi: analisi del codice e dell'algoritmo per l'individuazione degli elementi parallelizzabili, creazione del codice cuda e sua compilazione, ottimizzazione e profiling su cuda, debugging.
 
 **STATE OF THE ART**
 - QCA 
@@ -9,6 +15,7 @@
 
 **RATIONALE**
 - Why QCA?
+	* novel emerging paradigm
 	* 2 Thz, low energy consumption and miniaturization
 	* quantum computing
 - QCADesigner simulator slow on big circuits:
@@ -21,8 +28,24 @@
 		^ hundreds of core -> many threads running simultaneously, each thread responsible of computing a cell's polarization
 		^ scalable, adding new cores implies a greater number of cells computed simultaenously, higher speedup
 - Objective
-	* 
-	
-
+	* Speed up simulation for big circuits
+	* batch simulator
+	* Given a file .qca -> produce output: binary, continous values, plot on png, log with info of simulation
+	* if same .qca -> same results CPU and CUDA
 
 **IMPLEMENTATION**
+- First approach
+	* Downloaded from MINA the latest version of QCADesigner, NOT COMPILES!
+	* At first, lot of work done to obtain a working batch simulator on CPU
+	* Meanwhile analisys of the code, location of possible bottlenecks, analisys of data structures and their possible transformation in order to obtain best explotation of CUDA
+	* Batch simulator on CPU ready -> start profiling (table) and location of bottleneck.
+- CUDA implementation
+	* CPU algorithm -> CUDA algorithm proposed (working on old values each iteration, with Konrad's blessing): pseudo code.
+	* Cuda main data structures: arrays of polarizations, neighborhood, clocks, kink energies.
+	* 
+- Optimizations
+
+
+**RESULTS**
+
+**CONCLUSIONS**
