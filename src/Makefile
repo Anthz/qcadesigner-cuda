@@ -3,7 +3,7 @@
 .DEFAULT: usage
 
 usage:
-	@echo "make [all|qcadesigner-cpu|qcadesigner-cuda|usage|clean|clean-all] [CPU_OPT=<O1|O2|O3>|CPU_DBG=<-g|(-D symbol )+>|GPU_ARCH=<sm_10|sm_11|sm_12|sm_13|sm_20>|GPU_OPT=<--fast_math|FLOAT>|GPU_DBG=<-g|(-D symbol )+>]"
+	@echo "make [all|qcadesigner-cpu|qcadesigner-cuda|usage|clean|clean-all] [CPU_OPT=<O1|O2|O3>|CPU_DBG=<-g|(-D symbol )+>|GPU_ARCH=<sm_10|sm_11|sm_12|sm_13|sm_20>|GPU_OPT=<--fast_math>|GPU_PREC=<FLOAT>|GPU_DBG=<-g|(-D symbol )+>]"
 	@echo "all: compile both versions of qcadesigner, for cpu and gpu. Valid options are CPU_OPT, CPU_DBG, GPU_ARCH, GPU_OPT, GPU_DBG."
 	@echo "qcadesigner-cpu: compile only the CPU version of qcadesigner. Valid options are: CPU_OPT, CPU_DBG."
 	@echo "qcadesigner-cuda: compile only the GPU version of qcadesigner. Valid options are: GPU_ARCH, GPU_OPT, GPU_DBG."
@@ -18,7 +18,7 @@ qcadesigner-cpu:
 
 qcadesigner-cuda:
 	@echo "Making GPU version of qcadesigner. Please stand by..."
-	@make -f .Makefile_gpu EXTRA_PARAMS1=$(GPU_ARCH) EXTRA_PARAMS2=$(GPU_OPT) EXTRA_PARAMS3=$(GPU_DBG) 
+	@make -f .Makefile_gpu EXTRA_PARAMS1=$(GPU_ARCH) EXTRA_PARAMS2=$(GPU_OPT) EXTRA_PARAMS3=$(GPU_DBG) EXTRA_PARAMS4=$(GPU_PREC)
 	@echo "done."
 	
 clean-all:

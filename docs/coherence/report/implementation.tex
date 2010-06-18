@@ -53,8 +53,9 @@ In Coherence Vector mode, three different things happens: first, all the useful 
 \item \textsl{neighbour matrix} the unique index associated to every cell is found in this vector in position $i$ iif that cell is a neighbour of cell of uinique identifier $i$  (size: $n*b$)
 \item \textsl{clock value} a value between 0 to 3 representing the phase of the clock (size: $n$)
 \end{itemize}
-Second, a number of calls to the framework API are made in order to load all the necessary data to the GPU. During this phase the geometry of the 
+Second, a number of calls to the framework API are made in order to load all the necessary data to the GPU. During this phase the geometry of the blocks of threads is defined.
 
+Third, the main iteration begins its execution. This loop is executed n times, one for each instant of time required to. First of all the current polarization 
 figura: stack di [........] con all'interno le verie fasi del programma: lettura parametri, caricamento e validazione circuito, scelta tipologia di simulazione, (coherence) stabilità iniziale del sistema, ciclo for numsamples, ... scrittura risulatati su file
 Overview of the mechanism: bridge code <from theirs to ours and viceversa> + "photos"@instant t and t+1, evolution in GPU + IO of memory
 \subsection{Optimizations}
