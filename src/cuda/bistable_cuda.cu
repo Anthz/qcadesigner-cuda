@@ -48,51 +48,41 @@ __device__ __constant__ int d_output_number;
 __device__ __constant__ int d_number_of_samples;
 __device__ __constant__ double d_clock_low;
 __device__ __constant__ double d_clock_high;
+__device__ __constant__ double d_tolerance;
 
-__device__ inline int find(int x, int *array, int length)
-{
-	int idx=-1;
-	for (;length>0;length--)
-	{
-		if (array[length-1] == x) idx=length-1;
-	}
-	return idx;
-}
 
 __global__ void update_inputs (double *d_polarization, int *d_input_indexes, int sample)
 {
-	extern	__shared__ int shm_array[];
-	int input_idx;
+	extern	__shared__ int shm_input_indexes[];
+	int i;
 	int thr_idx = blockIdx.x * blockDim.x + threadIdx.x;
 	
 	if (threadIdx.x < d_input_number)
 	{
-		shm_array[threadIdx.x] = d_input_indexes[threadIdx.x];
+		shm_input_indexes[threadIdx.x] = d_input_indexes[threadIdx.x];
 	}
 	__syncthreads();
 	
 	//find input index and update it
 	if (thr_idx < d_cells_number)
 	{		
-		input_idx = find(thr_idx, shm_array,d_input_number);
-		/*cuPrintf("inidx:%d,thr_idx:%d,d[%d %d],sh[%d %d], inpnum:%d\n",input_idx,thr_idx,d_input_indexes[0],d_input_indexes[1],shm_array[0],
-			shm_array[1],d_input_number);*/
-		if (input_idx != -1)
-			d_polarization[thr_idx]=(-1 * __sinf(((double)( 1 << input_idx)) * __fdividef((double)sample * FOUR_PI,(double) d_number_of_samples)) > 0) ? 1: -1;
+		/*cuPrintf("inidx:%d,thr_idx:%d,d[%d %d],sh[%d %d], inpnum:%d\n",input_idx,thr_idx,d_input_indexes[0],d_input_indexes[1],shm_input_indexes[0],
+			shm_input_indexes[1],d_input_number);*/
+		for (i=0;i<d_input_number;i++)
+			if (shm_input_indexes[i]==thr_idx) 
+				d_polarization[thr_idx]=(-1 * __sinf(((double)( 1 << i)) * __fdividef((double)sample * FOUR_PI,(double) d_number_of_samples)) > 0) ? 1: -1;
 	}
 }
 
 
 __global__ void bistable_kernel (
 		double *d_polarization,
-		/*double *d_next_polarization,*/
 		int *d_cell_clock,
 		double *d_Ek,
 		int *d_neighbours,
 		int sample,
 		int *d_output_indexes,
 		char *d_stability,
-		double tolerance,
 		double *d_output_data,
 		int *d_cells_colors,
 		int color
@@ -106,8 +96,6 @@ __global__ void bistable_kernel (
 	double new_polarization;
 	double polarization_math;
 	double clock_value;
-	int output_idx;
-	int stable;
 	double kink;
 
 	
@@ -157,8 +145,7 @@ __global__ void bistable_kernel (
 			(fabs (polarization_math) <     0.001) ?  polarization_math :
 			__fdividef(polarization_math , sqrt (1 + polarization_math * polarization_math)) ;
 			
-			stable = (fabs (new_polarization - d_polarization[thr_idx]) <= tolerance);
-			d_stability[thr_idx] = (char)('0'+stable);
+			d_stability[thr_idx] = (char)('0'+fabs (new_polarization - d_polarization[thr_idx]) <= d_tolerance);
 
 			//set the new polarization in next_polarization array  
 			//d_next_polarization[thr_idx] = new_polarization;
@@ -167,15 +154,9 @@ __global__ void bistable_kernel (
 			// If any cells polarization has changed beyond this threshold
 			// then the entire circuit is assumed to have not converged.
 			
-			output_idx = find(thr_idx,shm_output_indexes,d_output_number);
-			if (output_idx != -1)
-				d_output_data[output_idx] = new_polarization;
+			for(q=0;q<d_output_number;q++)
+				if(shm_output_indexes[q]==thr_idx) d_output_data[q] = new_polarization;				
 		}
-		/*else
-		{
-			//d_next_polarization[thr_idx] = d_polarization[thr_idx];
-			d_stability[thr_idx] = 1;
-		}*/
 	}
 }
 
@@ -368,6 +349,7 @@ void launch_bistable_simulation(
 	cutilSafeCall (cudaMemcpyToSymbol("d_number_of_samples", &(number_of_samples), sizeof(double), 0, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_low", &(clock_low), sizeof(double), 0, cudaMemcpyHostToDevice));
 	cutilSafeCall (cudaMemcpyToSymbol("d_clock_high", &(clock_high), sizeof(double), 0, cudaMemcpyHostToDevice));
+	cutilSafeCall (cudaMemcpyToSymbol("d_tolerance", &(tolerance), sizeof(double), 0, cudaMemcpyHostToDevice));
 	
 	fprintf(stdout," done!\n");
 	for (j = 0; j < number_of_samples; j++)
@@ -435,8 +417,8 @@ void launch_bistable_simulation(
 					printf("150:%e,151:%e\n",h_polarization[150],h_polarization[151]);
 				}*/
 				
-				bistable_kernel<<< grid, threads, output_indexes_bytes >>> (d_polarization, /*d_next_polarization,*/ d_cell_clock, d_Ek, d_neighbours, 
-					j, d_output_indexes, d_stability, tolerance, d_output_data, d_cells_colors, colors_order[k]);
+				bistable_kernel<<< grid, threads, output_indexes_bytes >>> (d_polarization, d_cell_clock, d_Ek, d_neighbours, 
+					j, d_output_indexes, d_stability, d_output_data, d_cells_colors, colors_order[k]);
 					
 				// Wait Device
 				cudaThreadSynchronize ();
