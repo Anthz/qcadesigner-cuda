@@ -1,0 +1,37 @@
+[VERSION]
+qcadesigner_version=2.000000
+[#VERSION]
+[TYPE:DESIGN]
+[TYPE:QCADLayer]
+type=3
+status=1
+pszDescription=Drawing Layer
+[#TYPE:QCADLayer]
+[TYPE:QCADLayer]
+type=0
+status=1
+pszDescription=Substrate
+[TYPE:QCADSubstrate]
+[TYPE:QCADStretchyObject]
+[TYPE:QCADDesignObject]
+x=3000.000000
+y=1500.000000
+bSelected=FALSE
+clr.red=65535
+clr.green=65535
+clr.blue=65535
+bounding_box.xWorld=0.000000
+bounding_box.yWorld=0.000000
+bounding_box.cxWorld=6000.000000
+bounding_box.cyWorld=3000.000000
+[#TYPE:QCADDesignObject]
+[#TYPE:QCADStretchyObject]
+grid_spacing=20.000000
+[#TYPE:QCADSubstrate]
+[#TYPE:QCADLayer]
+[TYPE:QCADLayer]
+type=1
+status=0
+pszDescription=Main Cell Layer
+[#TYPE:QCADLayer]
+[#TYPE:DESIGN]
