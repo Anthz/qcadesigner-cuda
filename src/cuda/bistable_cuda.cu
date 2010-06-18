@@ -130,7 +130,9 @@ __global__ void bistable_kernel (
 					polarization_math += kink * d_polarization[nb_idx];
 				}
 			}
-
+			
+			__syncthreads();
+			
 			//math = math / 2 * gamma
 			clock_value = d_clock_prefactor * __cosf (__fdividef(((double)(1 << d_input_number)) * (double)sample * 4.0 * PI , (double)d_number_of_samples) - __fdividef(PI * current_cell_clock , 2)) + d_clock_shift;
 			clock_value = CLAMP(clock_value,d_clock_low,d_clock_high);
@@ -145,7 +147,7 @@ __global__ void bistable_kernel (
 			(fabs (polarization_math) <     0.001) ?  polarization_math :
 			__fdividef(polarization_math , sqrt (1 + polarization_math * polarization_math)) ;
 			
-			d_stability[thr_idx] = (char)('0'+fabs (new_polarization - d_polarization[thr_idx]) <= d_tolerance);
+			d_stability[thr_idx] = (char)('0'+ (int)( fabs (new_polarization - d_polarization[thr_idx]) <= d_tolerance));
 
 			//set the new polarization in next_polarization array  
 			//d_next_polarization[thr_idx] = new_polarization;
