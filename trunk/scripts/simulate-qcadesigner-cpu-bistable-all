@@ -1,4 +1,6 @@
-circuit_ls=`ls ../data/circuits/bistable`
+cd ../data/circuits/bistable
+circuit_ls=`ls *.qca`
+cd -
 now=$(date +%s)
 echo These files will be used for simulation:
 echo $circuit_ls
