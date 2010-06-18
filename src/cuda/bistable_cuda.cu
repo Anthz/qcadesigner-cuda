@@ -97,6 +97,7 @@ __global__ void bistable_kernel (
 	double polarization_math;
 	double clock_value;
 	double kink;
+	int my_turn, fixed;
 
 	
 	if (threadIdx.x < d_output_number)
@@ -109,17 +110,14 @@ __global__ void bistable_kernel (
 	// Only useful threads must work
 	if (thr_idx < d_cells_number)
 	{		
-		//cuPrintf("GO! my_color:%d\n",color);
-		//cuPrintf("\nd_output_number = %d,\t d_output_indexes[0]=%d\n",d_output_number, d_output_indexes[0] );	
-		  
-		//cuPrintf("%f ", d_polarization[thr_idx]);	
+		my_turn	= (color == d_cells_colors[thr_idx]);
+		fixed = (d_neighbours[thr_idx] == -1);
 
-		if (!(d_neighbours[thr_idx] == -1) && color == d_cells_colors[thr_idx]) // if thr_idx corresponding cell type is not FIXED or INPUT and is my turn
+		if (!fixed && my_turn)
 		{
 			nb_idx = 0;
 			polarization_math = 0;
 			current_cell_clock  = d_cell_clock[thr_idx];
-
 			
 			for(q = 0; q < d_neighbours_number & nb_idx != -1; q++)
 			{
@@ -130,9 +128,15 @@ __global__ void bistable_kernel (
 					polarization_math += kink * d_polarization[nb_idx];
 				}
 			}
-			
-			__syncthreads();
-			
+		}
+	}
+	__syncthreads(); //recovering from divergence
+
+	if (thr_idx < d_cells_number)
+	{		
+
+		if (!fixed && my_turn)
+		{
 			//math = math / 2 * gamma
 			clock_value = d_clock_prefactor * __cosf (__fdividef(((double)(1 << d_input_number)) * (double)sample * 4.0 * PI , (double)d_number_of_samples) - __fdividef(PI * current_cell_clock , 2)) + d_clock_shift;
 			clock_value = CLAMP(clock_value,d_clock_low,d_clock_high);
