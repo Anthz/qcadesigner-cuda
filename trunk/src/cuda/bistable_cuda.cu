@@ -97,6 +97,7 @@ __global__ void bistable_kernel (
 	double polarization_math;
 	double clock_value;
 	double kink;
+	int stable;
 
 	
 	if (threadIdx.x < d_output_number)
@@ -139,7 +140,8 @@ __global__ void bistable_kernel (
 			(fabs (polarization_math) <     0.001) ?  polarization_math :
 			__fdividef(polarization_math , sqrt (1 + polarization_math * polarization_math)) ;
 			
-			d_stability[thr_idx] = (char)('0'+ (int)( fabs (new_polarization - d_polarization[thr_idx]) <= d_tolerance));
+			stable = fabs (new_polarization - d_polarization[thr_idx]) <= d_tolerance;
+			d_stability[thr_idx] = (char)('0'+ stable);
 
 			//set the new polarization in next_polarization array  
 			//d_next_polarization[thr_idx] = new_polarization;
