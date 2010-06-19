@@ -1,6 +1,33 @@
 \chapter{State of the Art}\label{sec:state_of_art}
-- QCA 
-	* QCADesigner
-	* Two Engines: BISTABLE and COHERENCE, describe them shortly (see MINA site)
-	-> BISTABLE IS JUST A FAST APPROXIMATION to test circuits
+\section{Qunatum Dot Cellular Automata}
+During the last years the main effort of companies interested in developing information technology has been in the direction of shrinking size of transistors, the main component of any modern computer. This effort allowed to build machines able to run at very high frequency with a huge number of elements (memories, cores..) on a single chip.  This trend can't go on forever. In the search for a new computational model we focused on Quantum Dot Cellular Automata because it's a very promising technology. It's base component is the Quantum Dot, a nanostructure that can be built with different materials and different technologies which is able to store a well defined number of electrons. Using 4 quantum dots it's possible to create a cell like the one in figure. 
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.8]{img/_Cell1.png}
+\caption{A Cell made of 4 Quantum Dots}
+\label{cell}
+\end{figure}
+
+If we inject 2 electrons in this structure their reciprocal repulsion allow them to be only in two configurations, with the electrons disposed on one of the two diagonals. Electrons are free to move according to a clock signal but they can never leave the cell.
+The configuration in the picture above represents the logical bit 0 the opposite configuration is the bit 1. 
+If we put two cells one beside the other we can see that the polarization of the first cells has an impact on the polarization of the other. This effect can be used to build complex logic circuits. Main blocks of QCA circuits are NOT and Majority Gate both shown in the figure below.
+
+\includegraphics[scale=0.1]{img/not_normal.png}
+\includegraphics[scale=0.1]{img/majority.png}
+
+\subsection{Clock}
+A key issue in the design of circuits is the definition of clock areas. This technology uses 4 identical clock signals which are shifted of $frac{\pi}{2}$. Each clock signal has 4 clock phases: switch, hold, release and relax. During this fases potential barriers are raised or lowered inside the cell in order to contorl the movement of electrons. In the relax phase barrers are low and electrons can freele move inside the cell, during the switch phase barriers are rised and the movement of electrons are limiteted. during the hold phase eletrons aren't allowed to move within dots. In the relax phase the barriers are lowere. The alternation of clock phases identify the flow of information into the circuit. 
+
+\section{QCADesigner}
+QCADesigner is a tool made by the University of British Columbia to design and verify circuits in QCA technology. This tool offers two main feature. The first is to design with an intuitive graphical user interface a circuit, in the image below is showed a simple circuit, the second is to simulate the behaviour of the circuit. 
+
+\includegraphics[scale=0.4]{img/QCADesigner.png}
+
+To verify the behaviour of the system two simulation engines are offered. The bistable simualtion and the coherence vector simulation. the aim of this report is to speedup the execution of the bistable simulation engine so we are going to brefly describe only this type of simulation. The coherence vector differs in the way the polarization of cells is calculated, it's much slower but gives more accurate result.
+
+
+\subsection{Bistable Simulation}
+Bistable simulation engine has been created in order to give designers a way to test their circuit very rapidly. For the simulation the cell is modeled as a two state system, for each cell the kink energy with repsect to neighbour cells and the polarization is stored. the kink energy takes into account the cost of two neighbouring cells with different polarizaions. At each step of the execution the new polarization of each cell is calculated on the basis of the old polarizations and the kink energy of all neighbouring cells, within a predefined radius. The approximations made by ths simulation engine is sufficient to verify the logical behaviour of the system but doesn't descirbe well it's dinamics. For the inspection of dynamic situations coherence vector engine should be used. The main advantage of this kind of simulation is that it's very quick with respect to the cohrence vector engine. 
+
 \input{art_of_cuda}
