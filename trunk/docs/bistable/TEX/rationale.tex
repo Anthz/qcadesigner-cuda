@@ -1,0 +1,20 @@
+\chapter{Rationale}\label{sec:rationale}
+
+- Why QCA?
+	* novel emerging paradigm
+	* 2 Thz, low energy consumption and miniaturization
+	* quantum computing
+- QCADesigner simulator slow on big circuits:
+	* Every sample, each cell's polarization is computed based on the values of his neighbors, sequentially.
+	* Bottleneck from profiling (table with times)
+	* Simulation core: pseudo code
+	* Identical operations repeated for each cell, big circuits -> thousands of cells
+	* We chose to speedup this part of the code with CUDA because:
+		 SIMD architecture (SIMT): single instruction repeated on different data
+		 hundreds of core -> many threads running simultaneously, each thread responsible of computing a cell's polarization
+		 scalable, adding new cores implies a greater number of cells computed simultaenously, higher speedup
+- Objective
+	* Speed up simulation for big circuits
+	* batch simulator
+	* Given a file .qca -> produce output: binary, continous values, plot on png, log with info of simulation
+	* if same .qca -> same results CPU and CUDA
