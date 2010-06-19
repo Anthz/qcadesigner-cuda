@@ -1,15 +1,0 @@
-Initialization... done!
-Running 1 simulations with a radial tolerance of 0.001000
-Running simulation 0
-Number of cells = 127
-Number of samples = 64000
-Number of inputs = 5
-Converting to CUDA structures... done!
-Coloring... done!
-Number of colors = 8
-Allocating memory on device... done!
-#Simulating on CUDA: 0%#Simulating on CUDA: 1%#Simulating on CUDA: 2%#Simulating on CUDA: 3%#Simulating on CUDA: 4%#Simulating on CUDA: 5%#Simulating on CUDA: 6%#Simulating on CUDA: 7%#Simulating on CUDA: 8%#Simulating on CUDA: 9%#Simulating on CUDA: 10%#Simulating on CUDA: 11%#Simulating on CUDA: 12%#Simulating on CUDA: 13%#Simulating on CUDA: 14%#Simulating on CUDA: 15%#Simulating on CUDA: 16%#Simulating on CUDA: 17%#Simulating on CUDA: 18%#Simulating on CUDA: 19%#Simulating on CUDA: 20%#Simulating on CUDA: 21%#Simulating on CUDA: 22%#Simulating on CUDA: 23%#Simulating on CUDA: 24%#Simulating on CUDA: 25%#Simulating on CUDA: 26%#Simulating on CUDA: 27%#Simulating on CUDA: 28%#Simulating on CUDA: 29%#Simulating on CUDA: 30%#Simulating on CUDA: 31%#Simulating on CUDA: 32%#Simulating on CUDA: 33%#Simulating on CUDA: 34%#Simulating on CUDA: 35%#Simulating on CUDA: 36%#Simulating on CUDA: 37%#Simulating on CUDA: 38%#Simulating on CUDA: 39%#Simulating on CUDA: 40%#Simulating on CUDA: 41%#Simulating on CUDA: 42%#Simulating on CUDA: 43%#Simulating on CUDA: 44%#Simulating on CUDA: 45%#Simulating on CUDA: 46%#Simulating on CUDA: 47%#Simulating on CUDA: 48%#Simulating on CUDA: 49%#Simulating on CUDA: 50%#Simulating on CUDA: 51%#Simulating on CUDA: 52%#Simulating on CUDA: 53%#Simulating on CUDA: 54%#Simulating on CUDA: 55%#Simulating on CUDA: 56%#Simulating on CUDA: 57%#Simulating on CUDA: 58%#Simulating on CUDA: 59%#Simulating on CUDA: 60%#Simulating on CUDA: 61%#Simulating on CUDA: 62%#Simulating on CUDA: 63%#Simulating on CUDA: 64%#Simulating on CUDA: 65%#Simulating on CUDA: 66%#Simulating on CUDA: 67%#Simulating on CUDA: 68%#Simulating on CUDA: 69%#Simulating on CUDA: 70%#Simulating on CUDA: 71%#Simulating on CUDA: 72%#Simulating on CUDA: 73%#Simulating on CUDA: 74%#Simulating on CUDA: 75%#Simulating on CUDA: 76%#Simulating on CUDA: 77%#Simulating on CUDA: 78%#Simulating on CUDA: 79%#Simulating on CUDA: 80%#Simulating on CUDA: 81%#Simulating on CUDA: 82%#Simulating on CUDA: 83%#Simulating on CUDA: 84%#Simulating on CUDA: 85%#Simulating on CUDA: 86%#Simulating on CUDA: 87%#Simulating on CUDA: 88%#Simulating on CUDA: 89%#Simulating on CUDA: 90%#Simulating on CUDA: 91%#Simulating on CUDA: 92%#Simulating on CUDA: 93%#Simulating on CUDA: 94%#Simulating on CUDA: 95%#Simulating on CUDA: 96%#Simulating on CUDA: 97%#Simulating on CUDA: 98%#Simulating on CUDA: 99%#Simulating on CUDA: 100%!
-
-Iterations per sample = 2.749797
-Core simulation time = 65.004557 seconds
-Total simulation time = 65.049197 seconds
