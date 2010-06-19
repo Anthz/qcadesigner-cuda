@@ -1,4 +1,4 @@
-\documentclass[a4paper,12pt]{article}
+\documentclass[a4paper,12pt]{report}
 
 \usepackage{graphicx}
 \usepackage{latexsym}
@@ -38,7 +38,27 @@
 \titlfp
 
 %\maketitle
-%\titlepage
+\titlepage
+
+\headsep 2cm
+
+\setlength{\headwidth}{\textwidth}
+  %uncomment the following line to remove chapter in the header
+  \fancyhead[R]{}
+
+   %\fancyhead[L]{
+  % 	\includegraphics*[width=1in]{img/scritta}
+   	%with this you can move up or down the title in order not to overlap with chapter title.
+   %	\raisebox{5mm}
+   	%{	
+     % 	\begin{tabular}{l}
+      		%Prova di titolo
+      %	\end{tabular}
+   	%}
+	%}
+
+	\fancyfoot[C]{\thepage}
+	\renewcommand{\footrulewidth}{0.4pt}
 
 \newpage
 
