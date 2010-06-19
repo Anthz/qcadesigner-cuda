@@ -1,4 +1,4 @@
 cd ../src
 make clean
-make qcadesigner-cpu CPU_OPT=O3
+make qcadesigner-cpu2 CPU_OPT=O3
 
