@@ -209,6 +209,7 @@ void launch_bistable_simulation(
 	int output_indexes_bytes = sizeof(int)*output_number;
 	int total_iterations = 0;
 	int idx1, idx2, swap;
+	int inputs_update_required;
 
 	#ifdef FLOAT_PRECISION
 	h_polarization = (float *)malloc(sizeof(float)*cells_number);
@@ -362,8 +363,21 @@ void launch_bistable_simulation(
 	//	printf("pre update host: %d %d\n",input_indexes[0],input_indexes[1]);
 
 		stable = 0;	
-		update_inputs<<< grid, threads,input_indexes_bytes>>> (d_polarization, d_input_indexes, j);
-		cudaThreadSynchronize ();
+		inputs_update_required = 0;
+		for (i=0;i<input_number && j!=0 && !inputs_update_required;i++)
+		{
+			if ( (-1 * sin(((double)(1 << i)) * (double)(j-1) * FOUR_PI/(double) number_of_samples) > 0) ? 1: -1) !=
+			     (-1 * sin(((double)(1 << i)) * (double)j * FOUR_PI/(double) number_of_samples) > 0) ? 1: -1) )
+				inputs_update_required = 1;
+		}
+		
+		if (inputs_update_required || j==0)
+		{
+			update_inputs<<< grid, threads,input_indexes_bytes>>> (d_polarization, d_input_indexes, j);
+			cudaThreadSynchronize ();
+		}
+
+
 	/*	if (j==1)
                                 {
                                         cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
