@@ -1,33 +1,34 @@
-circuit_ls+="CircuitBig_64000.qca"
+circuit_ls+="Circuit_2_04.qca"
 now=$(date +%s)
 echo These files will be used for testing:
 echo $circuit_ls
 for i in $circuit_ls
 do
-	echo Simulating $i...
-	touch ../data/sim_outputs/bistable/$i-$now-cuda.log
-	../bin/qcadesigner-cuda -f ../data/circuits/bistable/$i -o ../scripts/bistable_options.txt -n 1 -t 0.001 -e BISTABLE -s ../data/sim_outputs/bistable/$i-$now 2>&1 | tee ../data/sim_outputs/bistable/$i-$now-cuda.log
-	echo Done simulating $i.
-	cd ../data/
-	if [ -e gnuplot/circuit ]
-	then
-		rm gnuplot/circuit
-	fi
-	cp sim_outputs/bistable/$i-$now-cuda.out gnuplot/circuit
-	cd gnuplot
-	gnuplot script_plot.gpi
-	mv -T circuit.png ../sim_outputs/bistable/$i-$now-cuda.png
-	rm circuit
-	cd ../sim_outputs/bistable
-	
-	for mail in $@
-	do
-		echo Emailing data to: $mail
-		echo Subject: $i-$now-cuda - Simulation done.
-		echo Body: $(cat $i-$now-cuda.log)
-		echo Attachment: $i-$now-cuda.png
-		cat $i-$now-cuda.log | mutt -s "$i-$now-cuda - Simulation done." -a $i-$now-cuda.png -- $mail
-	done
-	cd ../../../scripts
+        echo Simulating $i...
+        touch ../data/sim_outputs/bistable/$i-$now-cuda.log
+        ../bin/qcadesigner-cuda -f ../data/circuits/bistable/simulated/$i -o ../scripts/bistable_options.txt -n 1 -t 0.001 -e BISTABLE -s ../data/sim_outputs/bistable/$i-$now 2>&1 | tee ../data/sim_outputs/bistable/$i-$now-cuda.log
+        echo Done simulating $i.
+        cd ../data/
+        if [ -e gnuplot/circuit ]
+        then
+                rm gnuplot/circuit
+        fi
+        cp sim_outputs/bistable/$i-$now-cuda.out gnuplot/circuit
+        cd gnuplot
+        gnuplot script_plot.gpi
+        mv -T circuit.png ../sim_outputs/bistable/$i-$now-cuda.png
+        rm circuit
+        cd ../sim_outputs/bistable
+
+        for mail in $@
+        do
+                echo Emailing data to: $mail
+                echo Subject: $i-$now-cuda - Simulation done.
+                echo Body: $(cat $i-$now-cuda.log)
+                echo Attachment: $i-$now-cuda.png
+                cat $i-$now-cuda.log | mutt -s "$i-$now-cuda - Simulation done." -a $i-$now-cuda.png -- $mail
+        done
+        cd ../../../scripts
 done
 echo All done.
+

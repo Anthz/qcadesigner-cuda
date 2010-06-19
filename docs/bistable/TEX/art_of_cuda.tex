@@ -1,0 +1,91 @@
+\section{CUDA}
+\label{sec:art_of_cuda}
+   In recent times, Graphics Processing Units (GPUs) have been considered a potential source of computational
+power for non-graphical applications, due to the ongoing evolution of their programming interfaces and their
+appealing cost-performance figures of merit. Recent works had first attempted to adapt “general purpose” applications
+to the graphic rendering APIs (OpenGL and DirectX), which up to two years ago represented the only interface to tap
+into the GPU computational resources. Tesla is NVIDIA's first dedicated General Purpose GPU.
+\newline
+\subsection{NVIDIA Tesla Architecture}
+   Modern GPUs include hundreds of processing elements. The NVIDIA Tesla GPU series provide a set
+of independent multithreaded streaming multiprocessors. \figurename~\ref{fig:LT} shows an overview of the NVIDIA
+Tesla streaming processors array which is the part of the GPU architecture responsible for the general purpose computation.
+Each streaming multiprocessor is composed by a set of eight streaming processors,two special functional units and a multithreaded
+instruction issue unit (respectively indicated as SP, SFU and MT-Issue in \figurename~\ref{fig:Tesla}).\newline
+A SP is a fully pipelined single-issue processing core with two ALUs and a single floating point unit (FPU). 
+SFUs are dedicated to the computation of transcendental functions and pixel/vertex manipulations.
+The MT-Issue unit is in charge of mapping active threads on the available SPs.\newline
+  A multiprocessor is able to concurrently execute groups of 32 threads called warps. Since each thread
+in a warp has its own control flow, their execution paths may diverge due to the independent evaluation
+of conditional statements. In this case, the warp serially executes each path. When the warp is executing
+a given path, all threads that have not taken that path are disabled. On the other hand, in case the
+control flows converge again, the warp may return to a single, parallel execution of all threads.\newline
+ Each multiprocessor executes warps in a fashion much like the Single Instruction Multiple Data (SIMD)
+paradigm, since every thread will be assigned to a different SP and every active thread will execute the
+same instruction on different data.\newline
+   The MT-Issue unit weaves threads into a number of warps and schedules an active warp for execution,
+using a round-robin scheduling policy with aging for this purpose.\newline
+   Streaming multiprocessors are in turn grouped in Texture Processor Clusters (TPC). Each TPC includes three streaming
+multiprocessors in the Tesla architecture. The TPC also includes support for Texture processing, though these features are
+seldom used for general purpose computing and will not be investigated in this description.\newline
+   Finally, the NVIDIA GPU on-board memory hierarchy includes registers (private to each SP), on-chip memory and off-chip memory.
+The on-chip memory is private to each multiprocessor, and is split into a very small instruction cache, a read-only data cache,
+and 16 KB of addressable shared data, respectively indicated as I-cache, C-cache and Shared Memory in \figurename~\ref{fig:Tesla}.
+This shared memory is organized in 16 banks that can be concurrently accessed, each bank having a single read/write port.\newline
+  The GPU we used for our project is the NVIDIA Tesla c1060. 
+ With the computational power of its 240 Streaming Processors (grouped into 30 TPCs) and the 102,4 GB/s max bandwidth of its 4096 MB
+GDDR3 memory, it represents one of the most performing GPUs on the market.\newline
+
+\subsection{CUDA programming model}
+   The Compute Unified Device Architecture (CUDA), proposed by NVIDIA for its GeForce (8 series and above), Quadro and Tesla
+graphics processors, exposes a programming model that integrates host and GPU code in the same C/C++ source files.\newline
+The main programming structure supporting parallelism is an explicitly parallel function invocation (kernel) which
+is supposed to be executed by a user-specified number of threads.
+Every kernel is explicitly invoked by host code and executed by the device, while the host-side code continues execution
+ asynchronously after instantiating the kernel. The programmer is provided with a specific synchronizing function call
+to wait for the completion of the active asynchronous kernel computation.\newline
+   The CUDA programming model abstracts the actual parallelism implemented by the hardware architecture,
+providing the concepts of block and thread to express concurrency in algorithms.
+A block captures the notion of a group of concurrent threads. Blocks are required to execute independently, so that it has
+to be possible to execute them in any order (in parallel or in sequence). Therefore, the synchronization primitives semantically
+act only among threads belonging to the same block.
+Intra-block communications among threads use the logical shared memory associated with that block.\newline
+   Since the architecture does not provide support for the message-passing techniques, threads belonging
+to different blocks must communicate through global memory. The global memory is entirely mapped to the off-chip memory.
+The concurrent accesses to logical shared memory by threads executing within the same block are supported through an explicit
+barrier synchronization primitive.\newline
+   A kernel call-site must specify the number of blocks as well as the number of threads within each
+block when executing the kernel code. The current CUDA programming model imposes a capping of 512 threads per block.\newline
+   The mapping of threads to processors and of blocks to multiprocessors is mainly handled by hardware controller components.
+Two or more blocks may share the same multiprocessor through mechanisms that allow fast context switching depending on 
+the computational resources used by threads and on the constraints of the hardware architecture.
+The number of concurrent blocks managed by a single multiprocessor is currently limited to 8.\newline
+   In addition to the logical shared memory and the global memory, in the CUDA programming model each thread may access a constant memory.
+ An access to this read-only memory space is faster than one to global memory, provided that there is sufficient access locality since
+constant memory is implemented as a region of global memory fit with an on-chip cache.
+Finally, another portion of the off-chip memory may be allocated as a local memory that is used as thread private resource.
+Since the local memory access is slow, the shared memory also serves as an explicitly managed cache – though it is up to the
+programmer to warrant that the local data being saved in shared memory are not accessed by other
+threads. Shared memory comes in limited amounts (threads within each block typically share 16 KB of memory) hence,
+it is crucial for performance that each thread handle only small chunks of data.
+
+\subsection{SIMT and SIMD}
+   SIMT architecture is similar to single instruction, multiple-data (SIMD) design, which applies one instruction to multiple data lanes.\newline
+ The difference is that SIMT applies one instruction to multiple independent threads in parallel, not just multiple data lanes.
+A SIMD instruction controls a vector of multiple data lanes together and exposes the vector width to the software, whereas a SIMT instruction
+controls the execution and branching behavior of one thread.\newline
+   In contrast to SIMD vector architectures, SIMT enables programmers to write thread level parallel code for independent threads
+as well as data-parallel code for coordinated threads.\newline
+For program correctness, programmers can essentially ignore SIMT execution attributes such as warps; however, they can
+achieve substantial performance improvements by writing code that seldom requires threads in a warp to diverge. In practice, this
+is analogous to the role of cache lines in traditional codes: programmers can safely ignore cache line size when designing for
+correctness but must consider it in the code structure when designing for peak performance.\newline 
+SIMD vector architectures, on the other hand, require the software to manually coalesce loads into vectors and to manually manage
+divergence.
+
+
+
+
+
+
+
