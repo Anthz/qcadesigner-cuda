@@ -15,7 +15,7 @@ All the tests were performend using the "Lucifero" Workstation, located in the "
 \end{description} 
 
 \section{Test 1: CPU vs GPU}
-The most meaningful test executed is certainly the comparison between the original QCAD and CudaQCAD. Both the version of the simulator were tested on a pool of QCAs composed by several real circuits of different complexity. This test was designed in order to evaluate:
+The most meaningful test executed is certainly the comparison between the original QCADesigner and CudaQCADesigner. Both the versions of the simulator were tested on a pool of QCAs composed of several real circuits of different complexity. This test was designed in order to evaluate:
 
 \begin{description}
 \item[Correctness] of the two simulators.
@@ -23,26 +23,26 @@ The most meaningful test executed is certainly the comparison between the origin
 \item[Performance] in terms of execution time.
 \end{description}    
 
-Considering the first two points, the test has shown that both the simulators obtain the same results for all the circuits of the pool and that these results were alligned with the well known behaviour of the circuits.\\
-Regarding to the performance, it was noticed a considerable speed-up - 30x of peak - of the GPU version over CPU version only when the number of cells composing the simulated circuits was greater than 7000. For circuits with a lower number of cells, the original QCAD outperform CudaQCAD, Fig x.
+Considering the first two points, the test has shown that both the simulators obtain the same results for all the circuits of the pool and that these results were aligned with the well known behaviour of the circuits.\\
+With respect to the performance, it was noticed a considerable speed-up - 30x peak - of the GPU version over CPU version only when the number of cells composing the simulated circuits was greater than 7000. For circuits with a lower number of cells, the original QCADesigner outperform CudaQCADesigner, Fig 5.1.
  
 \begin{figure}[h!bt]
-	\centerline{\includegraphics[width=0.7\textwidth]{img/xeonvstesla.png}}
+	\centerline{\includegraphics[width=0.9\textwidth]{img/xeonvstesla.png}}
 	\caption{Performance comparison between Intel Xeon and Nvidia Tesla.}
 	\label{fig:NvidiaGPUsLogicalOrg}
 \end{figure}
 
 \begin{figure}[h!bt]
-        \centerline{\includegraphics[width=0.7\textwidth]{img/speedup.png}}
+        \centerline{\includegraphics[width=0.9\textwidth]{img/speedup.png}}
         \caption{Overall SpeedUp.}
         \label{fig:NvidiaGPUsLogicalOrg}
 \end{figure}
 
-This result was not surprising. Until the number of cells in the circuits is lower than a given threshold - 7000 with the used architecture - the overhead due to the device setup time is bigger than the gain due to the parallelism. However, considering that the original goal was to speed-up the simulation of those circuits that requires an amount of time too high to be considered acceptable for pratical purpouses, this test can be considered passed.
+This result was not surprising. Until the number of cells in the circuits is lower than a given threshold - 7000 with the used architecture - the overhead due to the device setup time is bigger than the gain due to the parallelism. However, considering that the original goal was to speed-up the simulation of those circuits that requires an amount of time too high to be considered acceptable for pratical purpouses on a SISD architecture, this test can be considered passed.
 
 \section{Test 2: Memory Transfers}
-As stated in chapter X, memory transfers between host and device are the most important factor, and often the most limiting, in order to achieve good performance in Cuda.\\
-A well built GPU algorithm should not waste more than 20\% of the whole execution time for Host-Device I/O. Considering this assumption, the results achieved by CudaQCAD are actually good: all the tested circuits showed a memory transfer rate lower than 10\%, even those under the threshold of 7000 cells (Fig X.X, X.Y).
+As stated in chapter \ref{sec:implementation}, memory transfers between host and device are one of the most important factors, and often the most limiting, in order to achieve good performance in CUDA.\\
+A well built GPU algorithm should not waste more than 20\% of the whole execution time for Host-Device I/O. Considering this assumption, the results achieved by CudaQCADesigner are actually good: all the tested circuits showed a memory transfer rate lower than 10\%, even those under the threshold of 7000 cells (Fig 5.3, 5.4).
 
 \begin{figure}[h!bt]
         \centerline{\includegraphics[width=\textwidth]{img/GPUTimeSummaryPlotMUX42.png}}
@@ -58,17 +58,17 @@ A well built GPU algorithm should not waste more than 20\% of the whole executio
 \end{figure}
    
 \section{Test 3: GPU Occupancy}
-This test aims to prove the effective usage of the GPU resourcers. The occupancy is the ratio of active warps to the maximum number of warps supported on a multiprocessor of the GPU. As stated in chapter 3, each multiprocessor on the device has a set of N registers available for use by Cuda thread programs. These registers are a shared resource that are allocated among the thread blocks executing on a multiprocessor. The Cuda compiler attempts to minimize register usage to maximize the number of thread blocks that can be active in the machine simultaneously. If a program tries to launch a kernel for which the registers used per thread are too many, the number of threads in concurrent execution will decrease, as consequentely the performance will do.\\
-Unfortunalely there is no way to automatic tune the execution parameters in order to achieve the full occupancy. For this reason, several attempts were performed and profiled, Fig X. Considering that the occupancy can be fairy evaluated only when the amout of computations is big enought to require the usages of all the available resources, for this test a circuit with a number of cells greater than the threshold was choosen.\\ 
+This test aims to prove the effective usage of the GPU resources. The occupancy is the ratio of active warps to the maximum number of warps supported on a multiprocessor of the GPU. As stated in chapter 3, each multiprocessor on the device has a set of N registers available for use by CUDA thread programs. These registers are a shared resource that are allocated among the thread blocks executing on a multiprocessor. The Cuda compiler attempts to minimize register usage to maximize the number of thread blocks that can be active in the machine simultaneously. If a program tries to launch a kernel for which the registers used per thread are too many, the number of threads in concurrent execution will decrease, and as a consequence, also performance will do.\\
+Unfortunalely there is no way to automatic tune the execution parameters in order to achieve the full occupancy. For this reason, several attempts were performed and profiled, Fig 5.5. Considering that the occupancy can be fairy evaluated only when the amount of computations is big enough to require the usage of all the available resources, for this test a circuit with a number of cells greater than the threshold was choosen.\\ 
 The first attempt was unsatifactory, due to an occupancy of only 50\%. For this reason the block size was progressively enlarged till achieving the maximum occupancy supported. Unfortunately, even with a larger block size, the occupancy could not be moved to more than 75\%, due to the register pressure.\\
-In order to further improve the occupacy, the kernel function was re-designed with special attention to the number of registers per threads, as described in chapter X. The new version of the kernel lead to much better results and the occupation was bring up to 100\%.
+In order to further improve the occupancy, the kernel function was re-designed with special attention to the number of registers per threads, as described in chapter 4. The new version of the kernel leads to much better results and the occupation was barought up to 100\%.
     
 \begin{figure}[h!bt]
-        \centerline{\includegraphics[width=0.7\textwidth]{img/OccupancyAnalysis.png}}
+        \centerline{\includegraphics[width=0.5\textwidth]{img/OccupancyAnalysis.png}}
         \caption{Occupancy Analysis. Data extracted from Nvidia Occupancy Calculator.}
         \label{fig:OccupancyAnalysis}
 \end{figure}
 
 \section{Test 4: Divergent Branches}
-The number of divergent branches can seriously impact on the performance of the simulator. As a rule of thumb the percentage of divergent branches must be lower than 15\% to be considered acceptable. In all the performed test, CudaQCAD was actually under this threshold, with an average divergent branches rate of 9\%.   
+The number of divergent branches can seriously impact on the performance of the simulator. As a rule of thumb the percentage of divergent branches must be lower than 15\% to be considered acceptable. In all the performed test, CudaQCADesigner was actually under this threshold, with an average divergent branche rate of 9\%.   
 
