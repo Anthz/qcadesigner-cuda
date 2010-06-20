@@ -17,7 +17,9 @@ If we put two cells one beside the other we can see that the polarization of the
 \includegraphics[scale=0.1]{img/majority.png}
 
 \subsection{Clock}
-A key issue in the design of circuits is the definition of clock areas. This technology uses 4 identical clock signals which are shifted of $frac{\pi}{2}$. Each clock signal has 4 clock phases: switch, hold, release and relax. During this fases potential barriers are raised or lowered inside the cell in order to contorl the movement of electrons. In the relax phase barrers are low and electrons can freele move inside the cell, during the switch phase barriers are rised and the movement of electrons are limiteted. during the hold phase eletrons aren't allowed to move within dots. In the relax phase the barriers are lowere. The alternation of clock phases identify the flow of information into the circuit. 
+\label{delay}
+A key issue in the design of circuits is the definition of clock areas. This technology uses 4 identical clock signals which are shifted of $frac{\pi}{2}$. Each clock signal has 4 clock phases: switch, hold, release and relax. During this fases potential barriers are raised or lowered inside the cell in order to contorl the movement of electrons. In the relax phase barrers are low and electrons can freele move inside the cell, during the switch phase barriers are rised and the movement of electrons are limiteted. during the hold phase eletrons aren't allowed to move within dots. In the relax phase the barriers are lowere. The alternation of clock phases identify the flow of information into the circuit. \newline
+This technology is pipelined and the output of the circuit is given after a delay which is equal to the number of clock phases divided by four.
 
 \section{QCADesigner}
 QCADesigner is a tool made by the University of British Columbia to design and verify circuits in QCA technology. This tool offers two main feature. The first is to design with an intuitive graphical user interface a circuit, in the image below is showed a simple circuit, the second is to simulate the behaviour of the circuit. 
