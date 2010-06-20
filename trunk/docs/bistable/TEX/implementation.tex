@@ -1,6 +1,6 @@
 \chapter{Implementation}\label{sec:implementation}
 \section{First approach}
-The original source code of QCADesigner was downloaded from Mina website (ref). We attempted to make it compile as it was but we did not
+The original source code of QCADesigner was downloaded from Mina website (\cite{site:QCADesigner}). We attempted to make it compile as it was but we did not
 manage to solve several compilation errors. So we started to focus on the identification of the core algorithm supporting the tool in
 order to obtain a working batch simulator executable on CPU. This operation took us some weeks of work. Meanwhile we were able to deeply
 analyze the code. We made some hypothesis on the location of possible bottlenecks, we identified the data structures used to represent 
@@ -14,16 +14,17 @@ Every cell is represented as a simple two-state system. The entire simulation is
 a preset effective radius. This operation is iterated until all cells have converged within a predetermined tolerance. 
 Once the entire system converges the output is recorded and the computation goes on with the next sample, after having updated
  the input cells with new input values.
-The number of samples required to have a good approximation is known (ref) to be $2000*2^N$, where $N$ is the number of inputs.
+The number of samples required to have a good approximation is known (\cite{site:MinaBistable}) to be $2000*2^N$, where $N$ is the number of inputs.
  The maximum number of iterations allowed for the convergence within a sample is set to $100$. Thus, during a simulation each cell's value 
 is computed sequentially $It*2000*2^N$ times, where $It$ is the mean number of iterations needed to reach convergence. 
 The more are the cells, the longer will take each sample to reach convergence. Each cell's new state calculation implies several accesses to the memory, since data structures are heavily dereferenced, and each neighbor's state as well as their reciprocal kink energy has to be read, and a series of floating point operations on values with double precision. Furthermore, at the beginning of each sample, new inputs values have to be set. As far as exhaustive simulation is concerned, every combination of input values has to be processed. Therefore, their values are calculated through a periodic function, implying several transcendental functional unit usages.\newline
 The analysis of the code makes it quite clear that the core of the simulation is the main bottleneck of this application. Once a circuit of millions of cells have to be simulated, the number of FP operations and memory accesses reach huge orders of magnitude. This first hypothesis was subsequently proved by the profiling of execution times, dealt with in section \ref{sec:cpu_profiling}.
 
 \section{Profiling of CPU simulation}\label{sec:cpu_profiling}
-Once the batch application was finished we started to profile the execution times simulating some circuits of different sizes. The table \ref{tab:cpu_profiling} shows ...\newline
+Once the batch application was finished we started to profile the execution times simulating some circuits of different sizes and different number of inputs. The table \ref{tab:cpu_profiling} shows the results we obtained. We calculated the mean number of iterations per sample needed to reach convergence, the core simulation time, the time of the entire simulation, including data loading from file and creation of data structures, and the proportion of the computation that we aim to speedup.
+\newline
 \begin{table}[h!tb]
-   \centering \caption{Table caption}
+   \centering \caption{CPU simulation Profiling}
    \label{tab:cpu_profiling}
    \vskip 0.2cm
    %%
@@ -31,24 +32,24 @@ Once the batch application was finished we started to profile the execution time
 	    %% The {|c|c|c|c|c|} define the number of columns.
 	    %% c means centered
 	    %% | defines a vertical line between two columns 
-	    \begin{tabular}{|c|c|c|c|c|}
+	    \begin{tabular}{|c|c|c|c|c|c|}
 	      \hline
-	      Cells & Samples & Iterations per Sample & Core Simulation Time & Total Simulation Time & Core percentage\\
+	      Cells & Samples & Iter. per sample & Core Time & Total Time & P \\
 	      \hline
-	      35576 & 8000 & 10.16 & 2590 s & 3106 s & 83.3 %\\
+	      35576 & 8000 & 10.16 & 2590 s & 3106 s & 83.3 \% \\
 	      \hline
-	      35486 & 16000 & 12 & 5642 s & 6165 s & 91.5 %\\
+	      35486 & 16000 & 12 & 5642 s & 6165 s & 91.5 \% \\
 	      \hline
-	      31875 & 32000 & 11 & 8668 s & 9078 s & 95,4 %\\
+	      31875 & 32000 & 11 & 8668 s & 9078 s & 95,4 \% \\
 	      \hline
-	      35893 & 64000 & 11 & 20799 s & 21335 s & 97.5 %\\
+	      35893 & 64000 & 11 & 20799 s & 21335 s & 97.5 \% \\
 	      \hline
-	      24498 & 128000 & 11,5 & 25324 s & 25544 s & 99.1 %\\
+	      24498 & 128000 & 11,5 & 25324 s & 25544 s & 99.1 \% \\
 	      \hline
 	    \end{tabular}
 	 }
  \end{table}
--> CALCOLARE LA PERCENTUALE DEL TEMPO IN FUNZIONE DELLE CELLE E DEGLI INPUT (alla buona) + un po' di analisi a confermare le cose speculate a caso nella sezione precedente + BLABLA
+As we can see, the hypothesis we made about the bottleneck is verified. Furthermore, the proportion of the computation for big circuits get bigger with the number of samples used, so with the number of inputs. The maximum expected improvement is, according to Amdahl's Law: $ \frac{1}{(1-P)+\frac{P}{S}} $, where S is the maximum speedup achievable parallelizing the portion P. For big circuits we can consider $P=1$ and thus the speedup of the entire simulation is equal to the speedup we manage to obtain from the parallelization of the core simulation.
 
 
 \section{Parallelization Strategy}
