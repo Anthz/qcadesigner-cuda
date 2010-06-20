@@ -51,4 +51,4 @@ qcadesigner-cpu: $(OBJECTS)
 objects/%.o: objects/%.c
 	@$(CC) $(GLIB) $(CPU_DBG) $(CFLAGS) -c -o $@ $<
 	
-
+ 

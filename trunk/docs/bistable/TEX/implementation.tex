@@ -127,14 +127,14 @@ Parallel bistable simulation, as showed in (ref algoritmo) could be divided in s
 
 SI POTREBBE FARE UN BELL'ALGORITMO SCRITTO BENE SULLO PSEUDOCOICE DELL'IMPLEMENTAZIONE.. NEL FILE CHE HO INCLUSO CI SONO DUE ESEMPI
 TRATTI DALLA MIA TESI
-\input{parallel_algorithm}
+%%\input{parallel_algorithm}
 
 
 
 
 
 \subsection{Memory allocation}
-As reported in the section \refname{\label{sec:art_of_cuda}}, when engeneering an algorithm for the GPUs, a critical
+As reported in the section \ref{sec:art_of_cuda} , when engeneering an algorithm for the GPUs, a critical
 design decision is the allocation of data onto the different memories provided by the architecture.
 Almost all the structures above have changeable sizes, depending on the circuit structure (number of cells and neighbourhood among them).
 For that reason array dimension may ramp up to many thousands of elements, dramatically increasing the space needed on the device.
@@ -152,12 +152,18 @@ by all the threads, such as clock constants, number of cells (input, output and 
 \subsection{Optimizations}
 In Order to best exploit Tesla parallel execution we had to look to some typical GPU programming's expedients.
 As we described above, we first focused our attention on the better memory allocation for all the needed variables.
-
-Trying to exploit fast access memories is one of the most valuable efforts to improve performances.
+\begin{itemize}
+ \item Trying to exploit \textbf{fast access memories} is one of the most valuable efforts to improve performances.
 In fact the global memory can be potentially 150x slower than registers, local and shared memory.\newline
 Unfortunately in our case structural problems led us to limit the use of \textit{shared} memory to store the input/output indexes arrays and  the
-\textit{constant} memory to store predefined variables. However turned out in sensible improvements in both the cases of first kernel and
-the second kernel. Register are employed to store the variables
+\textit{constant} memory to store predefined variables. However that turned out in sensible improvements in both the cases of first kernel and
+the second kernel. Register are employed to store local thread variables, and by means of the apposite occupance calculator we verified to not
+use more registers than those provided by architecture.
+
+\item \textbf{Coalescence} is another best practice improvement for CUDA code: in consists in make 
+
+\end{itemize}
+
 
 
 %%*shared memory (GIÀ CITATA)
