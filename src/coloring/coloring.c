@@ -34,7 +34,7 @@ int color_graph(int *array_graph, int node_num, int max_num_arcs, int **cell_col
 			for (j=0; j<max_num_arcs && nb_idx!=-1; j++)
 			{
 				nb_idx = array_graph[i+node_num*j];
-				if (nb_idx!=-1)
+				if (nb_idx!=-1 && array_graph[nb_idx]!=-1) //if I have a neighbor and this neighbor is not a fixed or input
 				{
 					nb_num++;
 					nb_colors[j] = node_colors[nb_idx];

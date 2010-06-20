@@ -68,7 +68,13 @@ As far as coherence engine is concerned, this was true, and the team which is wo
 \subsection{Parallelization by labels}
 In order to find a working parallelizable algorithm, two approaches had been considered then. The former was to modify someway the computation of the new state, in order to overcome any sort of oscillation and maintain the before prospected speedup roof, the second was to consider the dependency that was discussed in section \ref{sec:new_algorithm}, affecting negatively the achievable speedup.
 As for the first option, we tried adding some noise or skipping randomly the new polarization update when an oscillation is individuated, but we did not succeed. Again because of our lack of competence, we showed this problem to the MiNa group and we are currently in contact with a PhD which actively contributed to the creation of this tool. Meanwhile we managed to obtain a working bistable simulator exploiting the second option.\newline
-
+In order to maintain the dependency of the original algorithm we decided to divide the entire circuit into labels so that every cell has no neighbors on his label and computing simultaneously not all the cells, but cells belonging to the same label.
+The neighborhood relationship is stored as an undirected graph. Applying a coloring algorithm on it, we obtained these labels. Our graph has some peculiarity which had to be considered in order to find a fast and efficient coloring algorithm:
+\begin{itemize}
+	\item The graph is undirected, but as for \textit{fixed} and \textit{input} cells (whose values do not depend on the other cells state) it is directed, since we decided to mark these kind of cells as if they have no neighbors, while a normal cell is allowed to have them as neighbors;
+	\item A \textit{fixed} and \textit{input} cell is allowed to have any color
+\end{itemize}
+This way a sequentiality is introduced and the maximum speedup achievable is inevitably worsen.
 
 -> COLORING
 -> NUOVO SPEEDUP: CELLE/COLORS
