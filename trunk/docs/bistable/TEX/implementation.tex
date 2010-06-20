@@ -7,7 +7,7 @@ analyze the code. We made some hypothesis on the location of possible bottleneck
 circuits and started to consider possible transformations that had to be done in order to obtain fast accessible and light weight data 
 structures allocable on the GPU global memory.
 
-\section{The CPU algorithm and code analysis}
+\section{The CPU algorithm and code analysis}\label{sec:cpu_algorithm}
 Bistable engine is thought as a fast and approximated simulation, sufficient to verify the logic functionality of a design. 
 Every cell is represented as a simple two-state system. The entire simulation is divided into samples, that are units of time 
 (not yet experimentally defined), and for each sample the state of each cell is calculated with respect to the other cells within 
@@ -47,11 +47,20 @@ Once the batch application was finished we started to profile the execution time
 	    \end{tabular}
 	 }
  \end{table}
--> CALCOLARE LA PERCENTUALE DEL TEMPO IN FUNZIONE DELLE CELLE E DEGLI INPUT (alla buona) + un po' di analisi a confermare le cose speculate a caso nella sezione precedente.
+-> CALCOLARE LA PERCENTUALE DEL TEMPO IN FUNZIONE DELLE CELLE E DEGLI INPUT (alla buona) + un po' di analisi a confermare le cose speculate a caso nella sezione precedente + BLABLA
 
 
 \section{Parallelization Strategy}
 \subsection{The new algorithm and achievable speedup}
+As we have seen in section \ref{sec:cpu_algorithm}, the calculation of the each cell's new state is immediately stored before proceeding with the next cell. Therefore, not all of the new polarizations computation is based on the old value of neighbors. This dependence challenges our seek of the maximum speedup, since our initial proposal was to compute every cell's new state simultaneously. The figure \ref{fig:cpu_alg} shows how this dependency affects a simulation step.
+\begin{figure}[h!tb]
+	\centering
+	\subfigure[First order]{\includegraphics[scale=0.4]{img/CPUalg1.png}}
+	\subfigure[Second order]{\includegraphics[scale=0.4]{img/CPUalg2.png}}
+	\caption{New state computation with different orders}
+	\label{fig:cpu_alg}
+\end{figure}
+
 -> PROPOSTA: ATTUALMENTE L'ALGORITMO CALCOLA IL VALORE DI UNA CELLA AGGIORNANDOLO PRIMA DI PASSARE AL SUCCESSIVO CON ORDINE RANDOMIZZATO A OGNI SAMPLE -> NON è UNA LETTURA SEMPRE DELLO STATO VECCHIO.
 -> PROPOSTA DI CAMBIARE L'ALGORITMO: LETTURA SEMPRE DALLO STATO VECCHIO, CONTATTIAMO KONRAD PER CONSIGLIO DA PERSONA COMPETENTE A CONFERMARE LA NOSTRA IPOTESI: DOVREBBE ESSERE PIU ACCURATO, NON E' STATO FATTO SU CPU PERCHè RALLENTAVA PARECCHIO, COME POI ABBIAMO VISTO FACENDO LA MODIFICA ANCHE SU CPU.
 -> FORMULA DI AMDAHL E DISCUSSIONE SULLO SPEEDUP MASSIMO ACHIEVABLE CON QUESTO TIPO DI ALGORITMO E USANDO LA PERCENTUALE SOPRA
