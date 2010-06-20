@@ -1,4 +1,4 @@
-\chapter{implementation}\label{sec:implementation}
+\chapter{Implementation}\label{sec:implementation}
 \section{First approach}
 The original source code of QCADesigner was downloaded from Mina website (ref). We attempted to make it compile as it was but we did not
 manage to solve several compilation errors. So we started to focus on the identification of the core algorithm supporting the tool in
@@ -7,7 +7,7 @@ analyze the code. We made some hypothesis on the location of possible bottleneck
 circuits and started to consider possible transformations that had to be done in order to obtain fast accessible and light weight data 
 structures allocable on the GPU global memory.
 
-\section{CPU algorithm and profiling}
+\section{The CPU algorithm and code analysis}
 Bistable engine is thought as a fast and approximated simulation, sufficient to verify the logic functionality of a design. 
 Every cell is represented as a simple two-state system. The entire simulation is divided into samples, that are units of time 
 (not yet experimentally defined), and for each sample the state of each cell is calculated with respect to the other cells within 
@@ -15,38 +15,73 @@ a preset effective radius. This operation is iterated until all cells have conve
 Once the entire system converges the output is recorded and the computation goes on with the next sample, after having updated
  the input cells with new input values.
 The number of samples required to have a good approximation is known (ref) to be $2000*2^N$, where $N$ is the number of inputs.
- The maximum number of iterations allowed for the convergence within a sample is $100$. Thus, during a simulation each cell's value 
+ The maximum number of iterations allowed for the convergence within a sample is set to $100$. Thus, during a simulation each cell's value 
 is computed sequentially $It*2000*2^N$ times, where $It$ is the mean number of iterations needed to reach convergence. 
-The more are the cells, the longer will take each sample to reach convergence.
+The more are the cells, the longer will take each sample to reach convergence. Each cell's new state calculation implies several accesses to the memory, since data structures are heavily dereferenced, and each neighbor's state as well as their reciprocal kink energy has to be read, and a series of floating point operations on values with double precision. Furthermore, at the beginning of each sample, new inputs values have to be set. As far as exhaustive simulation is concerned, every combination of input values has to be processed. Therefore, their values are calculated through a periodic function, implying several transcendental functional unit usages.\newline
+The analysis of the code makes it quite clear that the core of the simulation is the main bottleneck of this application. Once a circuit of millions of cells have to be simulated, the number of FP operations and memory accesses reach huge orders of magnitude. This first hypothesis was subsequently proved by the profiling of execution times, dealt with in section \ref{sec:cpu_profiling}.
 
-Once we finished the batch application we started to profile the execution times simulating some circuits. The table (ref) shows 
+\section{Profiling of CPU simulation}\label{sec:cpu_profiling}
+Once the batch application was finished we started to profile the execution times simulating some circuits of different sizes. The table \ref{tab:cpu_profiling} shows ...\newline
+\begin{table}[h!tb]
+   \centering \caption{Table caption}
+   \label{tab:cpu_profiling}
+   \vskip 0.2cm
+   %%
+   \scalebox{0.90}{
+	    %% The {|c|c|c|c|c|} define the number of columns.
+	    %% c means centered
+	    %% | defines a vertical line between two columns 
+	    \begin{tabular}{|c|c|c|}
+	      \hline
+	      Col 1 & Col 2 & Col2  \\
+	      %% \\ force a newline without creating an horizontal line
+	      Dim C.1 & Dim C.3 & Dim C.3 \\
+	      %% \hline create an horizontal line between two rows
+	      \hline
+	      Data 1.1 & Data 1.2 & Data 1.3 \\
+	      \hline
+	      Data 2.1 & Data 2.2 & Data 2.3 \\
+	      \hline
+	      Data 3.1 & Data 3.2 & Data 3.3 \\  
+	      \hline
+	    \end{tabular}
+	 }
+ \end{table}
+-> CALCOLARE LA PERCENTUALE DEL TEMPO IN FUNZIONE DELLE CELLE E DEGLI INPUT (alla buona) + un po' di analisi a confermare le cose speculate a caso nella sezione precedente.
 
 
 \section{Parallelization Strategy}
+\subsection{The new algorithm and achievable speedup}
+-> PROPOSTA: ATTUALMENTE L'ALGORITMO CALCOLA IL VALORE DI UNA CELLA AGGIORNANDOLO PRIMA DI PASSARE AL SUCCESSIVO CON ORDINE RANDOMIZZATO A OGNI SAMPLE -> NON è UNA LETTURA SEMPRE DELLO STATO VECCHIO.
+-> PROPOSTA DI CAMBIARE L'ALGORITMO: LETTURA SEMPRE DALLO STATO VECCHIO, CONTATTIAMO KONRAD PER CONSIGLIO DA PERSONA COMPETENTE A CONFERMARE LA NOSTRA IPOTESI: DOVREBBE ESSERE PIU ACCURATO, NON E' STATO FATTO SU CPU PERCHè RALLENTAVA PARECCHIO, COME POI ABBIAMO VISTO FACENDO LA MODIFICA ANCHE SU CPU.
+-> FORMULA DI AMDAHL E DISCUSSIONE SULLO SPEEDUP MASSIMO ACHIEVABLE CON QUESTO TIPO DI ALGORITMO E USANDO LA PERCENTUALE SOPRA
+-> RISULTATI SUCCESSIVI HAN DIMOSTRATO CHE IL NUOVO ALGORITMO OK PER COHERENCE MA NON PER BISTABLE...
+-> COLORING
+-> NUOVO SPEEDUP: CELLE/COLORS
 
 \subsection{Data Structures}
-In the CPU implementation all the informations about circuit structure and cells' details are stored in complex nested structures:
-considering CUDA SIMT parallelism, well suited to operate over structures like matrices anda arrays, we first detected the useful data
+In the CPU implementation all the information about circuit structure and cells' details are stored in complex nested and dereferenced structures:
+considering CUDA SIMT parallelism, well suited to operate over structures like matrices and arrays, we first detected the useful data
 for simulation on GPU and then decided how to organize them for a fast CUDA implementation.\newline
-The essential data we identified were: cells' polarizations, neighbours'lists, intra-cells kinetic energy (\textit{eK}) values, clock values,
+The essential data we identified were: cells' polarizations, neighbors'lists, intra-cells kinetic energy (\textit{eK}) values, clock values,
 stability status and other predefined constants.\newline
 We decided to store most of these values (the ones that ) in simple array structures, in order to obtain a clearer thread mapping and a faster thread access.\newline
-Cells' polarizations array is in charge to contain the polarization values for all the cells through all the iterations, providing
+Cells' polarizations array is in charge of containing the polarization values for all the cells through all the iterations, providing
 the results for simulation output. At each iteration, polarizations are updated by threads.\newline
-Neighbours' and \textit{eK} arrays contain all the informations we need about circuit structure and energy interactions among
+Neighbors' and \textit{eK} arrays contain all the informations we need about circuit structure and energy interactions among
 the cells. They fully depend on circuit's geometry, and don't change during the simulation. However, they are essential to calculate 
 cells polarizations.\newline
-Stability array contains simple boolean values wich provide the stability status of every cell and permits the evaluation of array global
+Stability array contains simple boolean values which provide the stability status of every cell and permits the evaluation of array global
 stability after every iteration.\newline
 Other significant structures we designed in our implementations are the input and output cells' indexes arrays, two auxiliary structures
 which help us respectively to update input cells at the beginning of every sample and to store output cells' polarization at the end of 
 every iteration.
 
 \subsection{Parallel Algorithm}
-As reported previously, in our parallal implementation we focused our attention on the simulation core of the algorithm.\newline
+As reported previously, in our parallel implementation we focused our attention on the simulation core of the algorithm.\newline
 Our goal was to exploit the parallel thread execution to compute simultaneously all the circuit's cells. 
 
-BISOGNA SPIEGARE LA ROBA DI KONRAD CHE CI HA FATTO PENARE, MA POI NE SIAMO USCITI ABILMENTE CON IL MIGLIE'S COLORING
+BISOGNA SPIEGARE LA ROBA DI KONRAD CHE CI HA FATTO PENARE, MA POI NE SIAMO USCITI ABILMENTE CON IL MIGLIE'S COLORING (SPIEGATO NELLA SEZIONE SOPRA)
 
 After the initial circuit file reading and structures filling phases, we introduced a conversion function to have data in our desired format.
 After conversion the coloring algorithm is applied and all the needed data are ready to be allocated on the device.\newline
