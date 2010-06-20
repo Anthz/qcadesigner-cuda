@@ -1,24 +1,4 @@
 \chapter{Rationale}\label{sec:rationale}
-\section{Why QCA}
-
-
-
-
-- Why QCA?
-	* novel emerging paradigm
-	* 2 Thz, low energy consumption and miniaturization
-	* quantum computing
-- QCADesigner simulator slow on big circuits:
-	* Every sample, each cell's polarization is computed based on the values of his neighbors, sequentially.
-	* Bottleneck from profiling (table with times)
-	* Simulation core: pseudo code
-	* Identical operations repeated for each cell, big circuits -> thousands of cells
-	* We chose to speedup this part of the code with CUDA because:
-		 SIMD architecture (SIMT): single instruction repeated on different data
-		 hundreds of core -> many threads running simultaneously, each thread responsible of computing a cell's polarization
-		 scalable, adding new cores implies a greater number of cells computed simultaenously, higher speedup
-- Objective
-	* Speed up simulation for big circuits
-	* batch simulator
-	* Given a file .qca -> produce output: binary, continous values, plot on png, log with info of simulation
-	* if same .qca -> same results CPU and CUDA
+Quantum Dot Cellular Automata were cited among emerging technologies by the International Technology Roadmap For Semiconductors (\cite{art:ITRS_ERD}). The theoretical speed at which will be able to run is about 2 THZ and power consumption are extremely low (\cite{art:FPGA_Quantum}). Furthermore, this model has been demonstrated theoretically to be able to perform quantum computation (\cite{art:Quantum_QCA}).
+QCADesigner is a useful tool which allows designing and simulating any QCA circuit. We profiled the execution time with different circuits and performances turn out to be really pure when circuits get bigger.\newline
+We aim to speed up the simulator exploiting CUDA technology, providing a simple batch application able to simulate big systems in competitive times.
