@@ -31,14 +31,11 @@ Once the batch application was finished we started to profile the execution time
 	    %% The {|c|c|c|c|c|} define the number of columns.
 	    %% c means centered
 	    %% | defines a vertical line between two columns 
-	    \begin{tabular}{|c|c|c|}
+	    \begin{tabular}{|c|c|c|c|c|}
 	      \hline
-	      Col 1 & Col 2 & Col2  \\
-	      %% \\ force a newline without creating an horizontal line
-	      Dim C.1 & Dim C.3 & Dim C.3 \\
-	      %% \hline create an horizontal line between two rows
+	      Cells & Samples & Iterations per Sample & Core Simulation Time & Total Simulation Time & Core percentage\\
 	      \hline
-	      Data 1.1 & Data 1.2 & Data 1.3 \\
+	      35576 & 8000 & 10.16 & 2590 s & 3106 s & 83.3 %\\
 	      \hline
 	      Data 2.1 & Data 2.2 & Data 2.3 \\
 	      \hline
@@ -72,12 +69,19 @@ In order to maintain the dependency of the original algorithm we decided to divi
 The neighborhood relationship is stored as an undirected graph. Applying a coloring algorithm on it, we obtained these labels. Our graph has some peculiarity which had to be considered in order to find a fast and efficient coloring algorithm:
 \begin{itemize}
 	\item The graph is undirected, but as for \textit{fixed} and \textit{input} cells (whose values do not depend on the other cells state) it is directed, since we decided to mark these kind of cells as if they have no neighbors, while a normal cell is allowed to have them as neighbors;
-	\item A \textit{fixed} and \textit{input} cell is allowed to have any color
+	\item A \textit{fixed} and \textit{input} cell is allowed to have any color;
+	\item A normal cell is allowed to have the same color of his neighbor if this neighbor is a \textit{fixed} and \textit{input} cell;
+	\item The maximum number of arcs does not scale with the number of cells since there is a predefined effective radius within which the number of cells that can be located is physically bounded.
 \end{itemize}
-This way a sequentiality is introduced and the maximum speedup achievable is inevitably worsen.
-
--> COLORING
--> NUOVO SPEEDUP: CELLE/COLORS
+Therefore, we preferred to implement a home made coloring algorithm, which has a linear complexity and gives a small number of colors in a really short time. The graph \ref{fig:color_table} shows the trend of the number of colors found in some circuits in relation to the number of cells.
+\begin{figure}[h!tb]
+				\centering
+				\includegraphics[scale=0.5]{img/color_table.png}
+				\caption{Number of colors found with our coloring algorithm.}
+				\label{fig:color_table}
+\end{figure}
+Obviously it also depends on the structure of the entire circuit, but here is shown how the last property we pointed out makes the maximum number of colors well bounded by a limit of about 20-25 colors\newline
+This way a sequentiality is introduced and the maximum speedup achievable is inevitably worsen, but still our maximum speedup will be proportional to the number of cells as the circuit get bigger, since we can consider a constant the number of colors.
 
 \subsection{Data Structures}
 In the CPU implementation all the information about circuit structure and cells' details are stored in complex nested and dereferenced structures:
