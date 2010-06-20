@@ -51,7 +51,7 @@ Once the batch application was finished we started to profile the execution time
 
 
 \section{Parallelization Strategy}
-\subsection{The new algorithm and achievable speedup}
+\subsection{The new algorithm and achievable speedup}\label{sec:new_algorithm}
 As we have seen in section \ref{sec:cpu_algorithm}, the calculation of the each cell's new state is immediately stored before proceeding with the next cell. Therefore, not all of the new polarizations computation is based on the old value of neighbors. This dependence challenges our seek of the maximum speedup, since our initial proposal was to compute every cell's new state simultaneously. The figure \ref{fig:cpu_alg} shows how this dependency affects a simulation step varying the order in which the cells are considered.
 \begin{figure}[h!tb]
 	\centering
@@ -63,13 +63,13 @@ As we have seen in section \ref{sec:cpu_algorithm}, the calculation of the each 
 We initially made the hypothesis that calculate the new state of a cell entirely based on the old state of the neighbor cells would have worked even better than the current algorithm. This way we would have had a maximum speedup achievable of the core simulation proportional to the number of the cells.
 -> AMDAHL'S LAW WITH PERCENTAGE.
 Given our lack of competence in this field, we contacted Professor Konrad Walus of the University of British Columbia (Canada), which is the head of the Microsystems and Nanotechnology Research Group (MiNa) which developed this tool. He sustained our hypothesis, adding that their implementation was different just because copying each value would have worsen considerably performances on CPU, and that any numerical problem that may incur is bypassed by randomizing each sample the order in which cells are considered.\newline
-As far as coherence engine is concerned, this was true, and the team which is working on it had brilliant results with this algorithm. Unfortunately, the bistable simulation gave us an unexpected result: the state of the system did not converge to a stable state, on the contrary, cells' state starts oscillating and oscillations seems to get larger after some iterations. This result is probably due to the fact that this kind of simulation is just an approximation of the dynamic of the system and what happens is something comparable to the latch SR when is goes from the \textit{unforbidden state} $R=S=1$ to the \textit{keep state} $R=S=0$, whose output is unpredictable and the result will depend on the propagation time relations between the NOR gates. In our case, the algorithm is trying to compute the new state not considering any analogue relaxation time difference. Obviously this problem occur only when making logical approximations. The coherence engine is a physical simulation, so this problem is overcome.
+As far as coherence engine is concerned, this was true, and the team which is working on it had brilliant results with this algorithm. Unfortunately, the bistable simulation gave us an unexpected result: the state of the system did not converge to a stable state, on the contrary, cells' state starts oscillating and oscillations seems to get larger after some iterations. This result is probably due to the fact that this kind of simulation is just an approximation of the dynamic of the system and what happens is something comparable to the latch SR when is goes from the \textit{forbidden state} $R=S=1$ to the \textit{keep state} $R=S=0$, whose output is unpredictable and the result will depend on the propagation time relations between the NOR gates. In our case, the algorithm is trying to compute the new state not considering any analogue relaxation time difference. Obviously this problem occur only when making logical approximations. The coherence engine is a physical simulation, so this problem is overcome.
+
+\subsection{Parallelization by labels}
+In order to find a working parallelizable algorithm, two approaches had been considered then. The former was to modify someway the computation of the new state, in order to overcome any sort of oscillation and maintain the before prospected speedup roof, the second was to consider the dependency that was discussed in section \ref{sec:new_algorithm}, affecting negatively the achievable speedup.
+As for the first option, we tried adding some noise or skipping randomly the new polarization update when an oscillation is individuated, but we did not succeed. Again because of our lack of competence, we showed this problem to the MiNa group and we are currently in contact with a PhD which actively contributed to the creation of this tool. Meanwhile we managed to obtain a working bistable simulator exploiting the second option.\newline
 
 
-
--> PROPOSTA DI CAMBIARE L'ALGORITMO: LETTURA SEMPRE DALLO STATO VECCHIO, CONTATTIAMO KONRAD PER CONSIGLIO DA PERSONA COMPETENTE A CONFERMARE LA NOSTRA IPOTESI: DOVREBBE ESSERE PIU ACCURATO, NON E' STATO FATTO SU CPU PERCHè RALLENTAVA PARECCHIO, COME POI ABBIAMO VISTO FACENDO LA MODIFICA ANCHE SU CPU.
--> FORMULA DI AMDAHL E DISCUSSIONE SULLO SPEEDUP MASSIMO ACHIEVABLE CON QUESTO TIPO DI ALGORITMO E USANDO LA PERCENTUALE SOPRA
--> RISULTATI SUCCESSIVI HAN DIMOSTRATO CHE IL NUOVO ALGORITMO OK PER COHERENCE MA NON PER BISTABLE...
 -> COLORING
 -> NUOVO SPEEDUP: CELLE/COLORS
 
