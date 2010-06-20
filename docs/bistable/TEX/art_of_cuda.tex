@@ -8,10 +8,10 @@ into the GPU computational resources. Tesla is NVIDIA's first dedicated General 
 \newline
 \subsection{NVIDIA Tesla Architecture}
    Modern GPUs include hundreds of processing elements. The NVIDIA Tesla GPU series provide a set
-of independent multithreaded streaming multiprocessors. \figurename~\ref{fig:LT} shows an overview of the NVIDIA
+of independent multithreaded streaming multiprocessors. \figurename~\ref{fig:teslaarch} shows an overview of the NVIDIA
 Tesla streaming processors array which is the part of the GPU architecture responsible for the general purpose computation.
 Each streaming multiprocessor is composed by a set of eight streaming processors,two special functional units and a multithreaded
-instruction issue unit (respectively indicated as SP, SFU and MT-Issue in \figurename~\ref{fig:Tesla}).\newline
+instruction issue unit (respectively indicated as SP, SFU and MT-Issue in \figurename~\ref{fig:teslaarch}).\newline
 A SP is a fully pipelined single-issue processing core with two ALUs and a single floating point unit (FPU). 
 SFUs are dedicated to the computation of transcendental functions and pixel/vertex manipulations.
 The MT-Issue unit is in charge of mapping active threads on the available SPs.\newline
