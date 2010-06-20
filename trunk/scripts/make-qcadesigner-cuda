@@ -1,4 +1,4 @@
 cd ../src
 make clean
-make qcadesigner-cuda GPU_ARCH=sm_11 CPU_OPT=O3 GPU_PREC=FLOAT
+make qcadesigner-cuda GPU_ARCH=sm_13 CPU_OPT=O3
 
