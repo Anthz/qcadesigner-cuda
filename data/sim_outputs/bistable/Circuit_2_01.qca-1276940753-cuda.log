@@ -1,11 +1,0 @@
-Initialization... done!
-Running 1 simulations with a radial tolerance of 0.001000
-Running simulation 0
-Number of cells = 28
-Number of samples = 8000
-Number of inputs = 2
-Converting to CUDA structures... done!
-Coloring... done!
-Number of colors = 8
-Allocating memory on device... done!
-#Simulating on CUDA: 0%#Simulating on CUDA: 1%#Simulating on CUDA: 2%#Simulating on CUDA: 3%#Simulating on CUDA: 4%#Simulating on CUDA: 5%#Simulating on CUDA: 6%#Simulating on CUDA: 7%#Simulating on CUDA: 8%#Simulating on CUDA: 9%#Simulating on CUDA: 10%#Simulating on CUDA: 11%#Simulating on CUDA: 12%#Simulating on CUDA: 13%#Simulating on CUDA: 14%#Simulating on CUDA: 15%#Simulating on CUDA: 16%#Simulating on CUDA: 17%#Simulating on CUDA: 18%#Simulating on CUDA: 19%#Simulating on CUDA: 20%#Simulating on CUDA: 21%#Simulating on CUDA: 22%#Simulating on CUDA: 23%#Simulating on CUDA: 24%#Simulating on CUDA: 25%#Simulating on CUDA: 26%#Simulating on CUDA: 27%#Simulating on CUDA: 28%#Simulating on CUDA: 29%#Simulating on CUDA: 30%#Simulating on CUDA: 31%#Simulating on CUDA: 32%#Simulating on CUDA: 33%#Simulating on CUDA: 34%#Simulating on CUDA: 35%#Simulating on CUDA: 36%#Simulating on CUDA: 37%#Simulating on CUDA: 38%#Simulating on CUDA: 39%#Simulating on CUDA: 40%#Simulating on CUDA: 41%#Simulating on CUDA: 42%#Simulating on CUDA: 43%#Simulating on CUDA: 44%#Simulating on CUDA: 45%#Simulating on CUDA: 46%#Simulating on CUDA: 47%#Simulating on CUDA: 48%
