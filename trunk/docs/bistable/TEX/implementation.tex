@@ -51,7 +51,6 @@ Once the batch application was finished we started to profile the execution time
  \end{table}
 As we can see, the hypothesis we made about the bottleneck is verified. Furthermore, the proportion of the computation for big circuits get bigger with the number of samples used, so with the number of inputs. The maximum expected improvement is, according to Amdahl's Law: $ \frac{1}{(1-P)+\frac{P}{S}} $, where S is the maximum speedup achievable parallelizing the portion P. For big circuits we can consider $P=1$ and thus the speedup of the entire simulation is equal to the speedup we manage to obtain from the parallelization of the core simulation.
 
-
 \section{Parallelization Strategy}
 \subsection{The new algorithm and achievable speedup}\label{sec:new_algorithm}
 As we have seen in section \ref{sec:cpu_algorithm}, the calculation of the each cell's new state is immediately stored before proceeding with the next cell. Therefore, not all of the new polarizations computation is based on the old value of neighbors. This dependence challenges our seek of the maximum speedup, since our initial proposal was to compute every cell's new state simultaneously. The figure \ref{fig:cpu_alg} shows how this dependency affects a simulation step varying the order in which the cells are considered.
@@ -63,7 +62,6 @@ As we have seen in section \ref{sec:cpu_algorithm}, the calculation of the each 
 	\label{fig:cpu_alg}
 \end{figure}
 We initially made the hypothesis that calculate the new state of a cell entirely based on the old state of the neighbor cells would have worked even better than the current algorithm. This way we would have had a maximum speedup achievable of the core simulation proportional to the number of the cells.
--> AMDAHL'S LAW WITH PERCENTAGE.
 Given our lack of competence in this field, we contacted Professor Konrad Walus of the University of British Columbia (Canada), which is the head of the Microsystems and Nanotechnology Research Group (MiNa) which developed this tool. He sustained our hypothesis, adding that their implementation was different just because copying each value would have worsen considerably performances on CPU, and that any numerical problem that may incur is bypassed by randomizing each sample the order in which cells are considered.\newline
 As far as coherence engine is concerned, this was true, and the team which is working on it had brilliant results with this algorithm. Unfortunately, the bistable simulation gave us an unexpected result: the state of the system did not converge to a stable state, on the contrary, cells' state starts oscillating and oscillations seems to get larger after some iterations. This result is probably due to the fact that this kind of simulation is just an approximation of the dynamic of the system and what happens is something comparable to the latch SR when is goes from the \textit{forbidden state} $R=S=1$ to the \textit{keep state} $R=S=0$, whose output is unpredictable and the result will depend on the propagation time relations between the NOR gates. In our case, the algorithm is trying to compute the new state not considering any analogue relaxation time difference. Obviously this problem occur only when making logical approximations. The coherence engine is a physical simulation, so this problem is overcome.
 
@@ -85,20 +83,20 @@ Therefore, we preferred to implement a home made coloring algorithm, which has a
 				\caption{Number of colors found with our coloring algorithm.}
 				\label{fig:color_table}
 \end{figure}
-Obviously it also depends on the structure of the entire circuit, but here is shown how the last property we pointed out makes the maximum number of colors well bounded by a limit of about 20-25 colors\newline
-This way a sequentiality is introduced and the maximum speedup achievable is inevitably worsen, but still our maximum speedup will be proportional to the number of cells as the circuit get bigger, since we can consider a constant the number of colors.
+Obviously it also depends on the structure of the entire circuit, but here is shown how the last property we pointed out makes the maximum number of colors well bounded by a limit of about 20-25 colors.\newline In order to avoid numerical errors, the randomization of the cells' order would be too time expensive because of the many memory transfers that would be required between host and device. With this new algorithm, things become easier since it is sufficient to randomize the color order every sample so that the there is no predefined sequence of labels being computed.\newline
+This way a sequentiality is introduced and the maximum speedup achievable is inevitably worsen, but still our maximum speedup will be proportional to the number of cells as the circuit get bigger, since we can consider as a constant the number of colors.
 
 \subsection{Data Structures}
 In the CPU implementation all the information about circuit structure and cells' details are stored in complex nested and dereferenced structures:
 considering CUDA SIMT parallelism, well suited to operate over structures like matrices and arrays, we first detected the useful data
 for simulation on GPU and then decided how to organize them for a fast CUDA implementation.\newline
-The essential data we identified were: cells' polarizations, neighbors'lists, intra-cells kinetic energy (\textit{eK}) values, clock values,
+The essential data we identified were: cells' polarizations, neighbors' lists, intra-cells kinetic energy (\textit{eK}) values, clock values,
 stability status and other predefined constants.\newline
 We decided to store most of these values (the ones that ) in simple array structures, in order to obtain a clearer thread mapping and a faster thread access.\newline
 Cells' polarizations array is in charge of containing the polarization values for all the cells through all the iterations, providing
 the results for simulation output. At each iteration, polarizations are updated by threads.\newline
 Neighbors' and \textit{eK} arrays contain all the informations we need about circuit structure and energy interactions among
-the cells. They fully depend on circuit's geometry, and don't change during the simulation. However, they are essential to calculate 
+the cells. They fully depend on circuit's geometry, and do not change during the simulation. However, they are essential to calculate 
 cells polarizations.\newline
 Stability array contains simple boolean values which provide the stability status of every cell and permits the evaluation of array global
 stability after every iteration.\newline
@@ -109,12 +107,9 @@ every iteration.
 \subsection{Parallel Algorithm}
 As reported previously, in our parallel implementation we focused our attention on the simulation core of the algorithm.\newline
 Our goal was to exploit the parallel thread execution to compute simultaneously all the circuit's cells. 
-
-BISOGNA SPIEGARE LA ROBA DI KONRAD CHE CI HA FATTO PENARE, MA POI NE SIAMO USCITI ABILMENTE CON IL MIGLIE'S COLORING (SPIEGATO NELLA SEZIONE SOPRA)
-
 After the initial circuit file reading and structures filling phases, we introduced a conversion function to have data in our desired format.
 After conversion the coloring algorithm is applied and all the needed data are ready to be allocated on the device.\newline
-Parallel bistable simulation, as showed in (ref algoritmo) could be divided in stages below:
+Parallel bistable simulation, could be divided into the below stages:
 \begin{itemize}
  \item allocation and copy of the variables on the device, which is performed only one time during the execution.
  \item update inputs kernel, executed at the beginning of each sample to update inputs.
@@ -124,12 +119,7 @@ Parallel bistable simulation, as showed in (ref algoritmo) could be divided in s
  \item cleaning device memory after the last sample.
 \end{itemize}
 
-
-SI POTREBBE FARE UN BELL'ALGORITMO SCRITTO BENE SULLO PSEUDOCOICE DELL'IMPLEMENTAZIONE.. NEL FILE CHE HO INCLUSO CI SONO DUE ESEMPI
-TRATTI DALLA MIA TESI
 %%\input{parallel_algorithm}
-
-
 
 
 
@@ -141,13 +131,13 @@ For that reason array dimension may ramp up to many thousands of elements, drama
 While Tesla c1060's 4GB global memory is safely enough to store these structures, the same cannot be stated for the shared and constant
 memories: these have very limited storage space and need to be exploited very carefully.
 We decided to use shared memory to store relatively small structures such as the input and output indexes arrays. The input array is used
-in the \textit{update input kernel} to fastly find the input cells to be updated. In the same way, output indexes array is exploited 
+in the \textit{update input kernel} to find the input cells to be updated fast. In the same way, output indexes array is exploited 
 in the \textit{bistable kernel} to store output cells' polarizations.\newline
 The reasons of such a choice consist both in the limited sizes of these structures and in the high frequency of accesses to them during
 execution.\newline
 In the \textit{constant memory} cache we allocated all the necessary variables which not vary during the execution and need to be accessed
 by all the threads, such as clock constants, number of cells (input, output and total amount), stability tolerance, number of samples 
- maximum number of neighbours. All the remaining variables are stored in thread's local registers.\newline
+ maximum number of neighbors. All the remaining variables are stored in thread's local registers.\newline
 
 \subsection{Optimizations}
 In Order to best exploit Tesla parallel execution we had to look to some typical GPU programming's expedients.
@@ -159,33 +149,30 @@ Unfortunately in our case structural problems led us to limit the use of \textit
 \textit{constant} memory to store predefined variables. However that turned out in sensible improvements in both the cases of first kernel and
 the second kernel. Register are employed to store local thread variables: they represent a structural limit to the number of thread blocks 
 instantiated in every SMP. Tesla provides 16384 32 bits registers per SMP and our implementation requires 10 registers per-thread: by means of the 
-apposite occupance calculator we verified that every thread blocks in execution need 2560 registers per SMP.
+apposite occupancy calculator we verified that every thread blocks in execution need 2560 registers per SMP.
 Considering that the maximum number of active 256 thread blocks in execution on a SMP is limited to 4, we verified that the maximum 
-number of registers used (10240) does not exceed the number of registers provided by the architecture. Moreover, we assessed that limit
+number of registers used (10240) does not exceed the number of registers provided by the architecture. Moreover, we assessed that the limit
 of thread blocks for each Streaming Multiprocessor is given by the number of warps expected by our implementation.
 
 \item A key issue for all the CUDA applications is the bottleneck related to the \textbf{memory transfers} between host and device.
 We reduced these low bandwidth transfers to the minimum: we decided to allocate all the needed structures once at the beginning of
 the host function and then to recompute data directly on the GPU, without the need of passing through CPU. On chip memory transfers are
-obviously faster, but we could not avoid to perform some foundamental device-to-host data transfers, such as the stability array and the output
+obviously faster, but we could not avoid to perform some fundamental device-to-host data transfers, such as the stability array and the output
 array, respectively done after each iteration and after each sample.
 
 \item \textbf{Coalescence} is another best practice improvement for CUDA code: \textit{global memory} delivers the highest memory 
 bandwidth only when the global memory accesses can be coalesced within a half-warp so the hardware can then fetch (or store) the data
  in the fewest number of transactions. If the memory transaction cannot be coalesced, then a separate memory transaction will be issued 
 for each thread in the half-warp, which is undesirable. We tried to design thread accesses to be coalescing as much as possible, but it 
-was not possible to avoid uncoalescing accesses in instructions such as the polarization calculation (where the access to polarization 
-array is pretty unpredictable). Fortunately newer architectures such as Tesla c1060 have more relaxed coalescing reqirements, and 
+was not possible to avoid uncoalescent accesses in instructions such as the polarization calculation (where the access to polarization 
+array is pretty unpredictable). Fortunately newer architectures such as Tesla c1060 have more relaxed coalescing requirements, and 
 multiprocessor controllers are more able to deal with conflicts in memory accesses reducing multiple transaction penalty.
 As our implementation is supposed to be executed on devices with compute capability 1.3 or higher (need to support double precision
-floating point operations), coalescence does not  represent a big issue for us.
+floating point operations), coalescence does not represent a big issue for us.
 
-\item \textbf{Divergence}
+\item \textbf{Divergence} is not avoidable with architectures with compute capability 1.3 or smaller, since during the computation of a cell's value, all its neighbor's values have to be read from global memory, one thread has to access memory several times and without any order. Figure \ref{fig:divergence} shows how this divergence works.
 
-\item \textbf{fastmath}
-
-
-
+\item \textbf{Fast math} and \textbf{single precision Floating Point operations} may be exploited in order to get even faster simulation. Fast math functions (like fast sin and fast cosine, and fast division) use the special function unit in each multiprocessor, which take just one instruction, whereas normal implementation can take several instructions. Single precision floating point operations can be executed by every processor contained in a SM, while double precision ones are performed just by one special functional unit per SM.
 
 
 \end{itemize}
