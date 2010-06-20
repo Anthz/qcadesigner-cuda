@@ -1,57 +1,22 @@
 \begin{algorithm}\label{alg:DUenc}
-  \SetKwFunction{Empty}{vuoto}\SetKwFunction{XTSSerpentblockEnc}{XTS-Serpent-blockEnc}
-  \SetKwFunction{BitsOf}{bits di}\SetKwFunction{BitSizeOf}{dimensione in bit di}\SetKwFunction{First}{primi}\SetKwFunction{Last}{ultimi}
-  \SetKwFor{For}{for}{do}{endfor}\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{endif} 
-\BlankLine  
-  \For{$q\leftarrow 0$ \KwTo $m-2$}{
-    $C_q \leftarrow $ \XTSSerpentblockEnc($K, P_q, i, q$)\;}
-  $b\leftarrow$ \BitSizeOf $P_m$\;
-  \uIf{$b=0$}{
-    $C_{m-1}\leftarrow$ \XTSSerpentblockEnc($K, P_{m-1}, i, m-1$)\;
-    $C_m \leftarrow$ \Empty\;
-    }
-    \Else{
-    $CC\leftarrow$ \XTSSerpentblockEnc($K, P_{m-1}, i, m-1$)\;
-    $C_m\leftarrow$ \First $b$ \BitsOf $CC$\;
-    $CP\leftarrow$ \Last ($128-b$) \BitsOf $CC$\;
-    $PP\leftarrow P_m|CP$\;
-    $C_{m-1}\leftarrow$ \XTSSerpentblockEnc($K, PP, i, m$)\;
-    }
-  $C\leftarrow C_0 | \dots| C_{m-1}| C_m$\;
-\caption{XTS-Serpent per cifrare una \textit{Data Unit}}
-\end{algorithm}
-
-\IncMargin{1em}
-\begin{algorithm}\label{alg:serTrue}
-  \SetKwFunction{memCopyToHost}{memCopyToHost}\SetKwFunction{memCopyToGPU}{memCopyToGPU}
-  \SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
-  \SetKwData{Dati}{Dati}
-  \SetKwFor{For}{for}{do}{endfor} 
+  \SetKwFunction{UpdateInputsKernel}{update_inputs_kernel}\SetKwFunction{BistableKernel}{bistable_kernel}
+  \SetKwFunction{memCopyToGPU}{memcpy-to-gpu}\SetKwFunction{memCopyToCPU}{memcpy-to-cpu}\SetKwFunction{StabilityChecking}{stability-checking}
+  \SetKwFunction{NumSamples}{number-of-samples}\SetKwFunction{MaxIter}{max-iterations}\SetKwFunction{NumColors}{number-of-colors}
+  \SetKwFor{For}{for}{do}{od}\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{endif} \SetKwFor{While}{while}{do}{od}
   \SetKwBlock{Begin}{begin}{end}
- 
-\KwIn{$P = (P_d, P_{d+1}, \dots, P_{d+t})$: il \emph{plaintext chunk} di ingresso diviso in una sequenza di $t$ \textit{data units}.\newline
-$[d, d+t]$: range degli indici di \textit{data units} all'interno del \textit{plaintext} che devono essere cifrate attraverso molteplici
-chiamate dell'algoritmo.\newline
-$k_1$: chiave di cifratura primaria. $k_2$: chiave di cifratura secondaria.}
-  \KwOut{$C=(C_{d},C_{d+1},\dots, C_{d+t})$: il blocco di \emph{ciphertext}, risultato della criptazione.}
-  \KwDati{$E(p,k)$: cifratura simmetrica del plaintext $p$ tramite la chiave $k$.\newline
-   $t=512$: numero di \textit{data units} presenti in un blocco di \textit{plaintext}.\newline
-    $m=32$:numero di \textit{cipher blocks} per ogni \textit{data unit}.\newline
-    $P_n = (P_{n_0}), \dots, P_{n, m-1}$,\newline
-    $C_n = (C_{n_0}), \dots, C_{n, m-1}$ $\forall n \in [d,d+t]$.\newline
-    $\bar{n}$ indice cifrato della \textit{data unit} $n$}
-  \BlankLine
- \Begin{ 
- \For{$n\leftarrow d$ \KwTo $d+t$}
-    {
-      $\bar{n}\leftarrow E(n,k_2)$\;
-      \For{$i\leftarrow 0$ \KwTo$m-1$}
-	{
-      $w_{n,i}\leftarrow \bar{n}\otimes\alpha^{i}$\;
-      $C_{n,i}\leftarrow E(w_{n,i}\oplus P_{n,i},k_1)\oplus w_{n,i}$\;
+\BlankLine  
+  \memCopyToGPU()\;
+  \For{$j\leftarrow 0$ \KwTo \NumSamples}{
+      \UpdateInputsKernel()\;
+      $i \leftarrow 0$\;
+      \While{$i <$ \MaxIter \wedge $\neg stable$ }{
+	\For{$k\leftarrow 0$ \KwTo \NumColors}{
+	    \BistableKernel()\;
 	}
-    }
-  \Return{$C$}\;
-}
-\caption{Algoritmo XTS-Serpent per Truecrypt}
+      \memCopyToCPU($dS$)\;
+      $g \leftarrow$\StabilityChecking($S$)\;}
+  \memCopyToCPU($dOut$)\;
+  }
+
+\caption{Parallel Bistable Simulation Engine}
 \end{algorithm}

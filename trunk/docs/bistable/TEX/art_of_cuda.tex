@@ -2,7 +2,7 @@
 \label{sec:art_of_cuda}
    In recent times, Graphics Processing Units (GPUs) have been considered a potential source of computational
 power for non-graphical applications, due to the ongoing evolution of their programming interfaces and their
-appealing cost-performance figures of merit. Recent works had first attempted to adapt general purposeù applications
+appealing cost-performance figures of merit. Recent works had first attempted to adapt general purpose applications
 to the graphic rendering APIs (OpenGL and DirectX), which up to two years ago represented the only interface to tap
 into the GPU computational resources. Tesla is NVIDIA's first dedicated General Purpose GPU.
 \newline
@@ -35,6 +35,13 @@ This shared memory is organized in 16 banks that can be concurrently accessed, e
   The GPU we used for our project is the NVIDIA Tesla c1060. 
  With the computational power of its 240 Streaming Processors (grouped into 30 TPCs) and the 102,4 GB/s max bandwidth of its 4096 MB
 GDDR3 memory, it represents one of the most performing GPUs on the market.\newline
+
+\begin{figure}[h]
+    \centering
+     \includegraphics[width=1.2\textwidth]{./img/nvidiadetail}
+\caption{Architectural detail of the Tesla Architecture}\label{fig:teslaarch}
+    \end{figure}
+
 
 \subsection{CUDA programming model}
    The Compute Unified Device Architecture (CUDA), proposed by NVIDIA for its GeForce (8 series and above), Quadro and Tesla
