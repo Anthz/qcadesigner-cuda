@@ -157,10 +157,36 @@ As we described above, we first focused our attention on the better memory alloc
 In fact the global memory can be potentially 150x slower than registers, local and shared memory.\newline
 Unfortunately in our case structural problems led us to limit the use of \textit{shared} memory to store the input/output indexes arrays and  the
 \textit{constant} memory to store predefined variables. However that turned out in sensible improvements in both the cases of first kernel and
-the second kernel. Register are employed to store local thread variables, and by means of the apposite occupance calculator we verified to not
-use more registers than those provided by architecture.
+the second kernel. Register are employed to store local thread variables: they represent a structural limit to the number of thread blocks 
+instantiated in every SMP. Tesla provides 16384 32 bits registers per SMP and our implementation requires 10 registers per-thread: by means of the 
+apposite occupance calculator we verified that every thread blocks in execution need 2560 registers per SMP.
+Considering that the maximum number of active 256 thread blocks in execution on a SMP is limited to 4, we verified that the maximum 
+number of registers used (10240) does not exceed the number of registers provided by the architecture. Moreover, we assessed that limit
+of thread blocks for each Streaming Multiprocessor is given by the number of warps expected by our implementation.
 
-\item \textbf{Coalescence} is another best practice improvement for CUDA code: in consists in make 
+\item A key issue for all the CUDA applications is the bottleneck related to the \textbf{memory transfers} between host and device.
+We reduced these low bandwidth transfers to the minimum: we decided to allocate all the needed structures once at the beginning of
+the host function and then to recompute data directly on the GPU, without the need of passing through CPU. On chip memory transfers are
+obviously faster, but we could not avoid to perform some foundamental device-to-host data transfers, such as the stability array and the output
+array, respectively done after each iteration and after each sample.
+
+\item \textbf{Coalescence} is another best practice improvement for CUDA code: \textit{global memory} delivers the highest memory 
+bandwidth only when the global memory accesses can be coalesced within a half-warp so the hardware can then fetch (or store) the data
+ in the fewest number of transactions. If the memory transaction cannot be coalesced, then a separate memory transaction will be issued 
+for each thread in the half-warp, which is undesirable. We tried to design thread accesses to be coalescing as much as possible, but it 
+was not possible to avoid uncoalescing accesses in instructions such as the polarization calculation (where the access to polarization 
+array is pretty unpredictable). Fortunately newer architectures such as Tesla c1060 have more relaxed coalescing reqirements, and 
+multiprocessor controllers are more able to deal with conflicts in memory accesses reducing multiple transaction penalty.
+As our implementation is supposed to be executed on devices with compute capability 1.3 or higher (need to support double precision
+floating point operations), coalescence does not  represent a big issue for us.
+
+\item \textbf{Divergence}
+
+\item \textbf{fastmath}
+
+
+
+
 
 \end{itemize}
 
