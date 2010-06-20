@@ -1,8 +1,8 @@
 \chapter{Conclusions}\label{sec:conclusions}
-Our CUDA implementation allows for an efficient exploitation a nVidia's C1060 Tesla card for exhaustively simulating large and complex QCA cells based circuits. Our implementation has been tested against a number of circuits with the original QCADesigner algorithm's and we have verified that the property of correctness holds.
+Our CUDA implementation allows for an efficient exploitation a nVidia's C1060 Tesla card for exhaustively simulating large and complex QCA cells based circuits. Our implementation has been tested against a number of circuits with the original QCADesigner algorithms and we have verified that the property of correctness holds.
  
 Two main improvements are possible for this application
-\begine{itemize}
+\begin{itemize}
 \item the simulation mode called ``vector table'', that allows for a reduction of the $2^i$ term of the complexity formulae by manually disabling some of the inputs cells of the design
-\item the implementation of a (simple) mechanism to spread the load of the computation onto a \textsl{cluster} of Tesla cards. As in the single card case, the theoretical speedup is limited only by the number of nodes present in the cluster (which directly maps on the number of concurrently runnable threads, ie the number of concurrently simulable QCA cells). 
+\item the implementation of a (simple) mechanism to spread the load of the computation onto a \textsl{cluster} of Tesla cards. As in the single card case, the time complexity of the algorithm is reduced by the number of running threads; the speedup is then limited only by the number of nodes present in the cluster (which directly maps on the number of concurrently runnable threads, ie the number of concurrently simulable QCA cells). 
 \end{itemize}

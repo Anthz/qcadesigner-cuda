@@ -27,7 +27,7 @@ Due to the high latency of the Device Memory, each MP is provided with a private
 \item a Constant Cache and a Texture Cache, managed by the framework
 \item a set of exclusive Registers for each SP
 \end{itemize}
-The Shared Memory can be considered as both a sort of "cache" of the Global Memory %santa potrebbe ucciderci
+The Shared Memory can be considered as both a sort of "cache" of the Global Memory 
  directly administrated by the cores in the MP and a mechanism for communicating among SPs belonging to the same MP. The Constant Cache and the Texture Cache are L1 caches used to speed-up the access time of the Constant Memory and the Texture Memory, respectively. Due to the fact that Constant Memory and Texture Memory are read-only (from a GPU point of view), no cache coherency protocol is required.\\ 
 
 \section{Programming Model}
@@ -41,10 +41,11 @@ All the Blocks are grouped into another logical structure called Grid. Consideri
 	\label{fig:nVidiaGPUsLogicalOrg}
 \end{figure}
 
-\section{Best Pratices}
-In order to best exploit the resources of a Cuda capable GPU, there are several pratices that must be adopted. Even if many of these are strictly dependent on the specific device used, there are some general rules that can be easily identified:
+\section{Best Practices}
+In order to best exploit the resources of a CUDA capable GPU, there are several practices that must be adopted. Even if many of these are strictly dependent on the specific device used, there are some general rules that can be easily identified:
 \begin{description}
 \item[Memory transfers] between Host and Device must be reduced to the minimum. Ideally there should be only one transfer Host-Device to store on the GPU the data for the computation and one transfer Device-Host to collect the results.
-\item[GPU Occupancy] must be maximized. That is, the number of warp actually in execution must be closer to the maximum number of "in-fly" warp supported by the Device.\item[Divergent Branches] should be avoided. Due to the fact that all the threads of the warp must execute the same instruction, in case of divergent branches the warp execution will be serialized, reducing the performance.
+\item[GPU Occupancy] must be maximized. That is, the number of warps actually in execution must be closer to the maximum number of "in-fly" warps supported by the Device.
+\item[Divergent Branches] should be avoided. Due to the fact that all the threads of the warp must execute the same instruction, in case of divergent branches the warp execution will be serialized, reducing the performance.
 \end{description}
-These three good pratices, ordered by decreasing importance, could be considered the most important rules that must be observed to effective develop in Cuda. It should be noticed that in the past this list was expanded by at least one element, coalescence. In the first Cuda Devices - identified by a so called "compute capability" berween 1.0 and 1.1 - all the threads in the same warp had to access the memory words in sequence and, consequently, to avoiding multiple reads/writes. Only if this pratice was enforced the MP could reduce to the minimum the the number of memory accesses needed to provide the data to all the SPs. With modern devices - compute capability grater or equal to 1.2 - this constraint is much more relaxed: threads can access any worlds in any order, including the same worlds, and a single memory transaction for each segment addressed by the warp is issued. In this cases the problem of coalescence can be completely forgotten.
+These three good pratices, ordered by decreasing importance, could be considered the most important rules that must be observed to effectivly developing in CUDA. It should be noticed that in the past this list was expanded by at least one element, coalescence. In the first CUDA Devices - identified by a so called "compute capability" berween 1.0 and 1.1 - all the threads in the same warp had to access the memory words in sequence and, consequently, to avoid multiple reads/writes. Only if this pratice is enforced the MP can reduce to the least the number of memory accesses needed to provide the data to all the SPs. With modern devices - compute capability grater or equal to 1.2 - this constraint is much more relaxed: threads can access any word in any order, including the same words, and a single memory transaction for each segment addressed by the warp is issued. In this cases the problem of coalescence can be completely forgotten.
