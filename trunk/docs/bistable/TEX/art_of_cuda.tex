@@ -2,7 +2,7 @@
 \label{sec:art_of_cuda}
    In recent times, Graphics Processing Units (GPUs) have been considered a potential source of computational
 power for non-graphical applications, due to the ongoing evolution of their programming interfaces and their
-appealing cost-performance figures of merit. Recent works had first attempted to adapt “general purpose” applications
+appealing cost-performance figures of merit. Recent works had first attempted to adapt general purpose� applications
 to the graphic rendering APIs (OpenGL and DirectX), which up to two years ago represented the only interface to tap
 into the GPU computational resources. Tesla is NVIDIA's first dedicated General Purpose GPU.
 \newline
@@ -64,7 +64,7 @@ The number of concurrent blocks managed by a single multiprocessor is currently 
  An access to this read-only memory space is faster than one to global memory, provided that there is sufficient access locality since
 constant memory is implemented as a region of global memory fit with an on-chip cache.
 Finally, another portion of the off-chip memory may be allocated as a local memory that is used as thread private resource.
-Since the local memory access is slow, the shared memory also serves as an explicitly managed cache – though it is up to the
+Since the local memory access is slow, the shared memory also serves as an explicitly managed cache though it is up to the
 programmer to warrant that the local data being saved in shared memory are not accessed by other
 threads. Shared memory comes in limited amounts (threads within each block typically share 16 KB of memory) hence,
 it is crucial for performance that each thread handle only small chunks of data.
