@@ -15,6 +15,13 @@ instruction issue unit (respectively indicated as SP, SFU and MT-Issue in \figur
 A SP is a fully pipelined single-issue processing core with two ALUs and a single floating point unit (FPU). 
 SFUs are dedicated to the computation of transcendental functions and pixel/vertex manipulations.
 The MT-Issue unit is in charge of mapping active threads on the available SPs.\newline
+
+\begin{figure}[h!tp]
+    \centering
+     \includegraphics[width=0.7\textwidth]{./img/nvidiadetail}
+\caption{Architectural detail of the Tesla Architecture}\label{fig:teslaarch}
+    \end{figure}
+
   A multiprocessor is able to concurrently execute groups of 32 threads called warps. Since each thread
 in a warp has its own control flow, their execution paths may diverge due to the independent evaluation
 of conditional statements. In this case, the warp serially executes each path. When the warp is executing
@@ -30,17 +37,11 @@ multiprocessors in the Tesla architecture. The TPC also includes support for Tex
 seldom used for general purpose computing and will not be investigated in this description.\newline
    Finally, the NVIDIA GPU on-board memory hierarchy includes registers (private to each SP), on-chip memory and off-chip memory.
 The on-chip memory is private to each multiprocessor, and is split into a very small instruction cache, a read-only data cache,
-and 16 KB of addressable shared data, respectively indicated as I-cache, C-cache and Shared Memory in \figurename~\ref{fig:Tesla}.
+and 16 KB of addressable shared data, respectively indicated as I-cache, C-cache and Shared Memory in \figurename~\ref{fig:teslaarch}.
 This shared memory is organized in 16 banks that can be concurrently accessed, each bank having a single read/write port.\newline
   The GPU we used for our project is the NVIDIA Tesla c1060. 
  With the computational power of its 240 Streaming Processors (grouped into 30 TPCs) and the 102,4 GB/s max bandwidth of its 4096 MB
-GDDR3 memory, it represents one of the most performing GPUs on the market.\newline
-
-\begin{figure}[h]
-    \centering
-     \includegraphics[width=0.8\textwidth]{./img/nvidiadetail}
-\caption{Architectural detail of the Tesla Architecture}\label{fig:teslaarch}
-    \end{figure}
+GDDR3 memory, it represents one of the most performing GPGPUs on the market.\newline
 
 
 \subsection{CUDA programming model}
@@ -52,15 +53,27 @@ Every kernel is explicitly invoked by host code and executed by the device, whil
  asynchronously after instantiating the kernel. The programmer is provided with a specific synchronizing function call
 to wait for the completion of the active asynchronous kernel computation.\newline
    The CUDA programming model abstracts the actual parallelism implemented by the hardware architecture,
-providing the concepts of block and thread to express concurrency in algorithms.
+providing the concepts of block and thread to express concurrency in algorithms (\figurename~\ref{fig:memModel}).
 A block captures the notion of a group of concurrent threads. Blocks are required to execute independently, so that it has
 to be possible to execute them in any order (in parallel or in sequence). Therefore, the synchronization primitives semantically
 act only among threads belonging to the same block.
+\begin{figure}[h!tp]
+    \centering
+     \includegraphics[width=1\textwidth]{./img/memModel}
+\caption{CUDA thread hierarchy}\label{fig:threadHier}
+    \end{figure}
 Intra-block communications among threads use the logical shared memory associated with that block.\newline
    Since the architecture does not provide support for the message-passing techniques, threads belonging
 to different blocks must communicate through global memory. The global memory is entirely mapped to the off-chip memory.
 The concurrent accesses to logical shared memory by threads executing within the same block are supported through an explicit
 barrier synchronization primitive.\newline
+
+\begin{figure}[h!tp]
+    \centering
+     \includegraphics[width=1\textwidth]{./img/memModel}
+\caption{CUDA memory model}\label{fig:memModel}
+    \end{figure}
+
    A kernel call-site must specify the number of blocks as well as the number of threads within each
 block when executing the kernel code. The current CUDA programming model imposes a capping of 512 threads per block.\newline
    The mapping of threads to processors and of blocks to multiprocessors is mainly handled by hardware controller components.
@@ -76,19 +89,19 @@ programmer to warrant that the local data being saved in shared memory are not a
 threads. Shared memory comes in limited amounts (threads within each block typically share 16 KB of memory) hence,
 it is crucial for performance that each thread handle only small chunks of data.
 
-\subsection{SIMT and SIMD}
-   SIMT architecture is similar to single instruction, multiple-data (SIMD) design, which applies one instruction to multiple data lanes.\newline
- The difference is that SIMT applies one instruction to multiple independent threads in parallel, not just multiple data lanes.
-A SIMD instruction controls a vector of multiple data lanes together and exposes the vector width to the software, whereas a SIMT instruction
-controls the execution and branching behavior of one thread.\newline
-   In contrast to SIMD vector architectures, SIMT enables programmers to write thread level parallel code for independent threads
-as well as data-parallel code for coordinated threads.\newline
-For program correctness, programmers can essentially ignore SIMT execution attributes such as warps; however, they can
-achieve substantial performance improvements by writing code that seldom requires threads in a warp to diverge. In practice, this
-is analogous to the role of cache lines in traditional codes: programmers can safely ignore cache line size when designing for
-correctness but must consider it in the code structure when designing for peak performance.\newline 
-SIMD vector architectures, on the other hand, require the software to manually coalesce loads into vectors and to manually manage
-divergence.
+%\subsection{SIMT and SIMD}
+%   SIMT architecture is similar to single instruction, multiple-data (SIMD) design, which applies one instruction to multiple data lanes.\newline
+% The difference is that SIMT applies one instruction to multiple independent threads in parallel, not just multiple data lanes.
+%A SIMD instruction controls a vector of multiple data lanes together and exposes the vector width to the software, whereas a SIMT instruction
+%controls the execution and branching behavior of one thread.\newline
+%   In contrast to SIMD vector architectures, SIMT enables programmers to write thread level parallel code for independent threads
+%as well as data-parallel code for coordinated threads.\newline
+%For program correctness, programmers can essentially ignore SIMT execution attributes such as warps; however, they can
+%achieve substantial performance improvements by writing code that seldom requires threads in a warp to diverge. In practice, this
+%is analogous to the role of cache lines in traditional codes: programmers can safely ignore cache line size when designing for
+%correctness but must consider it in the code structure when designing for peak performance.\newline 
+%SIMD vector architectures, on the other hand, require the software to manually coalesce loads into vectors and to manually manage
+%divergence.
 
 
 

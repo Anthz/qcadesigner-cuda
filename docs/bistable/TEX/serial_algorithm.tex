@@ -1,4 +1,5 @@
 \begin{algorithm}
+  \dontprintsemicolon
   \SetKwData{NumSamples}{numberOfSamples}\SetKwData{MaxIter}{maxIterations}\SetKwData{NumColors}{numberOfColors}\SetKwData{Stable}{stable}
   \SetKwData{NCellLayers}{nCellLayers}\SetKwData{NCellsPerLayer}{nCellsPerLayer}
   \SetKwFunction{MemcpyToGPU}{MemcpyToGPU}\SetKwFunction{MemcpyToCPU}{MemcpyToCPU}\SetKwFunction{UpdateInputs}{UpdateInputs}
@@ -12,8 +13,8 @@
   \BlankLine
   \For{$j\leftarrow 0$ \KwTo \NumSamples}
   {
-    \UpdateInputs{$C$}\;
-    \Randomize{$C$}\;
+    \UpdateInputs{$Pol$}\;
+    \Randomize{$Pol$}\;
     $i \leftarrow 0$\;
     $stable \leftarrow false$\;
     \While{$i<$\MaxIter  \KwAnd \KwNot $stable$}
@@ -22,14 +23,14 @@
       {
 	\For{$l \leftarrow 0$ \KwTo \NCellsPerLayer}
 	{
-	  $OldP_{k,l} \leftarrow$ \GetPolarization{$C_{k,l}$}\;
-	  $NewP_{k,l} \leftarrow$ \ComputePol{$C_{k,l}$}\;
-	  $stable \leftarrow$ (($|NewP_{k,l} - OldP_{k,l}| < tolerance$) \KwAnd $stable$)\;
-	  \GetPolarization{$C_{k,l}$} $\leftarrow NewP_{k,l}$\;
+	  $OldP \leftarrow$ $Pol_{k,l}$\;
+	  $NewP \leftarrow$ \ComputePol{$Pol_{k,l}$}\;
+	  $stable \leftarrow$ (($|NewP - OldP| < tolerance$) \KwAnd $stable$)\;
+	  $Pol_{k,l} \leftarrow NewP$\;
 	}
       }
      }
-   \CollectOutputs{$C$}\;
+   \CollectOutputs{$Pol$}\;
   }
     
   

@@ -85,20 +85,41 @@ Therefore, we preferred to implement a home made coloring algorithm, which has a
 				\caption{Number of colors found with our coloring algorithm.}
 				\label{fig:color_table}
 \end{figure}
-Obviously it also depends on the structure of the entire circuit, but here is shown how the last property we pointed out makes the maximum number of colors well bounded by a limit of about 20-25 colors.\newline In order to avoid numerical errors, the randomization of the cells' order would be too time expensive because of the many memory transfers that would be required between host and device. With this new algorithm, things become easier since it is sufficient to randomize the color order every sample so that the there is no predefined sequence of labels being computed.\newline
-This way a sequentiality is introduced and the maximum speedup achievable is inevitably worsen, but still our maximum speedup will be proportional to the number of cells as the circuit get bigger, since we can consider as a constant the number of colors.
+Obviously it also depends on the structure of the entire circuit, but here is shown how the last property we pointed out makes the 
+maximum number of colors well bounded by a limit of about 20-25 colors.\newline In order to avoid numerical errors, the randomization 
+of the cells' order would be too time expensive because of the many memory transfers that would be required between host and device. 
+With this new algorithm, things become easier since it is sufficient to randomize the color order every sample so that the there is no
+ predefined sequence of labels being computed.\newline
+This way a sequentiality is introduced and the maximum speedup achievable is inevitably worsen, but still our maximum speedup will be 
+proportional to the number of cells as the circuit get larger, since we can consider as a constant the number of colors.
 
 \subsection{Data Structures}
-In the CPU implementation all the information about circuit structure and cells' details are stored in complex nested and dereferenced structures:
-considering CUDA SIMT parallelism, well suited to operate over structures like matrices and arrays, we first detected the useful data
+\subsubsection{Original Structures}
+In the CPU implementation all the information about circuit structure and details of cells are stored in complex nested and dereferenced
+ structures. \lstlistingname~\ref{bistable_struct} shows how every cell is represented by a C struct containing the the most useful 
+features for the simulation: \texttt{number_of_neighbours}, \texttt{neighbours} and \texttt{Ek} arrays provide all the necessary 
+informations about relationships with other cells
+
+\begin{lstlisting}[caption=Bistable model structure for the QCACell, label=bistable_struct]
+	    typedef struct
+	      {
+	      int number_of_neighbours;
+	      QCADCell **neighbours;
+	      int *neighbour_layer;
+	      double *Ek;
+	      double polarization;
+	      } bistable_model;
+\end{lstlisting}
+
+Considering CUDA SIMT parallelism, well suited to operate over structures like matrices and arrays, we first detected the useful data
 for simulation on GPU and then decided how to organize them for a fast CUDA implementation.\newline
-The essential data we identified were: cells' polarizations, neighbors' lists, intra-cells kinetic energy (\textit{eK}) values, clock values,
+The essential data we identified were: polarizations of cells, lists of neighbors, intra-cells kinetic energy (\textit{eK}) values, clock values,
 stability status and other predefined constants.\newline
 We decided to store most of these values (the ones that ) in simple array structures, in order to obtain a clearer thread mapping and a faster thread access.\newline
-Cells' polarizations array is in charge of containing the polarization values for all the cells through all the iterations, providing
+Polarization array is in charge of containing the polarization values for all the cells through all the iterations, providing
 the results for simulation output. At each iteration, polarizations are updated by threads.\newline
-Neighbors' and \textit{eK} arrays contain all the informations we need about circuit structure and energy interactions among
-the cells. They fully depend on circuit's geometry, and do not change during the simulation. However, they are essential to calculate 
+Neighbors and \textit{eK} arrays contain all the informations we need about circuit structure and energy interactions among
+the cells. They fully depend on the geometry of circuit, and do not change during the simulation. However, they are essential to calculate 
 cells polarizations.\newline
 Stability array contains simple boolean values which provide the stability status of every cell and permits the evaluation of array global
 stability after every iteration.\newline
