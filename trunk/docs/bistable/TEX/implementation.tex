@@ -9,8 +9,9 @@ structures allocable on the GPU global memory.
 
 \section{The CPU algorithm and code analysis}\label{sec:cpu_algorithm}
 Bistable engine is thought as a fast and approximated simulation, sufficient to verify the logic functionality of a design. 
-Every cell is represented as a simple two-state system. The entire simulation is divided into samples, that are units of time 
-(not yet experimentally defined), and for each sample the state of each cell is calculated with respect to the other cells within 
+Every cell is represented as a simple two-state system. The algorithm \ref{algo_bist_serial} shows a pseudo code of the simulation. 
+\input{serial_algorithm}
+The entire evolution of the system is divided into samples, that are units of time (not yet experimentally defined), and for each sample the state of each cell is calculated with respect to the other cells within 
 a preset effective radius. This operation is iterated until all cells have converged within a predetermined tolerance. 
 Once the entire system converges the output is recorded and the computation goes on with the next sample, after having updated
  the input cells with new input values.
@@ -20,7 +21,6 @@ is computed sequentially $It*2000*2^N$ times, where $It$ is the mean number of i
 The more complex is the circuit, the longer will take each sample to reach convergence. Each cell new state calculation implies several accesses to the memory, since data structures are heavily dereferenced, and each neighbor's state as well as their reciprocal kink energy has to be read, and a series of floating point operations on values with double precision. Furthermore, at the beginning of each sample, new inputs values have to be set. As far as exhaustive simulation is concerned, every combination of input values has to be processed. Therefore, their values are calculated throughout a periodic function, implying several transcendental functional unit usages.\newline
 The analysis of the code makes it quite clear that the core of the simulation is the main bottleneck of this application. Once a circuit of millions of cells have to be simulated, the number of FP operations and memory accesses reach huge orders of magnitude. This first hypothesis was subsequently proved by the profiling of execution times, dealt with in section \ref{sec:cpu_profiling}.
 
-\input{serial_algorithm}
 
 \section{Profiling of CPU simulation}\label{sec:cpu_profiling}
 Once the batch application was finished we started to profile the execution times simulating some circuits of different sizes and different number of inputs. The table \ref{tab:cpu_profiling} shows the results we obtained. We calculated the mean number of iterations per sample needed to reach convergence, the core simulation time, the time of the entire simulation, including data loading from file and creation of data structures, and the proportion of the computation that we aim to speedup.
