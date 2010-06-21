@@ -12,14 +12,12 @@
     $i \leftarrow 0$\;
     \While{$i<$\MaxIter  \KwAnd $stable$}
     {
-     \For{$k \leftarrow o$ \KwTo \NumColors}{
-      \BistableKernel{$pol,clK,eK,nbIdxs,stabArray,colors,k$}\;
-      }
+    \BistableKernel{$pol,clK,eK,nbIdxs,stabArray,colors,k$}\;\label{alg:bistkernel}
     \MemcpyToHost{$stabArray$}\;
     $stable$ $\leftarrow$ \StabCheck{$stabArray$}\;
     }
     \MemcpyToHost($outputs$)\;
   }
   
-  \caption{Parallel Bistable Engine Pseudocode}\label{algo_bist_parallel}
+  \caption{Parallel Bistable Engine Pseudocode}\label{algo_bist_parallel_failure}
 \end{algorithm}

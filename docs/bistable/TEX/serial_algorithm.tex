@@ -7,14 +7,12 @@
   \SetKwFunction{GetPolarization}{Polarization}\SetKwFunction{CollectOutputs}{CollectOutputs}
   \SetKwInOut{Input}{input}\SetKwInOut{Output}{output}\SetKw{KwAnd}{and}\SetKw{KwNot}{not} 
   \SetKwFor{While}{while}{do}{endw}
-  \Input{blablabla}
-  \Output{BlablaBla}
   \KwData{$NewP:$}
   \BlankLine
   \For{$j\leftarrow 0$ \KwTo \NumSamples}
   {
     \UpdateInputs{$Pol$}\;
-    \Randomize{$Pol$}\;
+    \Randomize{$Pol$}\;\label{alg:rand}
     $i \leftarrow 0$\;
     $stable \leftarrow false$\;
     \While{$i<$\MaxIter  \KwAnd \KwNot $stable$}
@@ -25,7 +23,7 @@
 	{
 	  $OldP \leftarrow$ $Pol_{k,l}$\;
 	  $NewP \leftarrow$ \ComputePol{$Pol_{k,l}$}\;
-	  $stable \leftarrow$ (($|NewP - OldP| < tolerance$) \KwAnd $stable$)\;
+	  $stable \leftarrow$ (($|NewP - OldP| < tolerance$) \KwAnd $stable$)\;\label{alg:tolerance}
 	  $Pol_{k,l} \leftarrow NewP$\;
 	}
       }
