@@ -152,8 +152,34 @@
 		\end{description}
 	\end{frame}
 
-	\begin{frame}{Implementation}
-		choiches
+	\begin{frame}{Original Implementation}
+		\begin{verbatim}
+		Read from file design and parameters
+		Choose simulation engine (here: Coherence Vector)
+		First iteration: stabilize system
+		Compute total simulation time based on number of inputs and time sampling
+		Until end of simulation time
+			Forall cell in design
+				Compute next polarization as a function of previous state and state of neighbors
+			Next cell
+			If time for output -> save to file outputs
+		Next time instant
+		End
+		\end{verbatim}
+	\end{frame}
+	
+		\begin{frame}{CUDA Implementation}
+		\begin{verbatim}
+		Read from file design and parameters
+		Choose simulation engine (here: Coherence Vector)
+		First iteration: stabilize system
+		Compute total simulation time based on number of inputs and time sampling
+		Until end of simulation time
+			Launch kernel which computes the evolution of all cells in parallel
+			If time for output -> save to file outputs
+		Next time instant
+		End
+		\end{verbatim}
 	\end{frame}
 
 \section{Results}
