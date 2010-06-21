@@ -4,7 +4,7 @@
 %%
 %% The original source files were:
 %%
-%% listings-1.3.dtx  (with options: `kernel')
+%% listings.dtx  (with options: `kernel')
 %% 
 %% Please read the software license in listings-1.3.dtx or listings-1.3.pdf.
 %%
@@ -15,8 +15,8 @@
 %% Send comments and ideas on the package, error reports and additional
 %% programming languages to <bmoses@dpdx.net>.
 %%
-\def\filedate{2004/09/07}
-\def\fileversion{1.3}
+\def\filedate{2007/02/22}
+\def\fileversion{1.4}
 \NeedsTeXFormat{LaTeX2e}
 \AtEndOfPackage{\ProvidesPackage{listings}
              [\filedate\space\fileversion\space(Carsten Heinz)]}
@@ -39,7 +39,8 @@
     \fi}
 \edef\lst@RestoreCatcodes{%
     \noexpand\lccode`\noexpand\/`\noexpand\/%
-    \lst@RestoreCatcodes\"\^^I\^^M\~\^^@\relax}
+    \lst@RestoreCatcodes\"\^^I\^^M\~\^^@\relax
+    \catcode12\active}
 \lst@InputCatcodes
 \AtEndOfPackage{\lst@RestoreCatcodes}
 \def\@lst{lst}
@@ -118,9 +119,14 @@
         \def\lst@next{#2}%
     \fi \lst@next #3}
 \def\lst@for#1\do#2{%
-    \def\lst@forbody##1{#2}%
-    \@for\lst@forvar:=#1\do
-    {\expandafter\lst@forbody\expandafter{\lst@forvar}}}
+  \def\lst@forbody##1{#2}%
+  \def\@tempa{#1}%
+  \ifx\@tempa\@empty\else\expandafter\lst@f@r#1,\@nil,\fi
+}
+\def\lst@f@r#1,{%
+  \def\@tempa{#1}%
+  \ifx\@tempa\@nnil\else\lst@forbody{#1}\expandafter\lst@f@r\fi
+}
 \def\lst@MakeActive#1{%
     \let\lst@temp\@empty \lst@MakeActive@#1%
     \relax\relax\relax\relax\relax\relax\relax\relax\relax}
@@ -640,6 +646,19 @@
     \def\lst@OutputLostSpace{\lst@ifnewline \lst@UseLostSpace\fi}%
     \let\lst@leftinsert\@empty
     \let\lst@rightinsert\@empty}
+\def\lst@column@spaceflexible{%
+    \lst@column@flexible
+    \def\lst@OutputLostSpace{%
+      \lst@ifwhitespace
+        \ifx\lst@outputspace\lst@visiblespace
+        \else
+          \lst@UseLostSpace
+        \fi
+      \else
+        \lst@ifnewline \lst@UseLostSpace\fi
+      \fi}%
+    \let\lst@leftinsert\@empty
+    \let\lst@rightinsert\@empty}
 \def\lst@outputpos#1#2\relax{%
     \def\lst@lefthss{\lst@hss}\let\lst@righthss\lst@lefthss
     \let\lst@rightinsert\lst@InsertLostSpace
@@ -820,8 +839,8 @@
 \def\lst@keepspacestrue{\let\lst@ifkeepspaces\iftrue}
 \def\lst@ProcessSpace{%
     \lst@ifkeepspaces
-        \lst@whitespacetrue
         \lst@PrintToken
+        \lst@whitespacetrue
         \lst@AppendOther\lst@outputspace
         \lst@PrintToken
     \else \ifnum\lst@newlines=\z@
@@ -841,8 +860,8 @@
         \global\advance\lst@pos\m@ne
         \lst@gobbledwhitespacetrue
     \else
-        \lst@whitespacetrue
         \lst@PrintToken
+        \lst@whitespacetrue
         \lst@AppendOther\lst@outputspace
         \lst@PrintToken
     \fi}
@@ -1016,7 +1035,7 @@
     \@makeother =\lsts@nfss@catcodes}
 \def\lst@makeletter#1{%
     \ifx\relax#1\else\catcode`#111\relax \expandafter\lst@makeletter\fi}
-\lst@Key{useoutput}{2}{\edef\lst@useoutput{\ifcase#10 0\or 1\else 2\fi}}
+\lst@Key{useoutput}{2}{\edef\lst@useoutput{\ifcase0#1 0\or 1\else 2\fi}}
 \lst@AddToHook{Init}
 {\edef\lst@OrgOutput{\the\output}%
 \ifcase\lst@useoutput\relax
@@ -1050,9 +1069,14 @@
         \fi
         \advance\@tempcnta\@ne
     \repeat}
-\def\lst@ScanChars{%
+\begingroup \catcode12=\active\let^^L\@empty
+\gdef\lst@ScanChars{%
+  \let\lsts@ssL^^L%
+  \def^^L{\par}%
     \lst@GetChars\lst@RestoreOrigCatcodes\@ne {128}%
+  \let^^L\lsts@ssL
     \lst@GetChars\lst@RestoreOrigExtendedCatcodes{128}{256}}
+\endgroup
 \lst@Key{rescanchars}\relax{\lst@ScanChars}
 \AtBeginDocument{\lst@ScanChars}
 \lst@Key{alsoletter}\relax{%
@@ -1365,6 +1389,7 @@
 \lst@AddToHookExe{EmptyStyle}
     {\let\lst@basicstyle\@empty
      \let\lst@inputenc\@empty}
+\lst@Key{multicols}{}{\@tempcnta=0#1\relax\def\lst@multicols{#1}}
 \def\lst@parshape{\parshape\@ne \z@ \linewidth}
 \lst@AddToHookAtTop{EveryLine}{\lst@parshape}
 \lst@AddToHookAtTop{EndGroup}{\lst@parshape}
@@ -1377,6 +1402,15 @@
     {\let\lst@firstline\@ne \def\lst@lastline{9999999\relax}}
 \lst@Key{linerange}\relax{\lstKV@OptArg[]{#1}{%
     \def\lst@interrange{##1}\def\lst@linerange{##2,}}}
+\lst@Key{rangeprefix}\relax{\def\lst@rangebeginprefix{#1}%
+                            \def\lst@rangeendprefix{#1}}
+\lst@Key{rangesuffix}\relax{\def\lst@rangebeginsuffix{#1}%
+                            \def\lst@rangeendsuffix{#1}}
+\lst@Key{rangebeginprefix}{}{\def\lst@rangebeginprefix{#1}}
+\lst@Key{rangebeginsuffix}{}{\def\lst@rangebeginsuffix{#1}}
+\lst@Key{rangeendprefix}{}{\def\lst@rangeendprefix{#1}}
+\lst@Key{rangeendsuffix}{}{\def\lst@rangeendsuffix{#1}}
+\lst@Key{includerangemarker}{true}[t]{\lstKV@SetIf{#1}\lst@ifincluderangemarker}
 \lst@AddToHook{PreSet}{\def\lst@firstline{1\relax}%
                        \let\lst@linerange\@empty}
 \lst@AddToHook{Init}
@@ -1387,20 +1421,130 @@
 \def\lst@GetLineInterval{\expandafter\lst@GLI\lst@linerange\@nil}
 \def\lst@GLI#1,#2\@nil{\def\lst@linerange{#2}\lst@GLI@#1--\@nil}
 \def\lst@GLI@#1-#2-#3\@nil{%
-    \ifx\@empty#1\@empty
-        \let\lst@firstline\@ne
-    \else
-        \def\lst@firstline{#1\relax}%
-    \fi
-    \ifx\@empty#2\@empty
-        \def\lst@lastline{9999999\relax}%
-    \else
-        \ifx -#2%
-            \let\lst@lastline\lst@firstline
-        \else
-            \def\lst@lastline{#2\relax}%
+    \lst@IfNumber{#1}%
+    {\ifx\@empty#1\@empty
+         \let\lst@firstline\@ne
+     \else
+         \def\lst@firstline{#1\relax}%
+     \fi
+     \ifx\@empty#3\@empty
+         \def\lst@lastline{9999999\relax}%
+     \else
+         \ifx\@empty#2\@empty
+             \let\lst@lastline\lst@firstline
+         \else
+             \def\lst@lastline{#2\relax}%
+         \fi
+     \fi}%
+    {\def\lst@firstline{9999999\relax}%
+     \let\lst@lastline\lst@firstline
+     \let\lst@rangebegin\lst@rangebeginprefix
+     \lst@AddTo\lst@rangebegin{#1}\lst@Extend\lst@rangebegin\lst@rangebeginsuffix
+     \ifx\@empty#3\@empty
+         \let\lst@rangeend\lst@rangeendprefix
+         \lst@AddTo\lst@rangeend{#1}\lst@Extend\lst@rangeend\lst@rangeendsuffix
+     \else
+         \ifx\@empty#2\@empty
+             \let\lst@rangeend\@empty
+         \else
+             \let\lst@rangeend\lst@rangeendprefix
+             \lst@AddTo\lst@rangeend{#2}\lst@Extend\lst@rangeend\lst@rangeendsuffix
+         \fi
+     \fi
+     \global\def\lst@DefRange{\expandafter\lst@CArgX\lst@rangebegin\relax\lst@DefRangeB}%
+     \ifnum\lst@mode=\lst@Pmode \expandafter\lst@DefRange \fi}}
+\lst@AddToHookExe{DeInit}{\global\let\lst@DefRange\@empty}
+\def\lst@DefRangeB#1#2{\lst@DefRangeB@#1#2}
+\def\lst@DefRangeB@#1#2#3#4{%
+    \lst@CDef{#1{#2}{#3}}#4{}%
+    {\lst@ifincluderangemarker
+         \lst@LeaveMode
+         \let#1#4%
+         \lst@DefRangeEnd
+         \lst@InitLstNumber
+     \else
+         \@tempcnta\lst@lineno \advance\@tempcnta\@ne
+         \edef\lst@firstline{\the\@tempcnta\relax}%
+         \gdef\lst@OnceAtEOL{\let#1#4\lst@DefRangeEnd}%
+         \lst@InitLstNumber
+     \fi
+ \global\let\lst@DefRange\lst@DefRangeEnd
+     \lst@CArgEmpty}%
+    \@empty}
+\def\lstpatch@labels{%
+\gdef\lst@SetFirstNumber{%
+    \ifx\lst@firstnumber\@undefined
+        \@tempcnta 0\csname\@lst no@\lst@intname\endcsname\relax
+        \ifnum\@tempcnta=\z@ \else
+            \lst@nololtrue
+            \advance\@tempcnta\lst@advancenumber
+            \edef\lst@firstnumber{\the\@tempcnta\relax}%
         \fi
+    \fi}%
+}
+\def\lst@InitLstNumber{%
+     \global\c@lstnumber\lst@firstnumber
+     \global\advance\c@lstnumber\lst@advancenumber
+     \global\advance\c@lstnumber-\lst@advancelstnum
+     \ifx \lst@firstnumber\c@lstnumber
+         \global\advance\c@lstnumber-\lst@advancelstnum
+     \fi}
+\def\lst@DefRangeEnd{%
+    \ifx\lst@rangeend\@empty\else
+        \expandafter\lst@CArgX\lst@rangeend\relax\lst@DefRangeE
     \fi}
+\def\lst@DefRangeE#1#2{\lst@DefRangeE@#1#2}
+\def\lst@DefRangeE@#1#2#3#4{%
+    \lst@CDef{#1#2{#3}}#4{}%
+    {\let#1#4%
+     \edef\lst@lastline{\the\lst@lineno\relax}%
+     \lst@DefRangeE@@}%
+    \@empty}
+\def\lst@DefRangeE@@#1\@empty{%
+    \lst@ifincluderangemarker
+        #1\lst@XPrintToken
+    \fi
+    \lst@LeaveModeToPmode
+    \lst@BeginDropInput{\lst@Pmode}}
+\def\lst@LeaveModeToPmode{%
+    \ifnum\lst@mode=\lst@Pmode
+        \expandafter\lsthk@EndGroup
+    \else
+        \expandafter\egroup\expandafter\lst@LeaveModeToPmode
+    \fi}
+\lst@AddToHook{EOL}{\lst@OnceAtEOL\global\let\lst@OnceAtEOL\@empty}
+\gdef\lst@OnceAtEOL{}% Init
+\def\lst@MSkipToFirst{%
+    \global\advance\lst@lineno\@ne
+    \ifnum \lst@lineno=\lst@firstline
+        \def\lst@next{\lst@LeaveMode \global\lst@newlines\z@
+        \lst@OnceAtEOL \global\let\lst@OnceAtEOL\@empty
+        \lst@InitLstNumber % Added to work with modified \lsthk@PreInit.
+        \lsthk@InitVarsBOL
+        \lst@BOLGobble}%
+        \expandafter\lst@next
+    \fi}
+\def\lst@SkipToFirst{%
+    \ifnum \lst@lineno<\lst@firstline
+        \def\lst@next{\lst@BeginDropInput\lst@Pmode
+        \lst@Let{13}\lst@MSkipToFirst
+        \lst@Let{10}\lst@MSkipToFirst}%
+        \expandafter\lst@next
+    \else
+        \expandafter\lst@BOLGobble
+    \fi}
+\def\lst@IfNumber#1{%
+    \ifx\@empty#1\@empty
+        \let\lst@next\@firstoftwo
+    \else
+        \lst@IfNumber@#1\@nil
+    \fi
+    \lst@next}
+\def\lst@IfNumber@#1#2\@nil{%
+    \let\lst@next\@secondoftwo
+    \ifnum`#1>47\relax \ifnum`#1>57\relax\else
+        \let\lst@next\@firstoftwo
+    \fi\fi}
 \lst@Key{nolol}{false}[t]{\lstKV@SetIf{#1}\lst@ifnolol}
 \def\lst@nololtrue{\let\lst@ifnolol\iftrue}
 \let\lst@ifnolol\iffalse % init
@@ -1415,13 +1559,18 @@
 \lst@AddToHookExe{TextStyle}
     {\let\lst@caption\@empty \let\lst@@caption\@empty
      \let\lst@title\@empty \let\lst@label\@empty}
-\@ifundefined{thechapter}
-    {\newcounter{lstlisting}
-     \renewcommand\thelstlisting{\@arabic\c@lstlisting}}
-    {\newcounter{lstlisting}[chapter]
-     \renewcommand\thelstlisting
-         {\ifnum \c@chapter>\z@ \thechapter.\fi \@arabic\c@lstlisting}}
+\AtBeginDocument{
+  \@ifundefined{thechapter}{\let\lst@ifnumberbychapter\iffalse}{}
+  \lst@ifnumberbychapter
+      \newcounter{lstlisting}[chapter]
+      \gdef\thelstlisting%
+           {\ifnum \c@chapter>\z@ \thechapter.\fi \@arabic\c@lstlisting}
+  \else
+      \newcounter{lstlisting}
+      \gdef\thelstlisting{\@arabic\c@lstlisting}
+  \fi}
 \lst@UserCommand\lstlistingname{Listing}
+\lst@Key{numberbychapter}{true}[t]{\lstKV@SetIf{#1}\lst@ifnumberbychapter}
 \@ifundefined{abovecaptionskip}
 {\newskip\abovecaptionskip
  \newskip\belowcaptionskip}{}
@@ -1471,7 +1620,7 @@
              \par\@parboxrestore\normalsize\normalfont % \noindent (AS)
              \ifx #1t\allowbreak \fi
              \ifx\lst@title\@empty
-                 \lst@makecaption\fnum@lstlisting\lst@caption % (AS)
+                 \lst@makecaption\fnum@lstlisting{\ignorespaces \lst@caption}
              \else
                  \lst@maketitle\lst@title % (AS)
              \fi
@@ -1550,6 +1699,10 @@
         \edef\@tempa{\noexpand\lst@beginfloat{lstlisting}[\lst@float]}%
         \expandafter\@tempa
     \fi
+    \ifx\lst@multicols\@empty\else
+        \edef\lst@next{\noexpand\multicols{\lst@multicols}}
+        \expandafter\lst@next
+    \fi
     \ifhmode\ifinner \lst@boxtrue \fi\fi
     \lst@ifbox
         \lsthk@BoxUnsafe
@@ -1618,10 +1771,17 @@
             \par\penalty-50\vspace\lst@belowskip
         \fi
     \fi
+    \ifx\lst@multicols\@empty\else
+        \def\lst@next{\global\let\@checkend\@gobble
+                      \endmulticols
+                      \global\let\@checkend\lst@@checkend}
+        \expandafter\lst@next
+    \fi
     \ifx\lst@float\relax\else
         \expandafter\lst@endfloat
     \fi
     \endgroup}
+\let\lst@@checkend\@checkend
 \newdimen\lst@maxwidth % \global
 \lst@AddToHook{InitVars}{\global\lst@maxwidth\z@}
 \lst@AddToHook{InitVarsEOL}
@@ -1691,21 +1851,33 @@
     \let\contentsname\lstlistlistingname
     \let\lst@temp\@starttoc \def\@starttoc##1{\lst@temp{lol}}%
     \tableofcontents \egroup}
-\@ifpackageloaded{scrlfile}
-{\newcommand*\lol@heading{\float@listhead{\lstlistlistingname}}
- \renewcommand*\lstlistoflistings{%
-   \begingroup%
-     \if@twocolumn
-       \@restonecoltrue\onecolumn
-     \else
-       \@restonecolfalse
-     \fi
-     \lol@heading%
-     \@parskipfalse\@parskip@indent%
-     \@starttoc{lol}%
-     \if@restonecol\twocolumn\fi
-   \endgroup}%
-}{}
+\@ifundefined{float@listhead}{}{%
+  \renewcommand*{\lstlistoflistings}{%
+    \begingroup
+      \@ifundefined{@restonecoltrue}{}{%
+        \if@twocolumn
+          \@restonecoltrue\onecolumn
+        \else
+          \@restonecolfalse
+        \fi
+      }%
+      \float@listhead{\lstlistlistingname}%
+      \parskip\z@\parindent\z@\parfillskip \z@ \@plus 1fil%
+      \@starttoc{lol}%
+      \@ifundefined{@restonecoltrue}{}{%
+        \if@restonecol\twocolumn\fi
+      }%
+    \endgroup
+  }%
+}
+\AtBeginDocument{%
+  \@ifundefined{float@addtolists}%
+    {\gdef\float@addtolists#1{\addtocontents{lol}{#1}}}%
+    {\let\orig@float@addtolists\float@addtolists
+     \gdef\float@addtolists#1{%
+       \addtocontents{lol}{#1}%
+       \orig@float@addtolists{#1}}}%
+}%
 \newcommand\lstinline[1][]{%
     \leavevmode\bgroup % \hbox\bgroup --> \bgroup
       \def\lst@boxpos{b}%
@@ -1753,6 +1925,68 @@
 \def\lst@InlineGJReadSp#1{%
     \lccode`\~=`\ \lowercase{\lst@lAddTo\lst@arg~}%
     \lst@InlineGJ#1}
+\newcommand\lstMakeShortInline[1][]{%
+  \def\lst@shortinlinedef{\lstinline[#1]}%
+  \lstMakeShortInline@}%
+\def\lstMakeShortInline@#1{%
+  \expandafter\ifx\csname lst@ShortInlineOldCatcode\string#1\endcsname\relax
+    \lst@shortlstinlineinfo{Made }{#1}%
+    \lst@add@special{#1}%
+    \expandafter
+    \xdef\csname lst@ShortInlineOldCatcode\string#1\endcsname{\the\catcode`#1}%
+    \begingroup
+      \catcode`\~\active  \lccode`\~`#1%
+      \lowercase{%
+        \global\expandafter\let
+          \csname lst@ShortInlineOldMeaning\string#1\endcsname~%
+          \expandafter\gdef\expandafter~\expandafter{\lst@shortinlinedef#1}}%
+    \endgroup
+    \global\catcode`#1\active
+  \else
+    \PackageError{Listings}%
+    {\string\lstMakeShorterInline\ definitions cannot be nested}%
+    {Use \string\lstDeleteShortInline first.}%
+    {}%
+  \fi}
+\def\lstDeleteShortInline#1{%
+  \expandafter\ifx\csname lst@ShortInlineOldCatcode\string#1\endcsname\relax
+    \PackageError{Listings}%
+    {#1 is not a short reference for \string\lstinline}%
+    {Use \string\lstMakeShortInline first.}%
+    {}%
+  \else
+    \lst@shortlstinlineinfo{Deleted }{#1 as}%
+    \lst@rem@special{#1}%
+    \global\catcode`#1\csname lst@ShortInlineOldCatcode\string#1\endcsname
+    \global \expandafter\let%
+      \csname lst@ShortInlineOldCatcode\string#1\endcsname \relax
+    \ifnum\catcode`#1=\active
+      \begingroup
+        \catcode`\~\active  \lccode`\~`#1%
+        \lowercase{%
+          \global\expandafter\let\expandafter~%
+          \csname lst@ShortInlineOldMeaning\string#1\endcsname}%
+      \endgroup
+    \fi
+  \fi}
+\def\lst@shortlstinlineinfo#1#2{%
+     \PackageInfo{Listings}{%
+       #1\string#2 a short reference for \string\lstinline}}
+\def\lst@add@special#1{%
+  \lst@rem@special{#1}%
+  \expandafter\gdef\expandafter\dospecials\expandafter
+    {\dospecials \do #1}%
+  \expandafter\gdef\expandafter\@sanitize\expandafter
+    {\@sanitize \@makeother #1}}
+\def\lst@rem@special#1{%
+  \def\do##1{%
+    \ifnum`#1=`##1 \else \noexpand\do\noexpand##1\fi}%
+  \xdef\dospecials{\dospecials}%
+  \begingroup
+    \def\@makeother##1{%
+      \ifnum`#1=`##1 \else \noexpand\@makeother\noexpand##1\fi}%
+    \xdef\@sanitize{\@sanitize}%
+  \endgroup}
 \def\lst@MakePath#1{\ifx\@empty#1\@empty\else\lst@MakePath@#1/\@nil/\fi}
 \def\lst@MakePath@#1/{#1/\lst@MakePath@@}
 \def\lst@MakePath@@#1/{%
