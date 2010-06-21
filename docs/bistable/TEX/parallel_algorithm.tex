@@ -1,22 +1,28 @@
-\begin{algorithm}\label{alg:DUenc}
-  \SetKwFunction{UpdateInputsKernel}{update_inputs_kernel}\SetKwFunction{BistableKernel}{bistable_kernel}
-  \SetKwFunction{memCopyToGPU}{memcpy-to-gpu}\SetKwFunction{memCopyToCPU}{memcpy-to-cpu}\SetKwFunction{StabilityChecking}{stability-checking}
-  \SetKwFunction{NumSamples}{number-of-samples}\SetKwFunction{MaxIter}{max-iterations}\SetKwFunction{NumColors}{number-of-colors}
-  \SetKwFor{For}{for}{do}{od}\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{endif} \SetKwFor{While}{while}{do}{od}
-  \SetKwBlock{Begin}{begin}{end}
-\BlankLine  
-  \memCopyToGPU()\;
-  \For{$j\leftarrow 0$ \KwTo \NumSamples}{
-      \UpdateInputsKernel()\;
-      $i \leftarrow 0$\;
-      \While{$i <$ \MaxIter \wedge $\neg stable$ }{
-	\For{$k\leftarrow 0$ \KwTo \NumColors}{
-	    \BistableKernel()\;
-	}
-      \memCopyToCPU($dS$)\;
-      $g \leftarrow$\StabilityChecking($S$)\;}
-  \memCopyToCPU($dOut$)\;
+\begin{algorithm}
+  \SetKwData{NumSamples}{numberOfSamples}\SetKwData{MaxIter}{maxIterations}\SetKwData{NumColors}{numberOfColors}\SetKwData{Stable}{stable}
+  \SetKwFunction{MemcpyToGPU}{MemcpyToGPU}\SetKwFunction{MemcpyToCPU}{MemcpyToCPU}\SetKwFunction{UpdateInputs}{UpdateInputsKernel}
+  \SetKwFunction{BistableKernel}{BistableKernel}\SetKwFunction{StabCheck}{StabilityChecking}
+  \SetKwInOut{Input}{input}\SetKwInOut{Output}{output}\SetKw{KwAnd}{and not}
+  \SetKwFor{While}{while}{do}{endw}
+  \Input{A bitmap $Im$ of size $w\times l$}
+  \Output{A partition of the bitmap}
+  \BlankLine
+  \emph{special treatment of the first line}\;
+  \MemcpyToGPU{}\;
+  \For{$j\leftarrow$ \KwTo \NumSamples}
+  {
+    \UpdateInputs{$polarizations, inputIdxs, j$}\;
+    $i \leftarrow 0$\;
+    \While{$i<$\MaxIter  \KwAnd $stable$}
+    {
+     \For{$k \leftarrow o$ \KwTo \NumColors}{
+      \BistableKernel{$pol,clK,eK,nbIdxs,stabArray,colors,k$}\;
+      }
+    \MemcpyToCPU{$stabArray$}\;
+    $stable$ $\leftarrow$ \StabCheck{$stabArray$}\;
+    }
+    \MemcpyToCPU($outputs$)\;
   }
-
-\caption{Parallel Bistable Simulation Engine}
+  
+  \caption{disjoint decomposition}\label{algo_disjdecomp}
 \end{algorithm}
