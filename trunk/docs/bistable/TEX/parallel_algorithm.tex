@@ -8,17 +8,17 @@
   \MemcpyToDevice{}\;
   \For{$j\leftarrow$ \KwTo \NumSamples}
   {
-    \UpdateInputs{$polarizations, inputIdxs, j$}\;
+    \UpdateInputs{}\;
     $i \leftarrow 0$\;
     \While{$i<$\MaxIter  \KwAnd $stable$}
     {
      \For{$k \leftarrow o$ \KwTo \NumColors}{
-      \BistableKernel{$pol,clK,eK,nbIdxs,stabArray,colors,k$}\;
+      \BistableKernel{}\;
       }
     \MemcpyToHost{$stabArray$}\;
     $stable$ $\leftarrow$ \StabCheck{$stabArray$}\;
     }
-    \MemcpyToHost($outputs$)\;
+    \MemcpyToHost{$outputs$}\;
   }
   
   \caption{Parallel Bistable Engine Pseudocode}\label{algo_bist_parallel}

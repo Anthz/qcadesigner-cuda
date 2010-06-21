@@ -140,23 +140,7 @@ Stability array contains simple boolean values which provide the stability statu
 stability after every iteration.\newline
 Other significant structures we designed in our implementations are the arrays of indexes of input and output cells, two auxiliary structures
 which help us respectively to update input cells at the beginning of every sample and to store output cells' polarization at the end of 
-every iteration.
-
-\subsection{Parallel Algorithm}
-As reported previously, in our parallel implementation we focused our attention on the simulation core of the algorithm.\newline
-Our goal was to exploit the parallel thread execution to compute simultaneously all the circuit's cells. 
-After the initial circuit file reading and structures filling phases, we introduced a conversion function to have data in our desired format.
-After conversion the coloring algorithm is applied and all the needed data are ready to be allocated on the device.\newline
-Parallel bistable simulation, could be divided into the below stages:
-\begin{itemize}
- \item allocation and copy of the variables on the device, which is performed only one time during the execution.
- \item update inputs kernel, executed at the beginning of each sample to update inputs.
- \item bistable kernel, invoked in every iteration as many times as the number of colors in the circuit
- \item stability checking, performed after each iteration
- \item copy-back of output cells polarizations from device to host, necessary to save circuit output at the end of each sample
- \item cleaning device memory after the last sample.
-\end{itemize}
-
+every iteration.\newline
 
 
 
@@ -169,13 +153,16 @@ For that reason array dimension may ramp up to many thousands of elements, drama
 While Tesla c1060's 4GB global memory is safely enough to store these structures, the same cannot be stated for the shared and constant
 memories: these have very limited storage space and need to be exploited very carefully.
 We decided to use shared memory to store relatively small structures such as the input and output indexes arrays. The input array is used
-in the \textit{update input kernel} to find the input cells to be updated fast. In the same way, output indexes array is exploited 
-in the \textit{bistable kernel} to store output cells' polarizations.\newline
+in the \textit{update input kernel} to find the input cells and fastly update them. In the same way, output indexes array is exploited 
+in the \textit{bistable kernel} to store polarizations ov output cells.\newline
 The reasons of such a choice consist both in the limited sizes of these structures and in the high frequency of accesses to them during
-execution.\newline
+execution. In the extreme case of a number of input or output cells exceeding the maximum size of the available shared memory per thread, 
+the respective array is normally allocated in global memory.\newline
 In the \textit{constant memory} cache we allocated all the necessary variables which not vary during the execution and need to be accessed
 by all the threads, such as clock constants, number of cells (input, output and total amount), stability tolerance, number of samples 
- maximum number of neighbors. All the remaining variables are stored in thread's local registers.\newline
+ maximum number of neighbors. Although the indexes of neighbors  and the \textit{Ek} arrays ramain fixed during simulation execution, they 
+cannot be allocated safely on the limited \textit{constant} memory cache because they exceed very easily the maximum available space of
+65 \textit{KBytes}. All the remaining variables are stored in the local thread registers.\newline
 
 \subsection{Optimizations}
 \label{sec:optimizations}
@@ -184,14 +171,22 @@ As we described above, we first focused our attention on the better memory alloc
 \begin{itemize}
  \item Trying to exploit \textbf{fast access memories} is one of the most valuable efforts to improve performances.
 In fact the global memory can be potentially 150x slower than registers, local and shared memory.\newline
-Unfortunately in our case structural problems led us to limit the use of \textit{shared} memory to store the input/output indexes arrays and  the
-\textit{constant} memory to store predefined variables. However that turned out in sensible improvements in both the cases of first kernel and
-the second kernel. Register are employed to store local thread variables: they represent a structural limit to the number of thread blocks 
+Unfortunately in our case data size problems led us to limit the use of \textit{shared} memory to store the input/output indexes arrays and  the
+\textit{constant} memory to store predefined variables. However, that turned out in sensible improvements in both the cases of the first kernel and
+the second kernel.\newline 
+Register,which are employed to store local thread variables, represent a structural limit to the number of thread blocks 
 instantiated in every SMP. Tesla provides 16384 32 bits registers per SMP and our implementation requires 10 registers per-thread: by means of the 
 apposite occupancy calculator we verified that every thread blocks in execution need 2560 registers per SMP.
 Considering that the maximum number of active 256 thread blocks in execution on a SMP is limited to 4, we verified that the maximum 
 number of registers used (10240) does not exceed the number of registers provided by the architecture. Moreover, we assessed that the limit
 of thread blocks for each Streaming Multiprocessor is given by the number of warps expected by our implementation.
+
+\begin{figure}[h!tp]
+    \centering
+     \includegraphics[width=0.8\textwidth]{./img/Divergence}
+\caption{Architectural detail of the Tesla Architecture}\label{fig:divergence}
+    \end{figure}
+
 
 \item A key issue for all the CUDA applications is the bottleneck related to the \textbf{memory transfers} between host and device.
 We reduced these low bandwidth transfers to the minimum: we decided to allocate all the needed structures once at the beginning of
@@ -199,33 +194,31 @@ the host function and then to recompute, when possible, data directly on the GPU
 obviously faster, but we could not avoid to perform some fundamental device-to-host data transfers, such as the stability array and the output
 array, respectively done after each iteration and after each sample.
 
+
 \item \textbf{Coalescence} is another best practice improvement for CUDA code: \textit{global memory} delivers the highest memory 
 bandwidth only when the global memory accesses can be coalesced within a half-warp so the hardware can then fetch (or store) the data
  in the fewest number of transactions. If the memory transaction cannot be coalesced, then a separate memory transaction will be issued 
 for each thread in the half-warp, which is undesirable. We tried to design thread accesses to be as much coalescing as possible, but it 
 was not possible to avoid uncoalescent accesses in instructions such as the polarization calculation (where the access to polarization 
-array has no regular pattern). Fortunately newer architectures such as Tesla c1060 have more relaxed coalescing requirements, and 
-multiprocessors are more able to deal with conflicts in memory accesses reducing multiple transaction penalty.
-As our implementation is supposed to be executed on devices with compute capability from 1.3 or higher (need to support double precision
-floating point operations), and considering the forthcoming distribution of 2.0 devices (with completely cached global memory)
+array has no regular pattern, as shown in \figurename~\ref{fig:divergence}). Fortunately newer architectures such as Tesla c1060 have more relaxed coalescing requirements, and 
+multiprocessors are more able to deal with conflicts in memory accesses reducing multiple transaction penalty.\newline
+\figurename~\ref{fig:Coalescence} shows how we modified the disposition of data in the array of indexes of neighbors (\figurename~\ref{fig:CoalescA}) 
+with respect to the possible coalescing access patterns allowed by the Tesla Architecture(\figurename~\ref{fig:CoalescB}).\newline
+However, considering the forthcoming distribution of the compute capability 2.0 devices (with a completely cached global memory)
 coalescence will be no longer a GPU programmers' issue.
 
-\item \textbf{Divergence} is not avoidable with architectures with compute capability from 1.3 or smaller, since during the computation
- of a cell's value, all its neighbor's values have to be read from global memory, one thread has to access memory several times and 
-without any order. Figure \ref{fig:divergence} shows how this divergence works.
+\begin{figure}[h!tb]
+	\centering
+	\subfigure[Tesla allowed coalescing accesses]{\includegraphics[scale=0.4]{img/coa4.png}}\label{fig:coalescA}
+	\subfigure[Array of neighbours indexes access pattern]{\includegraphics[scale=0.4]{img/coalescence.png}}\label{fig:coalescB}
+	\caption{Comparation between the Tesla architecture coalescence requirements and our rearrangement of the array of neighbours}
+	\label{fig:Coalescence}
+\end{figure}
 
-\item \textbf{Fast math} and \textbf{single precision Floating Point operations} may be exploited in order to get even faster simulation.
- Fast math functions (like fast sin and fast cosine, and fast division) use the special function unit in each multiprocessor, which take 
-just one instruction, whereas normal implementation can take several instructions. Single precision floating point operations can be 
-executed by every processor contained in a SM, while double precision ones are performed just by one special functional unit per SM.
+
 
 
 \end{itemize}
-
-
-
-%%*shared memory (GIÀ CITATA)
-%%*coalescence (HO FATTO UN PROFILING, SUL CIRCUIT_2_04 E SI VEDE CHE CI SONO UN BEL PO' DI ACCESSI NON COALESCENTI)
 
 
 
