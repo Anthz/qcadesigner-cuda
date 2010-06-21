@@ -1,0 +1,37 @@
+\begin{algorithm}
+  \SetKwData{NumSamples}{numberOfSamples}\SetKwData{MaxIter}{maxIterations}\SetKwData{NumColors}{numberOfColors}\SetKwData{Stable}{stable}
+  \SetKwData{NCellLayers}{nCellLayers}\SetKwData{NCellsPerLayer}{nCellsPerLayer}
+  \SetKwFunction{MemcpyToGPU}{MemcpyToGPU}\SetKwFunction{MemcpyToCPU}{MemcpyToCPU}\SetKwFunction{UpdateInputs}{UpdateInputs}
+  \SetKwFunction{ComputePol}{ComputePolarization}\SetKwFunction{Randomize}{RandomizeCells}
+  \SetKwFunction{GetPolarization}{Polarization}\SetKwFunction{CollectOutputs}{CollectOutputs}
+  \SetKwInOut{Input}{input}\SetKwInOut{Output}{output}\SetKw{KwAnd}{and}\SetKw{KwNot}{not} 
+  \SetKwFor{While}{while}{do}{endw}
+  \Input{blablabla}
+  \Output{BlablaBla}
+  \KwData{$NewP:$}
+  \BlankLine
+  \For{$j\leftarrow 0$ \KwTo \NumSamples}
+  {
+    \UpdateInputs{$C$}\;
+    \Randomize{$C$}\;
+    $i \leftarrow 0$\;
+    $stable \leftarrow false$\;
+    \While{$i<$\MaxIter  \KwAnd \KwNot $stable$}
+    {
+     \For{$k \leftarrow 0$ \KwTo \NCellLayers}
+      {
+	\For{$l \leftarrow 0$ \KwTo \NCellsPerLayer}
+	{
+	  $OldP_{k,l} \leftarrow$ \GetPolarization{$C_{k,l}$}\;
+	  $NewP_{k,l} \leftarrow$ \ComputePol{$C_{k,l}$}\;
+	  $stable \leftarrow$ (($|NewP_{k,l} - OldP_{k,l}| < tolerance$) \KwAnd $stable$)\;
+	  \GetPolarization{$C_{k,l}$} $\leftarrow NewP_{k,l}$\;
+	}
+      }
+     }
+   \CollectOutputs{$C$}\;
+  }
+    
+  
+  \caption{Original Bistable Engine Pseudocode}\label{algo_bist_serial}
+\end{algorithm}
