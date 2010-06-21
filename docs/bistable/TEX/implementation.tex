@@ -99,15 +99,15 @@ proportional to the number of cells as the circuit get larger, since we can cons
 \subsection{Data Structures}
 \subsubsection{Original Structures}
 In the CPU implementation all the information about circuit structure and details of cells are stored in complex nested and dereferenced
- structures. \lstlistingname~\ref{bistable_struct} shows how every cell is represented by a C struct containing the the most useful 
-features for the simulation.
+ structures. \lstlistingname~\ref{bistable_struct} shows how in the bistable model every cell is represented by a C struct containing 
+the the most useful features for the simulation.
 The first four fields of the structures provide all the necessary informations about relationships with other cells. The integer variable 
 \texttt{number\_of\_neighbours} allow to iterate correctly on other arrays to execute the needed operations.
 The combined use of \texttt{neighbours} and \texttt{neighbour\_layer} pointers permits to reach neighbors cells while \texttt{Ek} points
 to the array array containing all the kink energy values with respect to the neighbors cells.\newline
 The new polarization of the cell is then computed performing a set of operations over the polarizations of the neighbors, the respective 
 kink energy and the current cell polarization.\newline
-\begin{lstlisting}[caption=Bistable model structure for the QCACDell, label=bistable_struct]
+\begin{lstlisting}[caption=Bistable model structure for the cell, label=bistable_struct]
 	    typedef struct
 	      {
 	      int number_of_neighbours;
@@ -117,21 +117,28 @@ kink energy and the current cell polarization.\newline
 	      double polarization;
 	      } bistable_model;
 \end{lstlisting}
-These structures are grouped by layers in a matrix of sorted cells.
+These cell structs are actually only a part of a more complex nested structure: the \textit{QCADCell}, which, for the sake of simplicty 
+we are not going to describe in this paper. These \textit{QCADCell} structures are respectively grouped by layers in a matrix of sorted 
+cells. However 
 
-Considering CUDA SIMT parallelism, well suited to operate over structures like matrices and arrays, we first detected the useful data
-for simulation on GPU and then decided how to organize them for a fast CUDA implementation.\newline
-The essential data we identified were: polarizations of cells, lists of neighbors, intra-cells kinetic energy (\textit{eK}) values, clock values,
-stability status and other predefined constants.\newline
-We decided to store most of these values (the ones that ) in simple array structures, in order to obtain a clearer thread mapping and a faster thread access.\newline
+\subsubsection{New Data Structures}
+Original implementation structures are very complicated and sovrabundant of attributes: most of the data stored in them are useless with 
+respect to our scope. Moreover the nested structure is clearly unsuitable to the CUDA implementation: in GPGPU programming is 
+recommended to employ simple data structures such as arrays and matrices to exploit the SIMT parallelism. 
+ As first step in the creation of more we extracted all the useful features to execute the core simulation.
+The essential data we identified were: polarizations of cells, lists of neighbors, intra-cells kinetic energy (\textit{EK}) values, clock 
+values, stability status and other predefined constants. Most of them are organized in the structure described in 
+\lstlistingname~\ref{bistable_struct}.\newline
+We decided to store most of these values in simple array structures, in order to obtain a clearer thread mapping and a faster thread 
+access. By means of a conversion function we itarate over the cell matrix to extract, separate and allocate the desired data.\newline
 Polarization array is in charge of containing the polarization values for all the cells through all the iterations, providing
 the results for simulation output. At each iteration, polarizations are updated by threads.\newline
 Neighbors and \textit{eK} arrays contain all the informations we need about circuit structure and energy interactions among
 the cells. They fully depend on the geometry of circuit, and do not change during the simulation. However, they are essential to calculate 
-cells polarizations.\newline
+new polarizations of cells.\newline
 Stability array contains simple boolean values which provide the stability status of every cell and permits the evaluation of array global
 stability after every iteration.\newline
-Other significant structures we designed in our implementations are the input and output cells' indexes arrays, two auxiliary structures
+Other significant structures we designed in our implementations are the arrays of indexes of input and output cells, two auxiliary structures
 which help us respectively to update input cells at the beginning of every sample and to store output cells' polarization at the end of 
 every iteration.
 

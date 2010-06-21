@@ -52,16 +52,16 @@ is supposed to be executed by a user-specified number of threads.
 Every kernel is explicitly invoked by host code and executed by the device, while the host-side code continues execution
  asynchronously after instantiating the kernel. The programmer is provided with a specific synchronizing function call
 to wait for the completion of the active asynchronous kernel computation.\newline
+\begin{figure}[h!tp]
+    \centering
+     \includegraphics[width=0.4\textwidth]{./img/threadHierarchy}
+\caption{CUDA thread hierarchy}\label{fig:threadHier}
+    \end{figure}
    The CUDA programming model abstracts the actual parallelism implemented by the hardware architecture,
 providing the concepts of block and thread to express concurrency in algorithms (\figurename~\ref{fig:memModel}).
 A block captures the notion of a group of concurrent threads. Blocks are required to execute independently, so that it has
 to be possible to execute them in any order (in parallel or in sequence). Therefore, the synchronization primitives semantically
 act only among threads belonging to the same block.
-\begin{figure}[h!tp]
-    \centering
-     \includegraphics[width=1\textwidth]{./img/memModel}
-\caption{CUDA thread hierarchy}\label{fig:threadHier}
-    \end{figure}
 Intra-block communications among threads use the logical shared memory associated with that block.\newline
    Since the architecture does not provide support for the message-passing techniques, threads belonging
 to different blocks must communicate through global memory. The global memory is entirely mapped to the off-chip memory.
@@ -70,7 +70,7 @@ barrier synchronization primitive.\newline
 
 \begin{figure}[h!tp]
     \centering
-     \includegraphics[width=1\textwidth]{./img/memModel}
+     \includegraphics[width=0.4\textwidth]{./img/memModel}
 \caption{CUDA memory model}\label{fig:memModel}
     \end{figure}
 
