@@ -1,41 +1,54 @@
 \chapter{State of the Art}\label{sec:state_of_art}
 \section{Quantum Dot Cellular Automata}
-The base component of a QCA cell is the Quantum Dot, a nanostructure that can be built with different materials and different technologies which is able to store a well defined number of electrons. Using 4 quantum dots it's possible to create a cell like the one in figure \ref{img:cell}. 
+\label{sec:qca}
+Quantum Dot Cellular automaton or QCA is a computational model based on classical Cellular Automaton. Cellular automata are composed of a grid of cells which can have a finite number of state, in the simplest case two. The evolution of this system is performed in discrete time. At each step all the cells may change their state due to interaction with other cells. The new state of each cell is a function of it's old state and the state of a set of other cells which are called "`neighbor"'. Cellular automata have the same power of a Turing machine. \newline
+Quantum dot cellular automata is a particular class of cellular automata. This class has the peculiarity that the evolution of the state of the cells, also called polarization, is driven by quantum physics law.
+The base component of a QCA cell is the Quantum Dot, a nanostructure that can be built with different materials and different techniques, which is able to store a well defined number of electrons. Using 4 quantum dots it is possible to create a cell like the one in figure \ref{img:cell}. 
 
 \begin{figure}
 \centering
-\includegraphics[scale=0.8]{img/_Cell1.png}
+\includegraphics[scale=0.7]{img/_Cell1.png}
 \caption{A Cell made of 4 Quantum Dots}
 \label{img:cell}
 \end{figure}
 
-If we inject 2 electrons in this structure their reciprocal repulsion allow them to be only in two configurations, with the electrons disposed on one of the two diagonals. Electrons are free to move according to a clock signal but they can never leave the cell.
-The configuration in the picture above represents the logical bit 0 the opposite configuration is the bit 1. 
+If we inject two electrons in this structure their reciprocal repulsion allow them to be only in two configurations, with the electrons disposed on one of the two diagonals. In order to let the system evolve electrons are allowed to move between dots inside a cell according to a clock signal but they can never exit the cell, the effect of the clock on the cells is explained in \ref{sec:clock}.
+The configuration in picture \ref{img:cell} represents the logical bit 0 the opposite configuration is the bit 1. 
 If we put two cells one beside the other we can see that the polarization of the first cells has an impact on the polarization of the other. This effect can be used to build complex logic circuits. Main blocks of QCA circuits are NOT and Majority Gate both shown in figure \ref{img:gates}.
 \begin{figure}
 \centering
 \includegraphics[scale=0.1]{img/not_normal.png}
 \includegraphics[scale=0.1]{img/majority.png}
+\caption{NOT and majority gate}
 \label{img:gates}
 \end{figure}
 
 \subsection{Clock}
-\label{delay}
-A key issue in the design of circuits is the definition of clock areas. This technology uses 4 identical clock signals which are shifted of $\frac{\pi}{4}$. Each clock signal has 4 clock phases: switch, hold, release and relax. During this phases potential barriers are raised or lowered inside the cell in order to control the movement of electrons. In the relax phase barriers are low and electrons can freely move inside the cell, during the switch phase barriers are raised and the movement of electrons are limited. during the hold phase electrons are not allowed to move within dots. In the relax phase the barriers are lowered. The alternation of clock phases identify the flow of information into the circuit. \newline
-This technology is pipelined and the output of the circuit is given after a delay which is equal to the number of clock phases divided by four.
+\label{sec:clock}
+A key issue in the design of circuits is the definition of clock areas. As said in \ref{sec:qca} in order to define the switching of cells polarization a clock signal is used. QCA uses 4 identical clock signals shifted of $\frac{\pi}{4}$. Each clock signal has 4 clock phases: switch, hold, release and relax. The wave form of the clock signal is shown in figure \ref{img:clock}. 
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.1]{img/clock.png}
+\caption{NOT and majority gate}
+\label{img:clock}
+\end{figure}
+
+During these phases potential barriers between dots inside the cell are raised or lowered in order to control the movement of electrons. In the relax phase barriers are low and electrons can freely move inside the cell, during the switch phase barriers are raised and the movement of electrons are limited. during the hold phase electrons are not allowed to move within dots. In the relax phase the barriers are lowered. \newline
+In the design of circuits based on QCA the alternation of the four clock signals are used to control the flow of information. In figure \ref{img:ambiente} is shown a very simple circuit in which different cell colors correspond to different clock signals. At the beginning of the computation the input configurations are presented in the upper cells and at the end of the computation the output is read from the lower cell after a delay. The information flows from the input to the output according to the clock signals. The time that the information takes to go from the input to the output is the delay of the circuit. It can be easily seen from picture \ref{img:ambiente} that QCA is a pipeline technology so during the processing of a combination of inputs another combination can be presented to the input cells at each clock cycle. The total delay of the circuit is the number of cell signals switched from the inputs to the output divided by 4.
 
 \section{QCADesigner}
-QCADesigner is a tool made by the University of British Columbia to design and verify circuits in QCA technology. This tool offers two main feature. The first is to design with an intuitive graphical user interface a circuit, in the image \ref{img:ambiente} is showed a simple circuit, the second is to simulate the behavior of the circuit. 
+QCADesigner is a tool made by the University of British Columbia to design and verify circuits in QCA technology. This tool offers two main feature. The first is to design with an intuitive graphical user interface a circuit, in the image \ref{img:ambiente} is showed the design GUI and a very simple circuit, the second is to simulate the behavior of the circuit. 
 
 \begin{figure}
 \centering
 \includegraphics[scale=0.4]{img/QCADesigner.png}
+\caption{QCADesigner GUI}
 \label{img:ambiente}
 \end{figure}
-To verify the behavior of the system two simulation engines are offered. The bistable simulation and the coherence vector simulation. the aim of this report is to speedup the execution of the bistable simulation engine so we are going to briefly describe only this type of simulation. The coherence vector differs in the way the polarization of cells is calculated, it's much slower but gives more accurate result.
-
+To verify the behavior of the system two simulation engines are offered. The bistable simulation and the coherence vector simulation. The goal of this project is to speedup the execution of the bistable simulation engine so we are going to briefly describe  how this simulation works. The coherence vector differs from the bistable simulation in the way the polarization of cells is calculated, it is much slower but gives more accurate result.
 
 \subsection{Bistable Simulation}
-Bistable simulation engine has been created in order to give designers a way to test their circuit very rapidly. For the simulation the cell is modeled as a two state system, for each cell the kink energy with respect to neighbor cells and the polarization is stored. the kink energy takes into account the cost of two neighboring cells with different polarizations. At each step of the execution the new polarization of each cell is calculated on the basis of the old polarizations and the kink energy of all neighboring cells, within a predefined radius. The approximations made by this simulation engine is sufficient to verify the logical behavior of the system but does't describe well it's dynamics. For the inspection of dynamic situations coherence vector engine should be used. The main advantage of this kind of simulation is that it's very quick with respect to the coherence vector engine. 
+Bistable simulation engine has been created in order to give designers a way to rapidly test their circuit during the design phase. For the simulation the cell is modelled as a two state system, for each cell the kink energy with respect to neighbor cells and the polarization is stored. The kink energy takes into account the cost of two neighboring cells having opposite polarizations. How the new polarization of each cell is calculated and details about the simulation algorithms are shown in\ref(sec:cpu_algorithm). The modeling of the cells as a simple two state system is an approximations that this simulator engine does to be able verify the logical behavior of the system faster than the coherence vector engine by sacrificing the ability to describe well the dynamics of the circuit. 
 
 \input{art_of_cuda}
