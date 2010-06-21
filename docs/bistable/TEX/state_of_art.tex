@@ -51,4 +51,5 @@ To verify the behavior of the system two simulation engines are offered. The bis
 \subsection{Bistable Simulation}
 Bistable simulation engine has been created in order to give designers a way to rapidly test their circuit during the design phase. For the simulation the cell is modelled as a two state system, for each cell the kink energy with respect to neighbor cells and the polarization is stored. The kink energy takes into account the cost of two neighboring cells having opposite polarizations. How the new polarization of each cell is calculated and details about the simulation algorithms are shown in\ref{sec:cpu_algorithm}. The modeling of the cells as a simple two state system is an approximations that this simulator engine does to be able verify the logical behavior of the system faster than the coherence vector engine by sacrificing the ability to describe well the dynamics of the circuit. 
 
+
 \input{art_of_cuda}

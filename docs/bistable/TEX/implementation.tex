@@ -97,10 +97,14 @@ proportional to the number of cells as the circuit get larger, since we can cons
 \subsubsection{Original Structures}
 In the CPU implementation all the information about circuit structure and details of cells are stored in complex nested and dereferenced
  structures. \lstlistingname~\ref{bistable_struct} shows how every cell is represented by a C struct containing the the most useful 
-features for the simulation. \texttt{number_of_neighbours}, \texttt{neighbours} and \texttt{Ek} arrays provide all the necessary 
-informations about relationships with other cells: they respectively store
-
-\begin{lstlisting}[caption=Bistable model structure for the QCACell, label=bistable_struct]
+features for the simulation.
+The first four fields of the structures provide all the necessary informations about relationships with other cells. The integer variable 
+\texttt{number\_of\_neighbours} allow to iterate correctly on other arrays to execute the needed operations.
+The combined use of \texttt{neighbours} and \texttt{neighbour\_layer} pointers permits to reach neighbors cells while \texttt{Ek} points
+to the array array containing all the kink energy values with respect to the neighbors cells.\newline
+The new polarization of the cell is then computed performing a set of operations over the polarizations of the neighbors, the respective 
+kink energy and the current cell polarization.\newline
+\begin{lstlisting}[caption=Bistable model structure for the QCACDell, label=bistable_struct]
 	    typedef struct
 	      {
 	      int number_of_neighbours;
@@ -110,6 +114,7 @@ informations about relationships with other cells: they respectively store
 	      double polarization;
 	      } bistable_model;
 \end{lstlisting}
+These structures are grouped by layers in a matrix of sorted cells.
 
 Considering CUDA SIMT parallelism, well suited to operate over structures like matrices and arrays, we first detected the useful data
 for simulation on GPU and then decided how to organize them for a fast CUDA implementation.\newline
