@@ -9,13 +9,12 @@ structures allocable on the GPU global memory.
 
 \section{The CPU algorithm and code analysis}\label{sec:cpu_algorithm}
 Bistable engine is thought as a fast and approximated simulation, sufficient to verify the logic functionality of a design. 
-Every cell is represented as a simple two-state system. The algorithm \ref{algo_bist_serial} shows a pseudo code of the simulation. 
+Every cell is represented as a simple two-state system. The algorithm \ref{algo_bist_serial} shows a pseudo code of the simulation core. 
 \input{serial_algorithm}
-The entire evolution of the system is divided into samples, that are units of time (not yet experimentally defined), and for each sample the state of each cell is calculated with respect to the other cells within 
-a preset effective radius. This operation is iterated until all cells have converged within a predetermined tolerance. 
-Once the entire system converges the output is recorded and the computation goes on with the next sample, after having updated
- the input cells with new input values.
-The number of samples required to have a good approximation is known (\cite{site:MinaBistable}) to be about $1000*d+1000*k$, where $d$ is the circuit delay (number of clocks) and $k$ is the number of inputs combinations. So far, the tool only allows exhaustive simulations, that is, all possible combinations of inputs are evaluated, and the procedure is performed twice, since the first $d$ cycles output values are meaningless. Thus, $2000*2^N$ samples are needed, where $N$ is the number of input cells.
+The entire evolution of the system is divided into samples, that are units of time (not yet experimentally defined). At the beginning of each sample, input values are updated and cells order is randomized. The state of each cell is then calculated with respect to the other cells within 
+a preset effective radius. This operation is iterated until all cells have converged within a predetermined $tolerance$ (\ref{algo_bist_serial}, line \ref{alg:tolerance}). 
+Once the entire system converges the output is recorded and the computation goes on with the next sample.
+The number of samples required to have a good approximation is known (\cite{site:MinaBistable}) to be about $1000*d+1000*k$, where $d$ is the circuit delay (number of clocks) and $k$ is the number of inputs combinations. So far, the tool only allows exhaustive simulations, that is, all possible combinations of inputs are evaluated, and the procedure is performed twice, since the first $d$ cycles output values are meaningless. Thus, $2000*2^N$ samples are needed, where $N$ is the number of input cells. Obviously, this parameter introduces an exponential complexity which is just related to the fact that the number of all possible combinations of inputs is $2^N$.
  The maximum number of iterations allowed for the convergence within a sample is set to $100$. Thus, during a simulation each cell's value 
 is computed sequentially $It*2000*2^N$ times, where $It$ is the mean number of iterations needed to reach convergence. 
 The more complex is the circuit, the longer will take each sample to reach convergence. Each cell new state calculation implies several accesses to the memory, since data structures are heavily dereferenced, and each neighbor's state as well as their reciprocal kink energy has to be read, and a series of floating point operations on values with double precision. Furthermore, at the beginning of each sample, new inputs values have to be set. As far as exhaustive simulation is concerned, every combination of input values has to be processed. Therefore, their values are calculated throughout a periodic function, implying several transcendental functional unit usages.\newline
@@ -23,7 +22,7 @@ The analysis of the code makes it quite clear that the core of the simulation is
 
 
 \section{Profiling of CPU simulation}\label{sec:cpu_profiling}
-Once the batch application was finished we started to profile the execution times simulating some circuits of different sizes and different number of inputs. The table \ref{tab:cpu_profiling} shows the results we obtained. We calculated the mean number of iterations per sample needed to reach convergence, the core simulation time, the time of the entire simulation, including data loading from file and creation of data structures, and the proportion of the computation that we aim to speedup.
+We made the batch simulator work and had the CPU simulation profiled. We simulated some circuits of different sizes and different number of inputs and took the execution times. The table \ref{tab:cpu_profiling} shows the results we obtained. We calculated the mean number of iterations per sample needed to reach convergence, the core simulation time, the time of the entire simulation (including data loading from file and creation of data structures) and the proportion of the computation that we aim to speedup.
 \newline
 \begin{table}[h!tb]
    \centering \caption{CPU simulation Profiling}
@@ -51,11 +50,12 @@ Once the batch application was finished we started to profile the execution time
 	    \end{tabular}
 	 }
  \end{table}
-As we can see, the hypothesis we made about the bottleneck is verified. Furthermore, the proportion of the computation for big circuits get bigger with the number of samples used, so with the number of inputs. The maximum expected improvement is, according to Amdahl's Law: $ \frac{1}{(1-P)+\frac{P}{S}} $, where S is the maximum speedup achievable parallelizing the portion P. For big circuits we can consider $P=1$ and thus the speedup of the entire simulation is equal to the speedup we manage to obtain from the parallelization of the core simulation.
+As we can see, the hypothesis we made about the bottleneck is verified. Furthermore, the proportion of the computation for large circuits increases with the number of samples used, so with the number of inputs. The maximum expected improvement is, according to Amdahl's Law: $ \frac{1}{(1-P)+\frac{P}{S}} $, where S is the maximum speedup achievable parallelizing the portion P. For large circuits we can consider $P=1$ and thus the speedup of the entire simulation is equal to the speedup we manage to obtain from the parallelization of the core simulation. Whatever time occur to perform the part of the code outside the core cannot be eliminated or improved since it consists of data loading from file and creation of data structures.
 
 \section{Parallelization Strategy}
-\subsection{The new algorithm and achievable speedup}\label{sec:new_algorithm}
-As we have seen in section \ref{sec:cpu_algorithm}, the calculation of the each cell's new state is immediately stored before proceeding with the next cell. Therefore, not all of the new polarizations computation is based on the old value of neighbors. This dependence challenges our seek of the maximum speedup, since our initial proposal was to compute every cell's new state simultaneously. The figure \ref{fig:cpu_alg} shows how this dependency affects a simulation step varying the order in which the cells are considered.
+In this section, we consider the original algorithm in order to find a parallel algorithm which best exploit CUDA technology, making some consideration on achievable speedup and correctness of results.
+\subsection{The parallel algorithm and achievable speedup}\label{sec:new_algorithm}
+As we have seen in section \ref{sec:cpu_algorithm}, the calculation of each cell new state is immediately stored before proceeding with the next cell. Therefore, not all of the new polarizations computation is based on the old value of neighbors. This dependence challenges our seek of the maximum speedup, since our initial proposal was to compute all the new states of cells simultaneously. Figure \ref{fig:cpu_alg} shows how this dependency affects a simulation step varying the order in which the cells are considered.
 \begin{figure}[h!tb]
 	\centering
 	\subfigure[First order]{\includegraphics[scale=0.4]{img/CPUalg1.png}}
@@ -64,12 +64,15 @@ As we have seen in section \ref{sec:cpu_algorithm}, the calculation of the each 
 	\label{fig:cpu_alg}
 \end{figure}
 We initially made the hypothesis that calculate the new state of a cell entirely based on the old state of the neighbor cells would have worked even better than the current algorithm. This way we would have had a maximum speedup achievable of the core simulation proportional to the number of the cells.
-Given our lack of competence in this field, we contacted Professor Konrad Walus of the University of British Columbia (Canada), which is the head of the Microsystems and Nanotechnology Research Group (MiNa) which developed this tool. He sustained our hypothesis, adding that their implementation was different just because copying each value would have worsen considerably performances on CPU, and that any numerical problem that may incur is bypassed by randomizing each sample the order in which cells are considered.\newline
-As far as coherence engine is concerned, this was true, and the team which is working on it had brilliant results with this algorithm. Unfortunately, the bistable simulation gave us an unexpected result: the state of the system did not converge to a stable state, on the contrary, cells' state starts oscillating and oscillations seems to get larger after some iterations. This result is probably due to the fact that this kind of simulation is just an approximation of the dynamic of the system and what happens is something comparable to the latch SR when is goes from the \textit{forbidden state} $R=S=1$ to the \textit{keep state} $R=S=0$, whose output is unpredictable and the result will depend on the propagation time relations between the NOR gates. In our case, the algorithm is trying to compute the new state not considering any analogue relaxation time difference. Obviously this problem occur only when making logical approximations. The coherence engine is a physical simulation, so this problem is overcome.
+Professor Konrad Walus of the University of British Columbia (Canada), which is the head of the Microsystems and Nanotechnology Research Group (MiNa) which developed this tool, sustained our hypothesis, adding that their implementation was different just because copying each value would have worsen considerably performances on CPU, and that any numerical problem that may incur is bypassed by the randomization performed each sample (\ref{algo_bist_serial} line \ref{alg:rand}) to the order in which cells are considered. Algorithm \ref{algo_bist_parallel_failure} shows the pseudo code of our first proposal.
+\input{parallel_algorithm_failure}
+BistableKernel (\ref{alg:algo_bist_parallel_failure} line \ref{alg:bistkernel}) is the part of the code that has to be computed by each GPU thread. Each thread is in charge of computing the new state of each cell based on the values of his neighbors. The number of the threads that will simultaneously will be executed is dependent on the architecture of the device.
+Unfortunately, the bistable simulation gave us an unexpected result: the state of the system did not converge to a stable state, on the contrary, cells' state starts oscillating and oscillations seems to get larger after some iterations. This result is probably due to the fact that this kind of simulation is just an approximation of the dynamic of the system and what happens is something comparable to the latch SR when is goes from the \textit{forbidden state} $R=S=1$ to the \textit{keep state} $R=S=0$, whose output is unpredictable and the result will depend on the propagation time relations between the NOR gates. In our case, the algorithm is trying to compute the new state not considering any analogue relaxation time difference. Obviously this problem occur only when making logical approximations. The coherence engine is a physical simulation, so this problem is overcome.
 
 \subsection{Parallelization by labels}
 In order to find a working parallelizable algorithm, two approaches had been considered then. The former was to modify someway the computation of the new state, in order to overcome any sort of oscillation and maintain the before prospected speedup roof, the second was to consider the dependency that was discussed in section \ref{sec:new_algorithm}, affecting negatively the achievable speedup.
 As for the first option, we tried adding some noise or skipping randomly the new polarization update when an oscillation is individuated, but we did not succeed. Again because of our lack of competence, we showed this problem to the MiNa group and we are currently in contact with a PhD which actively contributed to the creation of this tool. Meanwhile we managed to obtain a working bistable simulator exploiting the second option.\newline
+\input{parallel_algorithm}
 In order to maintain the dependency of the original algorithm we decided to divide the entire circuit into labels so that every cell has no neighbors on his label and computing simultaneously not all the cells, but cells belonging to the same label.
 The neighborhood relationship is stored as an undirected graph. Applying a coloring algorithm on it, we obtained these labels. Our graph has some peculiarity which had to be considered in order to find a fast and efficient coloring algorithm:
 \begin{itemize}
@@ -147,7 +150,7 @@ Parallel bistable simulation, could be divided into the below stages:
  \item cleaning device memory after the last sample.
 \end{itemize}
 
-\input{parallel_algorithm}
+
 
 
 
