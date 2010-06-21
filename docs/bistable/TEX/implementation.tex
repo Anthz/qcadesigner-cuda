@@ -97,8 +97,8 @@ proportional to the number of cells as the circuit get larger, since we can cons
 \subsubsection{Original Structures}
 In the CPU implementation all the information about circuit structure and details of cells are stored in complex nested and dereferenced
  structures. \lstlistingname~\ref{bistable_struct} shows how every cell is represented by a C struct containing the the most useful 
-features for the simulation: \texttt{number_of_neighbours}, \texttt{neighbours} and \texttt{Ek} arrays provide all the necessary 
-informations about relationships with other cells
+features for the simulation. \texttt{number_of_neighbours}, \texttt{neighbours} and \texttt{Ek} arrays provide all the necessary 
+informations about relationships with other cells: they respectively store
 
 \begin{lstlisting}[caption=Bistable model structure for the QCACell, label=bistable_struct]
 	    typedef struct
