@@ -86,8 +86,8 @@ ifeq ($(EXTRA_PARAMS1), sm_20)
       NVCFLAGS += -arch=sm_20
 endif
 
-ifeq ($(EXTRA_PARAMS2), --fast-math)
-      NVCFLAGS += --fast-math
+ifeq ($(EXTRA_PARAMS2), --fast_math)
+      NVCFLAGS += --use_fast_math
 endif
 
 	NVCFLAGS += $(EXTRA_PARAMS3)

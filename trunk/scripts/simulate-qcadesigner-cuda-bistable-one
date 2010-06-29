@@ -1,4 +1,4 @@
-circuit_ls+="Circuit_2_04.qca"
+circuit_ls+="CircuitBig_64000.qca"
 now=$(date +%s)
 echo These files will be used for testing:
 echo $circuit_ls
@@ -6,7 +6,7 @@ for i in $circuit_ls
 do
         echo Simulating $i...
         touch ../data/sim_outputs/bistable/$i-$now-cuda.log
-        ../bin/qcadesigner-cuda -f ../data/circuits/bistable/simulated/$i -o ../scripts/bistable_options.txt -n 1 -t 0.001 -e BISTABLE -s ../data/sim_outputs/bistable/$i-$now 2>&1 | tee ../data/sim_outputs/bistable/$i-$now-cuda.log
+        ../bin/qcadesigner-cuda -f ../data/circuits/bistable/$i -o ../scripts/bistable_options.txt -n 1 -t 0.001 -e BISTABLE -s ../data/sim_outputs/bistable/$i-$now 2>&1 | tee ../data/sim_outputs/bistable/$i-$now-cuda.log
         echo Done simulating $i.
         cd ../data/
         if [ -e gnuplot/circuit ]
