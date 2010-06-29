@@ -17,6 +17,7 @@
 #include "cuPrintf.cu"
 #endif //CUPRINTF_B
 
+#define LAMBDA 0.5
 
 extern "C"{
 #include "../coloring/coloring.h"
@@ -78,9 +79,7 @@ __global__ void bistable_kernel (
 		int sample,
 		int *d_output_indexes,
 		char *d_stability,
-		double *d_output_data,
-		int *d_cells_colors,
-		int color
+		double *d_output_data
 		)
 {
 	extern	__shared__ int shm_output_indexes[];
@@ -89,6 +88,7 @@ __global__ void bistable_kernel (
 	int q;
 	int current_cell_clock;   //could be 0, 1, 2 or 3
 	double new_polarization;
+	double old_polarization;
 	double polarization_math;
 	double clock_value;
 	double kink;
@@ -109,7 +109,7 @@ __global__ void bistable_kernel (
 		  
 		//cuPrintf("%f ", d_polarization[thr_idx]);	
 
-		if (!(d_neighbours[thr_idx] == -1) && color == d_cells_colors[thr_idx]) // if thr_idx corresponding cell type is not FIXED or INPUT and is my turn
+		if (d_neighbours[thr_idx] != -1) // if thr_idx corresponding cell type is not FIXED or INPUT and is my turn
 		{
 			nb_idx = 0;
 			polarization_math = 0;
@@ -126,6 +126,7 @@ __global__ void bistable_kernel (
 				}
 			}
 			
+			old_polarization=d_polarization[thr_idx];
 			
 			//math = math / 2 * gamma
 			clock_value = d_clock_prefactor * __cosf (__fdividef(((double)(1 << d_input_number)) * (double)sample * 4.0 * PI , (double)d_number_of_samples) - __fdividef(PI * current_cell_clock , 2)) + d_clock_shift;
@@ -141,11 +142,11 @@ __global__ void bistable_kernel (
 			(fabs (polarization_math) <     0.001) ?  polarization_math :
 			__fdividef(polarization_math , sqrt (1 + polarization_math * polarization_math)) ;
 			
-			d_stability[thr_idx] = (char)('0'+ (int)( fabs (new_polarization - d_polarization[thr_idx]) <= d_tolerance));
+			d_stability[thr_idx] = (char)('0'+ (int)( fabs (new_polarization - old_polarization) <= d_tolerance));
 
 			//set the new polarization in next_polarization array  
 			//d_next_polarization[thr_idx] = new_polarization;
-			d_polarization[thr_idx] = new_polarization; //There is no conflicts because there is no read from other thread on this (they have other colors)
+			d_polarization[thr_idx] = new_polarization*LAMBDA+old_polarization*(1-LAMBDA); //There is no conflicts because there is no read from other thread on this (they have other colors)
 
 			// If any cells polarization has changed beyond this threshold
 			// then the entire circuit is assumed to have not converged.
@@ -383,7 +384,7 @@ void launch_bistable_simulation(
 		
 		// randomize the order in which the cells are simulated to try and minimize numerical errors
 		// associated with the imposed simulation order.
-
+/*
 		if(randomize_cells)
 			for (i = 0 ; i < num_colors ; i++)
 			{
@@ -394,7 +395,7 @@ void launch_bistable_simulation(
 				colors_order[idx1] = colors_order[idx2];
 				colors_order[idx2] = swap;
 			}		
-	
+*/	
 		// In each sample...
 		for (i = 0; i < max_iterations && !stable; i++)
 		{
@@ -406,8 +407,8 @@ void launch_bistable_simulation(
 			}*/
 	
 			// Launch Kernel
-			for(k = 0; k < num_colors; k++)
-			{
+			/*for(k = 0; k < num_colors; k++)
+			{*/
 				/*if (j>998 && j<1002)
 				{
 					cutilSafeCall(cudaMemcpy(h_polarization,d_polarization,cells_number*sizeof(double),cudaMemcpyDeviceToHost));
@@ -416,7 +417,7 @@ void launch_bistable_simulation(
 				}*/
 				
 				bistable_kernel<<< grid, threads, output_indexes_bytes >>> (d_polarization, d_cell_clock, d_Ek, d_neighbours, 
-					j, d_output_indexes, d_stability, d_output_data, d_cells_colors, colors_order[k]);
+					j, d_output_indexes, d_stability, d_output_data);
 					
 				// Wait Device
 				cudaThreadSynchronize ();
@@ -424,7 +425,7 @@ void launch_bistable_simulation(
 				// Set Memory for the next iteration
 				//			cutilSafeCall (cudaMemcpy (d_polarization, d_next_polarization, cells_number * sizeof(double), cudaMemcpyDeviceToDevice));
 				/*swap_arrays(&d_polarization,&d_next_polarization);// same array*/
-			}
+			//}
 			//	for (count = 0; count<cells_number; count++) printf("%d",h_stability[count]);
 			//	printf("\n");
 			
